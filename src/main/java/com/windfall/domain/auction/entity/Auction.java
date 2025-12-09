@@ -18,6 +18,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Auction extends BaseEntity {
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
+
     @Column(nullable = false)
     private String title;
 
@@ -50,7 +54,4 @@ public class Auction extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime endedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
-    private User seller;
 }
