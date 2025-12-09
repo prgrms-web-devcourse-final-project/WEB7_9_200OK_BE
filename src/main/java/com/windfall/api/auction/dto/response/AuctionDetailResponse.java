@@ -1,5 +1,7 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.domain.auction.enums.AuctionCategory;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +19,7 @@ public record AuctionDetailResponse(
     String description,
 
     @Schema(description = "카테고리", example = "피규어")
-    String category,
+    AuctionCategory category,
 
     @Schema(description = "상품 이미지 URL 목록", example = "[\"https://example.com/image1.jpg\"]")
     List<String> imageUrls,
@@ -38,7 +40,7 @@ public record AuctionDetailResponse(
     double discountRate,
 
     @Schema(description = "경매 상태", example = "ONGOING")
-    String status,
+    AuctionStatus status,
 
     @Schema(description = "찜 수", example = "25")
     int likeCount,
