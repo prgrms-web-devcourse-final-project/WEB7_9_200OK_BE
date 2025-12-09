@@ -27,6 +27,7 @@ public interface AuctionSpecification {
       @RequestBody Long userId
   );
 
+  @ApiErrorCodes({NOT_FOUND_AUCTION})
   @Operation(summary = "경매 가격 변동 내역 조회", description = "특정 경매의 가격 변동 내역을 조회합니다.")
   ApiResponse<AuctionHistoryResponse> getAuctionHistory(
       @Parameter(description = "경매 ID", required = true, example = "1")
