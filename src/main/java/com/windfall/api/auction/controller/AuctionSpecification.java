@@ -13,15 +13,17 @@ import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Auction", description = "경매 상세 및 상호작용 API")
 public interface AuctionSpecification {
 
+  @ApiErrorCodes({ErrorCode.INVALID_TIME,ErrorCode.INVALID_STOP_LOSS,ErrorCode.INVALID_DROP_AMOUNT})
   @Operation(summary = "경매 생성", description = "새로운 경매를 생성합니다.")
   ApiResponse<AuctionCreateResponse> createAuction(
-      @RequestBody AuctionCreateRequest request
+      @Valid @RequestBody AuctionCreateRequest request
   );
 
   @Operation(summary = "경매 상세 조회", description = "특정 경매의 상세 정보(상품 정보, 가격 정보, 상태 정보)를 조회합니다.")
@@ -52,4 +54,8 @@ public interface AuctionSpecification {
       @Parameter(description = "사용자 ID", required = true, example = "42")
       @RequestBody Long userId
   );
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0038ee4 (refactor: 스웨거 추가 #8)
 }
