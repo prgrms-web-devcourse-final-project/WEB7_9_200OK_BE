@@ -51,7 +51,6 @@ public class Auction extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime startedAt;
 
-    @Column(nullable = false)
     private LocalDateTime endedAt;
 
 }
