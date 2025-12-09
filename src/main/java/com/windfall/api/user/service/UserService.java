@@ -6,6 +6,7 @@ import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -13,6 +14,7 @@ public class UserService {
 
   private final UserRepository userRepository;
 
+  @Transactional(readOnly = true)
   public User getUserById(Long userId) {
     return userRepository.findById(userId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_USER));
