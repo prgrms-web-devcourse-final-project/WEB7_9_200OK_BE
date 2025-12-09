@@ -1,0 +1,50 @@
+package com.windfall.domain.auction.entity;
+
+
+
+import com.windfall.domain.auction.enums.AuctionCategory;
+import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.global.entity.BaseEntity;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+public class Auction extends BaseEntity {
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(columnDefinition = "TEXT",nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private AuctionCategory category;
+
+    @Column(nullable = false)
+    private Long startPrice;
+
+    @Column(nullable = false)
+    private Long currentPrice;
+
+    @Column(nullable = false)
+    private Long stopLoss;
+
+    @Column(nullable = false)
+    private Long dropAmount;
+
+    @Column(nullable = false)
+    private AuctionStatus status;
+
+    @Column(nullable = false)
+    private LocalDateTime startedAt;
+
+    @Column(nullable = false)
+    private LocalDateTime endedAt;
+}
