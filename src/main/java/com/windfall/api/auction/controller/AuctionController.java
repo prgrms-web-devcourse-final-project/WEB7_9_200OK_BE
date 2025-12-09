@@ -1,5 +1,7 @@
 package com.windfall.api.auction.controller;
 
+import com.windfall.api.auction.dto.response.AuctionDetailResponse;
+import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,9 +45,9 @@ public class AuctionController implements AuctionSpecification {
       @PathVariable Long auctionId,
       @PathVariable String emojiType,
       @RequestBody Long userId) {
-
+    
     //TODO: Redis Pub/Sub으로 이모지 발생 로직 구현
-
+    
     return ApiResponse.ok(null);
   }
 }

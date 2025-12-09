@@ -1,5 +1,7 @@
 package com.windfall.api.auction.controller;
 
+import com.windfall.api.auction.dto.response.AuctionDetailResponse;
+import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
