@@ -1,5 +1,7 @@
 package com.windfall.api.auction.controller;
 
+import static com.windfall.global.exception.ErrorCode.AUCTION_NOT_PROCESS;
+import static com.windfall.global.exception.ErrorCode.INVALID_AUCTION_SELLER;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_MEMBER;
 
@@ -34,6 +36,7 @@ public interface AuctionSpecification {
       @PathVariable Long auctionId
   );
 
+  @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_MEMBER, AUCTION_NOT_PROCESS ,INVALID_AUCTION_SELLER})
   @Operation(summary = "경매 이모지 전송", description = "특정 경매에 대해 판매자가 이모지를 전송합니다.")
   ApiResponse<Void> sendEmoji(
       @Parameter(description = "경매 ID", required = true, example = "1")
