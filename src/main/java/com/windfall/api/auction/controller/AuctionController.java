@@ -1,7 +1,10 @@
 package com.windfall.api.auction.controller;
 
+import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/v1/auctions")
 @RequiredArgsConstructor
 public class AuctionController implements AuctionSpecification {
+
+  private final AuctionService auctionService;
 
   @Override
   @GetMapping("/{auctionId}")
@@ -46,9 +51,18 @@ public class AuctionController implements AuctionSpecification {
       @PathVariable Long auctionId,
       @PathVariable EmojiType emojiType,
       @RequestBody Long userId) {
-    
+
     //TODO: Redis Pub/Sub으로 이모지 발생 로직 구현
-    
+
     return ApiResponse.ok(null);
+  }
+
+  @Override
+  @PostMapping
+  public ApiResponse<AuctionCreateResponse> createAuction(
+      @RequestBody AuctionCreateRequest request
+  ){
+    AuctionCreateResponse response = auctionService.createAuction(request);
+    return ApiResponse.created("경매가 생성되었습니다.",response);
   }
 }
