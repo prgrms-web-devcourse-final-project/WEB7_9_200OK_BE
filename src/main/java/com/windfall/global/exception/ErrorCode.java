@@ -17,7 +17,7 @@ public enum ErrorCode {
   INVALID_AUCTION_SELLER(HttpStatus.FORBIDDEN, "해당 경매의 판매자가 아닙니다."),
 
   // 그 외
-  UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
+  UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 에러")
   ;
 
   private final HttpStatus httpStatus;
