@@ -126,11 +126,154 @@ class AuctionControllerTest {
         resultTime = resultTime.plusHours(1);
       }
 
-      return resultTime;
+      return resultTime.plusDays(1);
     }
     private String formated(LocalDateTime resultTime){
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
       return resultTime.format(formatter);
+    }
+
+    @Test
+    @DisplayName("Validation 예외처리 상황 - 제목")
+    void fail1() throws Exception{
+      // given
+      LocalDateTime resultTime = createTime();
+      String formattedTime = formated(resultTime);
+
+      AuctionCreateRequest request = new AuctionCreateRequest(
+          sellerId,
+          null,
+          "테스트 설명",
+          AuctionCategory.DIGITAL,
+          10000L,
+          9000L,
+          50L,
+          resultTime
+      );
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          post("/api/v1/auctions")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request))
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("createAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("경매 제목은 필수입니다."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("경매 가격 하락가가 시작가의 0.5% 이하일 때")
+    void fail2() throws Exception{
+      // given
+      LocalDateTime resultTime = createTime();
+      String formattedTime = formated(resultTime);
+
+      AuctionCreateRequest request = new AuctionCreateRequest(
+          sellerId,
+          "테스트 제목",
+          "테스트 설명",
+          AuctionCategory.DIGITAL,
+          10000L,
+          9000L,
+          49L,
+          resultTime
+      );
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          post("/api/v1/auctions")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request))
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("createAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("경매 하락 가격을 다시 설정해주세요."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("경매 스탑로스가 시작가의 90% 초과일 때")
+    void fail3() throws Exception{
+      // given
+      LocalDateTime resultTime = createTime();
+      String formattedTime = formated(resultTime);
+
+      AuctionCreateRequest request = new AuctionCreateRequest(
+          sellerId,
+          "테스트 제목",
+          "테스트 설명",
+          AuctionCategory.DIGITAL,
+          10000L,
+          9001L,
+          50L,
+          resultTime
+      );
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          post("/api/v1/auctions")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request))
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("createAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("경매 Stop Loss을 다시 설정해주세요."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("경매 시작 시간이 1일 이내일 때")
+    void fail4() throws Exception{
+      // given
+      LocalDateTime resultTime = createTime().minusMinutes(10);
+
+      AuctionCreateRequest request = new AuctionCreateRequest(
+          sellerId,
+          "테스트 제목",
+          "테스트 설명",
+          AuctionCategory.DIGITAL,
+          10000L,
+          9000L,
+          50L,
+          resultTime
+      );
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          post("/api/v1/auctions")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(objectMapper.writeValueAsString(request))
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("createAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("경매 시간을 다시 설정해주세요."))
+          .andDo(print());
     }
   }
 
