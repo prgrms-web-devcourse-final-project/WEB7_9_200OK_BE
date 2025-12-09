@@ -29,4 +29,10 @@ public abstract class BaseEntity {
     @LastModifiedDate
     private LocalDateTime modifyDate;
 
+    private boolean activated = true; //기본값 설정
+
+    public void unActivated(){
+        this.activated = false;
+    }
+
 }
