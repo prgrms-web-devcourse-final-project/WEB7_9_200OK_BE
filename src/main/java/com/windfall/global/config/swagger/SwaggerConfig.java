@@ -26,9 +26,9 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("PetPlace")
+                        .title("WindFall")
                         .version("1.0")
-                        .description("PetPlace API 서버 문서입니다")
+                        .description("WindFall API 서버 문서입니다")
                 );
     }
 
