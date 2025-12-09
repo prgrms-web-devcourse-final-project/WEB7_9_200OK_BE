@@ -4,6 +4,7 @@ package com.windfall.domain.auction.entity;
 
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.domain.user.entity.User;
 import com.windfall.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -48,4 +49,8 @@ public class Auction extends BaseEntity {
 
     @Column(nullable = false)
     private LocalDateTime endedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 }
