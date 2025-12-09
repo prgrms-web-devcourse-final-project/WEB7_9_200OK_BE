@@ -1,8 +1,10 @@
 package com.windfall.domain.auction.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public enum AuctionCategory {
   CLOTHING("의류"),
   GOODS("잡화"),
@@ -17,7 +19,4 @@ public enum AuctionCategory {
 
   private final String categoryName;
 
-  AuctionCategory(String categoryName) {
-    this.categoryName = categoryName;
-  }
 }
