@@ -40,6 +40,7 @@ public class Auction extends BaseEntity {
     private Long dropAmount;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private AuctionStatus status;
 
     @Column(nullable = false)
