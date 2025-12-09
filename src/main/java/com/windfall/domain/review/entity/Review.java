@@ -16,11 +16,11 @@ public class Review extends BaseEntity {
 
   //@OneToOne - Trade 엔티티 생성 이후 매핑 예정
 
-  @Column(name = "reviewerId", nullable = false)
-  private Long reviewerId;
+  @Column(name = "buyer_id", nullable = false)
+  private Long buyerId;
 
-  @Column(name = "revieweeId", nullable = false)
-  private Long revieweeId;
+  @Column(name = "seller_id", nullable = false)
+  private Long sellerId;
 
   @Column(name = "rating", nullable = false)
   private int rating;
