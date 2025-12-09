@@ -8,9 +8,16 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorCode {
 
-    UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 에러")
+  // User
+  NOT_FOUND_MEMBER(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 
-    ;
-    private final HttpStatus httpStatus;
-    private final String message;
+  // Auction
+  NOT_FOUND_AUCTION(HttpStatus.NOT_FOUND, "존재하지 않는 경매입니다."),
+
+  // Global
+  UNKNOWN_ERROR(HttpStatus.UNAUTHORIZED, "알 수 없는 에러")
+  ;
+
+  private final HttpStatus httpStatus;
+  private final String message;
 }

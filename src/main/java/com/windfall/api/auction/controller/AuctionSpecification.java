@@ -1,8 +1,12 @@
 package com.windfall.api.auction.controller;
 
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_MEMBER;
+
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.domain.auction.enums.EmojiType;
+import com.windfall.global.config.swagger.ApiErrorCodes;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @Tag(name = "Auction", description = "경매 상세 및 상호작용 API")
 public interface AuctionSpecification {
 
+  @ApiErrorCodes({NOT_FOUND_MEMBER, NOT_FOUND_AUCTION})
   @Operation(summary = "경매 상세 조회", description = "특정 경매의 상세 정보(상품 정보, 가격 정보, 상태 정보)를 조회합니다.")
   ApiResponse<AuctionDetailResponse> getAuctionDetail(
       @Parameter(description = "경매 ID", required = true, example = "1")
