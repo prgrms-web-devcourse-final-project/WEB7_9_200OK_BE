@@ -1,5 +1,7 @@
 package com.windfall.api.auction.controller;
 
+import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.domain.auction.enums.EmojiType;
@@ -38,5 +40,9 @@ public interface AuctionSpecification {
 
       @Parameter(description = "사용자 ID", required = true, example = "42")
       @RequestBody Long userId
+  );
+
+  ApiResponse<AuctionCreateResponse> createAuction(
+      @RequestBody AuctionCreateRequest request
   );
 }
