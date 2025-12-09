@@ -23,6 +23,15 @@ public class AuctionController implements AuctionSpecification {
   private final AuctionService auctionService;
 
   @Override
+  @PostMapping
+  public ApiResponse<AuctionCreateResponse> createAuction(
+      @RequestBody AuctionCreateRequest request
+  ){
+    AuctionCreateResponse response = auctionService.createAuction(request);
+    return ApiResponse.created("경매가 생성되었습니다.",response);
+  }
+
+  @Override
   @GetMapping("/{auctionId}")
   public ApiResponse<AuctionDetailResponse> getAuctionDetail(
       @PathVariable Long auctionId,
@@ -57,12 +66,4 @@ public class AuctionController implements AuctionSpecification {
     return ApiResponse.ok(null);
   }
 
-  @Override
-  @PostMapping
-  public ApiResponse<AuctionCreateResponse> createAuction(
-      @RequestBody AuctionCreateRequest request
-  ){
-    AuctionCreateResponse response = auctionService.createAuction(request);
-    return ApiResponse.created("경매가 생성되었습니다.",response);
-  }
 }
