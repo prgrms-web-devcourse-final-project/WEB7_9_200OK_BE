@@ -5,10 +5,13 @@ import static com.windfall.global.exception.ErrorCode.INVALID_AUCTION_SELLER;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 
+import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.config.swagger.ApiErrorCodes;
+import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,8 +57,5 @@ public interface AuctionSpecification {
       @Parameter(description = "사용자 ID", required = true, example = "42")
       @RequestBody Long userId
   );
-<<<<<<< HEAD
-=======
 
->>>>>>> 0038ee4 (refactor: 스웨거 추가 #8)
 }
