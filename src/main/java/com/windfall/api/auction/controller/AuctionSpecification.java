@@ -2,6 +2,7 @@ package com.windfall.api.auction.controller;
 
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +34,7 @@ public interface AuctionSpecification {
       @PathVariable Long auctionId,
 
       @Parameter(description = "이모지 타입", required = true, example = "LIKE")
-      @PathVariable String emojiType,
+      @PathVariable EmojiType emojiType,
 
       @Parameter(description = "사용자 ID", required = true, example = "42")
       @RequestBody Long userId
