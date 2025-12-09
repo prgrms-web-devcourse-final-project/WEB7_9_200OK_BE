@@ -7,6 +7,7 @@ import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +26,7 @@ public class AuctionController implements AuctionSpecification {
   @Override
   @PostMapping
   public ApiResponse<AuctionCreateResponse> createAuction(
-      @RequestBody AuctionCreateRequest request
+      @Valid @RequestBody AuctionCreateRequest request
   ){
     AuctionCreateResponse response = auctionService.createAuction(request);
     return ApiResponse.created("경매가 생성되었습니다.",response);
