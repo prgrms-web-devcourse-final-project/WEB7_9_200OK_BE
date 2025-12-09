@@ -18,7 +18,7 @@ public interface AuctionSpecification {
       @PathVariable Long auctionId,
 
       @Parameter(description = "사용자 ID", required = true, example = "42")
-      @RequestBody Long userId);
+      @RequestBody Long userId
   );
 
   @Operation(summary = "경매 가격 변동 내역 조회", description = "특정 경매의 가격 변동 내역을 조회합니다.")
