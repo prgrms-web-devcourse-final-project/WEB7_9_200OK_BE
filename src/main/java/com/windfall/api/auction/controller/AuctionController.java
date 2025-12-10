@@ -1,6 +1,5 @@
 package com.windfall.api.auction.controller;
 
-
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
@@ -10,6 +9,7 @@ import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -46,7 +46,7 @@ public class AuctionController implements AuctionSpecification {
     // TODO: 현재 응답 dto로 할지? vs api를 요청 값만 다르게해서 3번 요청할지
 
     return ApiResponse.ok(null);
-  }
+  };
 
   @Override
   @GetMapping("/{auctionId}")
