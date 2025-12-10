@@ -31,8 +31,4 @@ public abstract class BaseEntity {
 
     private boolean activated = true; //기본값 설정
 
-    public void unActivated(){
-        this.activated = false;
-    }
-
 }

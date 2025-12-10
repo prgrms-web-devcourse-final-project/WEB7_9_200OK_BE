@@ -10,12 +10,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE auction SET activate = false WHERE id = ?")
+@SQLRestriction("activate = true")
 public class Auction extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
