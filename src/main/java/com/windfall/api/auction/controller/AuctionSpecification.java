@@ -13,6 +13,7 @@ import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.config.swagger.ApiErrorCodes;
 import com.windfall.global.response.ApiResponse;
@@ -31,6 +32,11 @@ public interface AuctionSpecification {
   @Operation(summary = "경매 생성", description = "새로운 경매를 생성합니다.")
   ApiResponse<AuctionCreateResponse> createAuction(
       @Valid @RequestBody AuctionCreateRequest request
+  );
+
+
+  @Operation(summary = "경매 다건 조회", description = "경매 리스트들을 조회합니다.")
+  ApiResponse<AuctionListReadResponse> readAuctionList(
   );
 
   @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})

@@ -4,9 +4,11 @@ import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,16 @@ public class AuctionController implements AuctionSpecification {
     AuctionCreateResponse response = auctionService.createAuction(request);
     return ApiResponse.created("경매가 생성되었습니다.",response);
   }
+
+  @Override
+  @GetMapping
+  public ApiResponse<AuctionListReadResponse> readAuctionList(
+  ){
+    // TODO: 추후 프론트 담당이 생길 경우 이야기
+    // TODO: 현재 응답 dto로 할지? vs api를 요청 값만 다르게해서 3번 요청할지
+
+    return ApiResponse.ok(null);
+  };
 
   @Override
   @GetMapping("/{auctionId}")
