@@ -1,4 +1,4 @@
-package com.windfall.api.auction.dto.response;
+package com.windfall.api.auction.dto.response.info;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 

@@ -1,5 +1,6 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.api.auction.dto.response.info.SellerInfo;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;

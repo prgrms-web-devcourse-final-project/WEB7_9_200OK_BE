@@ -1,5 +1,8 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.api.auction.dto.response.info.popularInfo;
+import com.windfall.api.auction.dto.response.info.processInfo;
+import com.windfall.api.auction.dto.response.info.scheduledInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
