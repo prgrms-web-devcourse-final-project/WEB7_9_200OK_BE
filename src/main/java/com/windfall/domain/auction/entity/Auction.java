@@ -1,6 +1,7 @@
 package com.windfall.domain.auction.entity;
 
 
+import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.User;
@@ -53,4 +54,17 @@ public class Auction extends BaseEntity {
 
   private LocalDateTime endedAt;
 
+  public static Auction create(AuctionCreateRequest request, User seller) {
+    return Auction.builder()
+        .seller(seller)
+        .title(request.title())
+        .description(request.description())
+        .category(request.category())
+        .startPrice(request.startPrice())
+        .currentPrice(request.startPrice())
+        .stopLoss(request.stopLoss())
+        .dropAmount(request.dropAmount())
+        .startedAt(request.startAt())
+        .build();
+  }
 }

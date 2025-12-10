@@ -27,21 +27,11 @@ public class AuctionService {
 
     validateAuctionRequest(request);
 
-    Auction auction = Auction.builder()
-        .seller(seller)
-        .title(request.title())
-        .description(request.description())
-        .category(request.category())
-        .startPrice(request.startPrice())
-        .currentPrice(request.startPrice())
-        .stopLoss(request.stopLoss())
-        .dropAmount(request.dropAmount())
-        .startedAt(request.startAt())
-        .build();
+    Auction auction = Auction.create(request, seller);
 
-    auctionRepository.save(auction);
+    Auction savedAuction = auctionRepository.save(auction);
 
-    return AuctionCreateResponse.from(auction, seller.getId());
+    return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
 
   private void validateAuctionRequest(AuctionCreateRequest request) {
