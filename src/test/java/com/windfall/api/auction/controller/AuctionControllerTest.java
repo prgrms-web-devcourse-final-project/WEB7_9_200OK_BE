@@ -23,15 +23,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 
 @Transactional
 @SpringBootTest
@@ -52,6 +50,8 @@ class AuctionControllerTest {
 
   private Long sellerId;
 
+  private Long auctionId;
+
 
   @BeforeEach
   void setUp() {
@@ -60,8 +60,23 @@ class AuctionControllerTest {
         .provider(ProviderType.NAVER)
         .provideruserId("test1234")
         .build();
-    userRepository.save(seller);
-    sellerId = seller.getId();
+    User saveUser = userRepository.save(seller);
+    sellerId = saveUser.getId();
+
+    Auction auction = Auction.builder()
+        .title("테스트 제목")
+        .description("테스트 설명")
+        .category(AuctionCategory.DIGITAL)
+        .startPrice(10000L)
+        .currentPrice(10000L)
+        .stopLoss(9000L)
+        .dropAmount(50L)
+        .status(AuctionStatus.SCHEDULED)
+        .startedAt(LocalDateTime.now().plusDays(2))
+        .seller(saveUser)
+        .build();
+    Auction saveAuction = auctionRepository.save(auction);
+    auctionId = saveAuction.getId();
   }
   @Nested
   @DisplayName("경매 생성 API")
@@ -112,33 +127,12 @@ class AuctionControllerTest {
           .andExpect(jsonPath("$.data.startAt").value(formattedTime))
           .andDo(print());
     }
-    private LocalDateTime createTime(){
-      LocalDateTime now = LocalDateTime.now().plusMinutes(5);
-
-      int minute = now.getMinute();
-      int remainder = minute % 5;
-
-      int baseMinute = (remainder == 0 ? minute : minute + (5 - remainder));
-
-      LocalDateTime resultTime = now.withMinute(baseMinute % 60);
-
-      if(baseMinute >= 60){
-        resultTime = resultTime.plusHours(1);
-      }
-
-      return resultTime.plusDays(1);
-    }
-    private String formated(LocalDateTime resultTime){
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-      return resultTime.format(formatter);
-    }
 
     @Test
     @DisplayName("Validation 예외처리 상황 - 제목")
     void fail1() throws Exception{
       // given
       LocalDateTime resultTime = createTime();
-      String formattedTime = formated(resultTime);
 
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
@@ -174,7 +168,6 @@ class AuctionControllerTest {
     void fail2() throws Exception{
       // given
       LocalDateTime resultTime = createTime();
-      String formattedTime = formated(resultTime);
 
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
@@ -210,7 +203,6 @@ class AuctionControllerTest {
     void fail3() throws Exception{
       // given
       LocalDateTime resultTime = createTime();
-      String formattedTime = formated(resultTime);
 
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
@@ -275,6 +267,48 @@ class AuctionControllerTest {
           .andExpect(jsonPath("$.message").value("경매 시간을 다시 설정해주세요."))
           .andDo(print());
     }
+  }
+
+  @Nested
+  @DisplayName("경매 삭제 API")
+  class t2 {
+    @Test
+    @DisplayName("정상 작동")
+    void success() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          delete("/api/v1/auctions/%s".formatted(auctionId))
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("deleteAuction"))
+          .andExpect(status().isNoContent())
+          .andDo(print());
+    }
+  }
+
+  private LocalDateTime createTime(){
+    LocalDateTime now = LocalDateTime.now().plusMinutes(5);
+
+    int minute = now.getMinute();
+    int remainder = minute % 5;
+
+    int baseMinute = (remainder == 0 ? minute : minute + (5 - remainder));
+
+    LocalDateTime resultTime = now.withMinute(baseMinute % 60);
+
+    if(baseMinute >= 60){
+      resultTime = resultTime.plusHours(1);
+    }
+
+    return resultTime.plusDays(1);
+  }
+  private String formated(LocalDateTime resultTime){
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    return resultTime.format(formatter);
   }
 
 }
