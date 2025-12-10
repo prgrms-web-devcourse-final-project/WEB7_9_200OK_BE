@@ -29,16 +29,11 @@ public class AuctionPriceHistory extends BaseEntity {
   @Column(nullable = false)
   private Long viewerCount;
 
-  @Builder.Default
-  @Column(nullable = false)
-  private boolean activated = true;
-
   public static AuctionPriceHistory create(Auction auction, Long price, Long viewerCount) {
     return AuctionPriceHistory.builder()
         .auction(auction)
         .price(price)
         .viewerCount(viewerCount)
-        .activated(true)
         .build();
   }
 }
