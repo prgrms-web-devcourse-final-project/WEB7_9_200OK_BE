@@ -28,13 +28,13 @@ public record AuctionDetailResponse(
     SellerInfo seller,
 
     @Schema(description = "시작가")
-    int startPrice,
+    Long startPrice,
 
     @Schema(description = "현재가")
-    int currentPrice,
+    Long currentPrice,
 
     @Schema(description = "최소 보장가")
-    int stopLoss,
+    Long stopLoss,
 
     @Schema(description = "하락 퍼센트")
     double discountRate,
@@ -43,13 +43,13 @@ public record AuctionDetailResponse(
     AuctionStatus status,
 
     @Schema(description = "찜 수")
-    int likeCount,
+    Long likeCount,
 
     @Schema(description = "사용자 찜 여부")
     boolean isLiked,
 
     @Schema(description = "실시간 접속자 수")
-    long viewCount,
+    Long viewCount,
 
     @Schema(description = "경매 시작 시간")
     LocalDateTime startedAt,
