@@ -3,6 +3,7 @@ package com.windfall.api.auction.controller;
 import static com.windfall.global.exception.ErrorCode.AUCTION_NOT_PROCESS;
 import static com.windfall.global.exception.ErrorCode.INVALID_AUCTION_SELLER;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
+
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "Auction", description = "경매 상세 및 상호작용 API")
 public interface AuctionSpecification {
+
 
   @ApiErrorCodes({INVALID_TIME,INVALID_STOP_LOSS,INVALID_DROP_AMOUNT})
   @Operation(summary = "경매 생성", description = "새로운 경매를 생성합니다.")
