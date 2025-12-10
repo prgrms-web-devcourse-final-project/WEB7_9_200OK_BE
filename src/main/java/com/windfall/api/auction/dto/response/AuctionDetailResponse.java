@@ -30,14 +30,14 @@ public record AuctionDetailResponse(
     @Schema(description = "시작가")
     Long startPrice,
 
-    @Schema(description = "현재가")
+    @Schema(description = "현재가 (예정 : 시작가)")
     Long currentPrice,
 
-    @Schema(description = "최소 보장가")
+    @Schema(description = "최소 보장가 (판매자만)")
     Long stopLoss,
 
-    @Schema(description = "하락 퍼센트")
-    double discountRate,
+    @Schema(description = "하락 퍼센트 (예정 : null)")
+    Double discountRate,
 
     @Schema(description = "경매 상태")
     AuctionStatus status,
