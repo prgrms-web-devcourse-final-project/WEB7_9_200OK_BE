@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 
 @Schema(description = "경매 생성 응답 DTO")
 public record AuctionCreateResponse(
+
+    @Schema(description = "경매 id")
+    Long auctionId,
+
     @Schema(description = "판매자 id")
     Long sellerId,
 
@@ -43,6 +47,7 @@ public record AuctionCreateResponse(
 
   public static AuctionCreateResponse from(Auction auction, Long sellerId) {
     return new AuctionCreateResponse(
+        auction.getId(),
         sellerId,
         auction.getTitle(),
         auction.getDescription(),
