@@ -1,5 +1,6 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -57,5 +58,33 @@ public record AuctionDetailResponse(
     @Schema(description = "최근 가격 하락 내역")
     List<AuctionHistoryResponse> recentPriceHistory
 
-) {}
+) {
+  public static AuctionDetailResponse of(
+      Auction auction,
+      Long currentPrice,
+      Double discountRate,
+      Long stopLoss,
+      boolean isLiked,
+      List<AuctionHistoryResponse> history
+  ) {
+    return new AuctionDetailResponse(
+        auction.getId(),
+        auction.getTitle(),
+        auction.getDescription(),
+        auction.getCategory(),
+        List.of("https://example.jpg"), // auction.getImageUrls(),
+        SellerInfo.from(auction.getSeller()),
+        auction.getStartPrice(),
+        currentPrice,
+        stopLoss,
+        discountRate,
+        auction.getStatus(),
+        0L, // auction.getLikeCount(),
+        isLiked,
+        0L, // auction.getViewCount(),
+        auction.getStartedAt(),
+        history
+    );
+  }
+}
 
