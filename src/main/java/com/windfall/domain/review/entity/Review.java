@@ -1,9 +1,12 @@
 package com.windfall.domain.review.entity;
 
 
+import com.windfall.domain.trade.entity.Trade;
 import com.windfall.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -14,7 +17,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Review extends BaseEntity {
 
-  //@OneToOne - Trade 엔티티 생성 이후 매핑 예정
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "trade_id", nullable = false, unique = true)
+  private Trade trade;
 
   @Column(name = "buyer_id", nullable = false)
   private Long buyerId;
