@@ -1,5 +1,6 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.domain.auction.entity.AuctionPriceHistory;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
@@ -18,4 +19,13 @@ public record AuctionHistoryResponse(
     @Schema(description = "가격 변동 시점")
     LocalDateTime createdAt
 
-) {}
+) {
+  public static AuctionHistoryResponse from(AuctionPriceHistory history) {
+    return new AuctionHistoryResponse(
+        history.getId(),
+        history.getPrice(),
+        history.getViewerCount(),
+        history.getCreateDate()
+    );
+  }
+}

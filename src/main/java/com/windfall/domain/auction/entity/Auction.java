@@ -1,6 +1,5 @@
 package com.windfall.domain.auction.entity;
 
-
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -74,5 +73,29 @@ public class Auction extends BaseEntity {
 
   public void updateStatus(AuctionStatus status) {
     this.status = status;
+  }
+
+  public long getDisplayPrice() {
+    if (this.status == AuctionStatus.SCHEDULED) {
+      return this.startPrice;
+    }
+    return this.currentPrice;
+  }
+
+  public double calculateDiscountRate() {
+    if (startPrice == 0) {
+      return 0.0;
+    }
+    double rate = ((double) (this.startPrice - getDisplayPrice()) / this.startPrice) * 100;
+
+    return Math.round(rate * 10.0) / 10.0;
+  }
+
+  public boolean isSeller(Long userId) {
+    if (userId == null) {
+      return false;
+    }
+
+    return this.seller.getId().equals(userId);
   }
 }

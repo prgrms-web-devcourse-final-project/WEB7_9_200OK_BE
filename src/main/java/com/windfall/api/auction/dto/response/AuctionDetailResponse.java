@@ -1,5 +1,6 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.domain.auction.entity.Auction;
 import com.windfall.api.auction.dto.response.info.SellerInfo;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -31,14 +32,14 @@ public record AuctionDetailResponse(
     @Schema(description = "시작가")
     Long startPrice,
 
-    @Schema(description = "현재가")
+    @Schema(description = "현재가 (예정 : 시작가)")
     Long currentPrice,
 
-    @Schema(description = "최소 보장가")
+    @Schema(description = "최소 보장가 (판매자만)")
     Long stopLoss,
 
-    @Schema(description = "하락 퍼센트")
-    double discountRate,
+    @Schema(description = "하락 퍼센트 (예정 : null)")
+    Double discountRate,
 
     @Schema(description = "경매 상태")
     AuctionStatus status,
@@ -58,5 +59,33 @@ public record AuctionDetailResponse(
     @Schema(description = "최근 가격 하락 내역")
     List<AuctionHistoryResponse> recentPriceHistory
 
-) {}
+) {
+  public static AuctionDetailResponse of(
+      Auction auction,
+      Long currentPrice,
+      Double discountRate,
+      Long stopLoss,
+      boolean isLiked,
+      List<AuctionHistoryResponse> history
+  ) {
+    return new AuctionDetailResponse(
+        auction.getId(),
+        auction.getTitle(),
+        auction.getDescription(),
+        auction.getCategory(),
+        List.of("https://example.jpg"), // auction.getImageUrls(),
+        SellerInfo.from(auction.getSeller()),
+        auction.getStartPrice(),
+        currentPrice,
+        stopLoss,
+        discountRate,
+        auction.getStatus(),
+        0L, // auction.getLikeCount(),
+        isLiked,
+        0L, // auction.getViewCount(),
+        auction.getStartedAt(),
+        history
+    );
+  }
+}
 
