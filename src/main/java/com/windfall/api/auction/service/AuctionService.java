@@ -1,6 +1,7 @@
 package com.windfall.api.auction.service;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
@@ -47,6 +48,30 @@ public class AuctionService {
     if (request.startAt().isBefore(LocalDateTime.now().plusDays(1L))
         || request.startAt().isAfter(LocalDateTime.now().plusDays(7L))) {
       throw new ErrorException(ErrorCode.INVALID_TIME);
+    }
+  }
+
+  @Transactional
+  public AuctionCancelResponse cancelAuction(Long auctionId, Long userId) {
+    User user = userService.getUserById(userId);
+
+    Auction auction = getAuctionById(auctionId);
+
+    validateCancelAuction(auction, user);
+
+    auction.updateStatus(AuctionStatus.CANCELED);
+    return AuctionCancelResponse.of(auctionId, AuctionStatus.CANCELED);
+  }
+
+  private void validateCancelAuction(Auction auction, User user) {
+    if (user != auction.getSeller()) {
+      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
+    }
+
+    // TODO 추가 필요: trade가 생길 시 trade 구매완료 상태값 받아오기
+    if(auction.getStatus() != AuctionStatus.SCHEDULED
+    ){
+      throw new ErrorException(ErrorCode.AUCTION_CANNOT_CANCEL);
     }
   }
 

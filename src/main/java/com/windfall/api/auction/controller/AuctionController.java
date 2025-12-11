@@ -1,6 +1,8 @@
 package com.windfall.api.auction.controller;
 
+
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
@@ -13,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -79,6 +82,19 @@ public class AuctionController implements AuctionSpecification {
     //TODO: Redis Pub/Sub으로 이모지 발생 로직 구현
 
     return ApiResponse.ok(null);
+  }
+
+  @Override
+  @PatchMapping("/{auctionId}")
+  public ApiResponse<AuctionCancelResponse> cancelAuction(
+      @Parameter(description = "경매 ID", required = true, example = "1")
+      @PathVariable Long auctionId,
+
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestParam Long userId
+  ){
+    AuctionCancelResponse response = auctionService.cancelAuction(auctionId, userId);
+    return ApiResponse.ok("경매가 취소되었습니다.", response);
   }
 
   @Override

@@ -9,8 +9,10 @@ import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
 import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
 import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
+import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_CANCEL;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
@@ -71,6 +73,15 @@ public interface AuctionSpecification {
       @RequestBody Long userId
   );
 
+  @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE ,INVALID_AUCTION_SELLER,AUCTION_CANNOT_CANCEL})
+  @Operation(summary = "경매 취소", description = "경매를 취소합니다.")
+  ApiResponse<AuctionCancelResponse> cancelAuction(
+      @Parameter(description = "경매 ID", required = true, example = "1")
+      @PathVariable Long auctionId,
+
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestParam Long userId
+  );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE ,INVALID_AUCTION_SELLER,AUCTION_CANNOT_DELETE})
   @Operation(summary = "경매 삭제", description = "경매를 삭제합니다.")
@@ -79,6 +90,6 @@ public interface AuctionSpecification {
       @PathVariable Long auctionId,
 
       @Parameter(description = "사용자 ID", required = true, example = "1")
-      @Valid @RequestParam Long userId
+      @RequestParam Long userId
   );
 }
