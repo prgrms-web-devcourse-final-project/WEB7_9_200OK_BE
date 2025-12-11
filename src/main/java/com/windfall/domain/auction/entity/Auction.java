@@ -71,6 +71,7 @@ public class Auction extends BaseEntity {
         .build();
   }
 
+
   public void updateStatus(AuctionStatus status) {
     this.status = status;
   }

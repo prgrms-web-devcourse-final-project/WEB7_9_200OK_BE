@@ -56,6 +56,7 @@ public class AuctionService {
     }
   }
 
+
   @Transactional
   public AuctionCancelResponse cancelAuction(Long auctionId, Long userId) {
     User user = userService.getUserById(userId);
