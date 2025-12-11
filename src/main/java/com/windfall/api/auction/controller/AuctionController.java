@@ -10,7 +10,6 @@ import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
-import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -87,10 +86,8 @@ public class AuctionController implements AuctionSpecification {
   @Override
   @PatchMapping("/{auctionId}")
   public ApiResponse<AuctionCancelResponse> cancelAuction(
-      @Parameter(description = "경매 ID", required = true, example = "1")
       @PathVariable Long auctionId,
 
-      @Parameter(description = "사용자 ID", required = true, example = "1")
       @RequestParam Long userId
   ){
     AuctionCancelResponse response = auctionService.cancelAuction(auctionId, userId);
@@ -100,11 +97,9 @@ public class AuctionController implements AuctionSpecification {
   @Override
   @DeleteMapping("/{auctionId}")
   public ApiResponse<Void> deleteAuction(
-      @Parameter(description = "경매 ID", required = true, example = "1")
       @PathVariable Long auctionId,
 
       // TODO 임시 유저 id -> 로그인 개발 시 제거해야 함
-      @Parameter(description = "사용자 ID", required = true, example = "1")
       @RequestParam Long userId
   ){
     auctionService.deleteAuction(auctionId, userId);
