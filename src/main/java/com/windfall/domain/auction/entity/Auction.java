@@ -18,8 +18,8 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE auction SET activate = false WHERE id = ?")
-@SQLRestriction("activate = true")
+@SQLDelete(sql = "UPDATE auction SET activated = false WHERE id = ?")
+@SQLRestriction("activated = true")
 public class Auction extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -70,5 +70,9 @@ public class Auction extends BaseEntity {
         .dropAmount(request.dropAmount())
         .startedAt(request.startAt())
         .build();
+  }
+
+  public void updateStatus(AuctionStatus status) {
+    this.status = status;
   }
 }
