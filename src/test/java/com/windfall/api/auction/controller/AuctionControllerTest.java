@@ -23,12 +23,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 
 @Transactional
@@ -278,6 +275,7 @@ class AuctionControllerTest {
       // when
       ResultActions resultActions = mockMvc.perform(
           delete("/api/v1/auctions/%s".formatted(auctionId))
+              .param("userId", "1")  // TODO : 추후 로그인 개발 시 제거 필요
               .accept(MediaType.APPLICATION_JSON)
       );
 
@@ -287,6 +285,91 @@ class AuctionControllerTest {
           .andExpect(handler().methodName("deleteAuction"))
           .andExpect(status().isNoContent())
           .andDo(print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 경매일 때")
+    void fail() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          delete("/api/v1/auctions/%s".formatted(9999L))
+              .param("userId", String.valueOf(sellerId))  // TODO : 추후 로그인 개발 시 제거 필요
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("deleteAuction"))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+          .andExpect(jsonPath("$.message").value("존재하지 않는 경매입니다."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("경매 판매자가 아닐 때")
+    void fail2() throws Exception{
+      User seller = User.builder()
+          .email("test@naver.com")
+          .provider(ProviderType.NAVER)
+          .provideruserId("test1234")
+          .build();
+      User notUser = userRepository.save(seller);
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          delete("/api/v1/auctions/%s".formatted(auctionId))
+              .param("userId", String.valueOf(notUser.getId()))  // TODO : 추후 로그인 개발 시 제거 필요
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("deleteAuction"))
+          .andExpect(status().isForbidden())
+          .andExpect(jsonPath("$.status").value("FORBIDDEN"))
+          .andExpect(jsonPath("$.message").value("해당 경매의 판매자가 아닙니다."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("진행 중인 경매일 때")
+    void fail3() throws Exception{
+      // given
+      User user = userRepository.findById(sellerId).orElse(null);
+
+      Auction auction = Auction.builder()
+          .title("진행 중인 경매")
+          .description("테스트 설명")
+          .category(AuctionCategory.DIGITAL)
+          .startPrice(10000L)
+          .currentPrice(9500L)
+          .stopLoss(9000L)
+          .dropAmount(50L)
+          .status(AuctionStatus.PROCESS)
+          .startedAt(LocalDateTime.now().minusHours(1))
+          .seller(user)
+          .build();
+
+      auctionRepository.save(auction);
+      auctionId = auction.getId();
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          delete("/api/v1/auctions/%s".formatted(auctionId))
+              .param("userId", String.valueOf(sellerId))  // TODO : 추후 로그인 개발 시 제거 필요
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("deleteAuction"))
+          .andExpect(status().isConflict())
+          .andExpect(jsonPath("$.status").value("CONFLICT"))
+          .andExpect(jsonPath("$.message").value("현재 상태의 경매는 삭제할 수 없습니다."))
+          .andDo(print());
+
     }
   }
 
