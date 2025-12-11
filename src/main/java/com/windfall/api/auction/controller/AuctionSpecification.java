@@ -8,11 +8,15 @@ import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
 import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
+import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
+import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_CANCEL;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.config.swagger.ApiErrorCodes;
 import com.windfall.global.response.ApiResponse;
@@ -22,6 +26,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Auction", description = "경매 상세 및 상호작용 API")
 public interface AuctionSpecification {
@@ -31,6 +36,11 @@ public interface AuctionSpecification {
   @Operation(summary = "경매 생성", description = "새로운 경매를 생성합니다.")
   ApiResponse<AuctionCreateResponse> createAuction(
       @Valid @RequestBody AuctionCreateRequest request
+  );
+
+
+  @Operation(summary = "경매 다건 조회", description = "경매 리스트들을 조회합니다.")
+  ApiResponse<AuctionListReadResponse> readAuctionList(
   );
 
   @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})
@@ -60,4 +70,23 @@ public interface AuctionSpecification {
       @RequestBody Long userId
   );
 
+  @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE ,INVALID_AUCTION_SELLER,AUCTION_CANNOT_CANCEL})
+  @Operation(summary = "경매 취소", description = "경매를 취소합니다.")
+  ApiResponse<AuctionCancelResponse> cancelAuction(
+      @Parameter(description = "경매 ID", required = true, example = "1")
+      @PathVariable Long auctionId,
+
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestParam Long userId
+  );
+
+  @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE ,INVALID_AUCTION_SELLER,AUCTION_CANNOT_DELETE})
+  @Operation(summary = "경매 삭제", description = "경매를 삭제합니다.")
+  ApiResponse<Void> deleteAuction(
+      @Parameter(description = "경매 ID", required = true, example = "1")
+      @PathVariable Long auctionId,
+
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @RequestParam Long userId
+  );
 }
