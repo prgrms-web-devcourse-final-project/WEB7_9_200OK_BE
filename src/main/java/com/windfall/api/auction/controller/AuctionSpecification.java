@@ -8,6 +8,7 @@ import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
 import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
+import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
@@ -23,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Auction", description = "경매 상세 및 상호작용 API")
 public interface AuctionSpecification {
@@ -69,4 +71,14 @@ public interface AuctionSpecification {
       @RequestBody Long userId
   );
 
+
+  @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE ,INVALID_AUCTION_SELLER,AUCTION_CANNOT_DELETE})
+  @Operation(summary = "경매 삭제", description = "경매를 삭제합니다.")
+  ApiResponse<Void> deleteAuction(
+      @Parameter(description = "경매 ID", required = true, example = "1")
+      @PathVariable Long auctionId,
+
+      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @Valid @RequestParam Long userId
+  );
 }
