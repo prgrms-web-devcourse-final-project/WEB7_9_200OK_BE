@@ -70,13 +70,10 @@ public class AuctionService {
   }
 
   private void validateCancelAuction(Auction auction, User user) {
-    if (user != auction.getSeller()) {
-      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
-    }
+    validateIsSeller(auction,user);
 
     // TODO 추가 필요: trade가 생길 시 trade 구매완료 상태값 받아오기
-    if(auction.getStatus() != AuctionStatus.SCHEDULED
-    ){
+    if(auction.getStatus() != AuctionStatus.SCHEDULED){
       throw new ErrorException(ErrorCode.AUCTION_CANNOT_CANCEL);
     }
   }
@@ -93,9 +90,7 @@ public class AuctionService {
   }
 
   private void validateDeleteAuction(Auction auction, User user) {
-    if (user != auction.getSeller()) {
-      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
-    }
+    validateIsSeller(auction,user);
 
     // TODO 추가 필요: trade가 생길 시 trade 구매완료 상태값 받아오기
     if(auction.getStatus() != AuctionStatus.SCHEDULED
@@ -103,6 +98,12 @@ public class AuctionService {
         && auction.getStatus() != AuctionStatus.FAILED
     ){
       throw new ErrorException(ErrorCode.AUCTION_CANNOT_DELETE);
+    }
+  }
+
+  private void validateIsSeller(Auction auction, User user) {
+    if (user != auction.getSeller()) {
+      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
     }
   }
   public Auction getAuctionById(Long auctionId) {
