@@ -37,10 +37,7 @@ public interface AuctionSpecification {
   @Operation(summary = "경매 상세 조회", description = "특정 경매의 상세 정보(상품 정보, 가격 정보, 상태 정보)를 조회합니다.")
   ApiResponse<AuctionDetailResponse> getAuctionDetail(
       @Parameter(description = "경매 ID", required = true, example = "1")
-      @PathVariable Long auctionId,
-
-      @Parameter(description = "사용자 ID", required = true, example = "42")
-      @RequestBody Long userId
+      @PathVariable Long auctionId
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION})
