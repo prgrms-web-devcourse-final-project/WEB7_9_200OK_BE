@@ -1,4 +1,4 @@
-package com.windfall.domain.auctionlike.entity;
+package com.windfall.domain.like.entity;
 
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.global.entity.BaseEntity;
