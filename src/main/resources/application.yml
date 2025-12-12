@@ -7,6 +7,11 @@ spring:
     hikari:
       auto-commit: false
 
+  data:
+    redis:
+      host: localhost
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
   jpa:
     properties:
