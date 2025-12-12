@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,8 @@ public class AuctionScheduler {
 
   private final AuctionRepository auctionRepository;
   private final AuctionPriceHistoryRepository historyRepository;
+
+  private final RedisTemplate<String, String> redisTemplate;
 
   @Scheduled(cron = "0 0/5 * * * *")
   @Transactional
@@ -63,7 +66,7 @@ public class AuctionScheduler {
         else {
           if(targetPrice < auction.getCurrentPrice()) {
             auction.updateCurrentPrice(targetPrice);
-            savePriceHistory(auction, targetPrice);
+            savePriceHistoryWithViewers(auction, targetPrice);
             log.info("경매 가격 하락 처리 완료 ( 경매 ID: {}, 가격: {} -> {}",
                 auction.getId(), auction.getCurrentPrice(), targetPrice);
           }
@@ -72,8 +75,15 @@ public class AuctionScheduler {
     }
   }
 
-  private void savePriceHistory(Auction auction, long targetPrice) {
-    AuctionPriceHistory history = AuctionPriceHistory.create(auction, targetPrice, 0L);
+  private void savePriceHistoryWithViewers(Auction auction, long targetPrice) {
+    String redisKey = "auction:" + auction.getId() + ":viewers";
+
+    Long viewerCount = redisTemplate.opsForSet().size(redisKey);
+    if (viewerCount == null) {
+      viewerCount = 0L;
+    }
+
+    AuctionPriceHistory history = AuctionPriceHistory.create(auction, targetPrice, viewerCount);
     historyRepository.save(history);
   }
 }
