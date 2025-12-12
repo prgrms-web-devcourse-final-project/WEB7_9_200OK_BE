@@ -116,7 +116,11 @@ public class AuctionService {
     }
 
     boolean isSeller = auction.isSeller(userId);
-    Long exposedStopLoss = isSeller ? auction.getStopLoss() : null;
+
+    Long exposedStopLoss = null;
+    if (isSeller) {
+      exposedStopLoss = auction.getStopLoss();
+    }
 
     // TODO: 타 도메인 의존성 처리 (User, Like)
     // TODO: websocket 실시간 조회수 처리, 가격 하락 처리
@@ -147,7 +151,11 @@ public class AuctionService {
     }
 
     Long viewerCount = redisTemplate.opsForSet().size(redisKey);
-    return viewerCount != null ? viewerCount : 0L;
+
+    if (viewerCount == null) {
+      return 0L;
+    }
+    return viewerCount;
   }
 
   private List<AuctionHistoryResponse> getRecentHistories(Long auctionId) {
