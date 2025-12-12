@@ -15,7 +15,9 @@ import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,8 @@ public class AuctionService {
   private final AuctionRepository auctionRepository;
   private final AuctionPriceHistoryRepository historyRepository;
   private final UserService userService;
+
+  private final RedisTemplate<String, String> redisTemplate;
 
   @Transactional
   public AuctionCreateResponse createAuction(AuctionCreateRequest request) {
@@ -55,7 +59,6 @@ public class AuctionService {
       throw new ErrorException(ErrorCode.INVALID_TIME);
     }
   }
-
 
   @Transactional
   public AuctionCancelResponse cancelAuction(Long auctionId, Long userId) {
@@ -101,19 +104,9 @@ public class AuctionService {
     }
   }
 
-  private void validateIsSeller(Auction auction, User user) {
-    if (user != auction.getSeller()) {
-      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
-    }
-  }
-  public Auction getAuctionById(Long auctionId) {
-    return auctionRepository.findById(auctionId)
-        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
-  }
-
   public AuctionDetailResponse getAuctionDetail(Long auctionId, Long userId) {
 
-    Auction auction = findAuctionOrThrow(auctionId);
+    Auction auction = getAuctionById(auctionId);
 
     Long displayPrice = auction.getDisplayPrice();
 
@@ -123,10 +116,16 @@ public class AuctionService {
     }
 
     boolean isSeller = auction.isSeller(userId);
-    Long exposedStopLoss = isSeller ? auction.getStopLoss() : null;
+
+    Long exposedStopLoss = null;
+    if (isSeller) {
+      exposedStopLoss = auction.getStopLoss();
+    }
 
     // TODO: 타 도메인 의존성 처리 (User, Like)
     // TODO: websocket 실시간 조회수 처리, 가격 하락 처리
+
+    long viewerCount = updateAndViewerCount(auctionId, userId);
 
     List<AuctionHistoryResponse> historyList = getRecentHistories(auctionId);
 
@@ -136,8 +135,27 @@ public class AuctionService {
         discountRate,
         exposedStopLoss,
         false,
+        viewerCount,
         historyList
     );
+  }
+
+  private long updateAndViewerCount(Long auctionId, Long userId) {
+    String redisKey = "auction:" + auctionId + ":viewers";
+
+    if(userId != null) {
+      redisTemplate.opsForSet().add(redisKey, String.valueOf(userId));
+
+      // 웹소켓 붙이기 전이므로 임시로 TTL 1분 설정
+      redisTemplate.expire(redisKey, java.time.Duration.ofMinutes(1));
+    }
+
+    Long viewerCount = redisTemplate.opsForSet().size(redisKey);
+
+    if (viewerCount == null) {
+      return 0L;
+    }
+    return viewerCount;
   }
 
   private List<AuctionHistoryResponse> getRecentHistories(Long auctionId) {
@@ -148,7 +166,12 @@ public class AuctionService {
         .toList();
   }
 
-  private Auction findAuctionOrThrow(Long auctionId) {
+  private void validateIsSeller(Auction auction, User user) {
+    if (user != auction.getSeller()) {
+      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
+    }
+  }
+  public Auction getAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
