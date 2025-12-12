@@ -28,7 +28,7 @@ public class AuctionScheduler {
   @Transactional
   public void runAuctionScheduler() {
     LocalDateTime now = LocalDateTime.now();
-    log.info("스케줄러 실행: {}", now);
+    log.info("⏱️스케줄러 실행: {}", now);
 
     openScheduledAuctions(now);
 
@@ -42,7 +42,7 @@ public class AuctionScheduler {
 
     for (Auction auction : startingAuctions) {
       auction.updateStatus(AuctionStatus.PROCESS);
-      log.info("경매 시작 처리 완료 ( 경매 ID: {}, 제목: {} )", auction.getId(), auction.getTitle());
+      log.info("✅경매 시작 처리 완료 ( 경매 ID: {}, 제목: {} )", auction.getId(), auction.getTitle());
     }
   }
 
@@ -58,17 +58,20 @@ public class AuctionScheduler {
         long targetPrice = auction.getStartPrice() - totalDiscount;
 
         if(targetPrice < auction.getStopLoss()) {
-          log.info("경매 유찰 ( 경매 ID: {}, StopLoss 도달)", auction.getId());
+          log.info("❌경매 유찰 ( 경매 ID: {}, StopLoss 도달)", auction.getId());
           auction.updateStatus(AuctionStatus.FAILED);
 
           auction.updateCurrentPrice(auction.getStopLoss());
         }
         else {
           if(targetPrice < auction.getCurrentPrice()) {
+            long oldPrice = auction.getCurrentPrice();
+
             auction.updateCurrentPrice(targetPrice);
             savePriceHistoryWithViewers(auction, targetPrice);
-            log.info("경매 가격 하락 처리 완료 ( 경매 ID: {}, 가격: {} -> {}",
-                auction.getId(), auction.getCurrentPrice(), targetPrice);
+
+            log.info("📉경매 가격 하락 처리 완료 ( 경매 ID: {}, 가격: {} -> {}",
+                auction.getId(), oldPrice, targetPrice);
           }
         }
       }
