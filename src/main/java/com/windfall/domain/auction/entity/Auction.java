@@ -9,12 +9,16 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE auction SET activated = false WHERE id = ?")
+@SQLRestriction("activated = true")
 public class Auction extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -65,6 +69,11 @@ public class Auction extends BaseEntity {
         .dropAmount(request.dropAmount())
         .startedAt(request.startAt())
         .build();
+  }
+
+
+  public void updateStatus(AuctionStatus status) {
+    this.status = status;
   }
 
   public long getDisplayPrice() {

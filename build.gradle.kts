@@ -33,6 +33,9 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     runtimeOnly("com.h2database:h2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+    // Redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
 }
 
 tasks.withType<Test> {

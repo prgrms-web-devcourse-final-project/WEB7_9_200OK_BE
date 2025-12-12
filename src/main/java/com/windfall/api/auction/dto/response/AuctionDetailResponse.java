@@ -1,6 +1,7 @@
 package com.windfall.api.auction.dto.response;
 
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.api.auction.dto.response.info.SellerInfo;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -50,7 +51,7 @@ public record AuctionDetailResponse(
     boolean isLiked,
 
     @Schema(description = "실시간 접속자 수")
-    Long viewCount,
+    Long viewerCount,
 
     @Schema(description = "경매 시작 시간")
     LocalDateTime startedAt,
@@ -65,6 +66,7 @@ public record AuctionDetailResponse(
       Double discountRate,
       Long stopLoss,
       boolean isLiked,
+      Long viewerCount,
       List<AuctionHistoryResponse> history
   ) {
     return new AuctionDetailResponse(
@@ -81,7 +83,7 @@ public record AuctionDetailResponse(
         auction.getStatus(),
         0L, // auction.getLikeCount(),
         isLiked,
-        0L, // auction.getViewCount(),
+        viewerCount,
         auction.getStartedAt(),
         history
     );
