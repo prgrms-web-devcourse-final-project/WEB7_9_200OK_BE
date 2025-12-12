@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -21,15 +22,25 @@ public class Review extends BaseEntity {
   @JoinColumn(name = "trade_id", nullable = false, unique = true)
   private Trade trade;
 
-  @Column(name = "buyer_id", nullable = false)
-  private Long buyerId;
-
-  @Column(name = "seller_id", nullable = false)
-  private Long sellerId;
-
   @Column(name = "rating", nullable = false)
   private int rating;
 
   @Column(name = "content", columnDefinition = "TEXT")
   private String content;
+
+  @Builder
+  public Review(Trade trade, int rating, String content) {
+    this.trade = trade;
+    this.rating = rating;
+    this.content = content;
+  }
+
+  public static Review createReview(Trade trade, int rating, String content){
+    return Review.builder()
+        .trade(trade)
+        .rating(rating)
+        .content(content)
+        .build();
+  }
+
 }
