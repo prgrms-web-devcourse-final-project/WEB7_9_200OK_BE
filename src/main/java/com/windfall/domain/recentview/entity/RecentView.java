@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class RecentView extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "auction_id")
+  @JoinColumn(name = "auction_id", nullable = false)
   private Auction auction;
 
   @Column(name = "user_id", nullable = false)
