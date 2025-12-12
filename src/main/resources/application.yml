@@ -10,8 +10,7 @@ spring:
   data:
     redis:
       host: localhost
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
+      port: 6379
 
   jpa:
     properties:
