@@ -56,7 +56,6 @@ public class AuctionService {
     }
   }
 
-
   @Transactional
   public AuctionCancelResponse cancelAuction(Long auctionId, Long userId) {
     User user = userService.getUserById(userId);
@@ -101,19 +100,9 @@ public class AuctionService {
     }
   }
 
-  private void validateIsSeller(Auction auction, User user) {
-    if (user != auction.getSeller()) {
-      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
-    }
-  }
-  public Auction getAuctionById(Long auctionId) {
-    return auctionRepository.findById(auctionId)
-        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
-  }
-
   public AuctionDetailResponse getAuctionDetail(Long auctionId, Long userId) {
 
-    Auction auction = findAuctionOrThrow(auctionId);
+    Auction auction = getAuctionById(auctionId);
 
     Long displayPrice = auction.getDisplayPrice();
 
@@ -148,7 +137,12 @@ public class AuctionService {
         .toList();
   }
 
-  private Auction findAuctionOrThrow(Long auctionId) {
+  private void validateIsSeller(Auction auction, User user) {
+    if (user != auction.getSeller()) {
+      throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
+    }
+  }
+  public Auction getAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
