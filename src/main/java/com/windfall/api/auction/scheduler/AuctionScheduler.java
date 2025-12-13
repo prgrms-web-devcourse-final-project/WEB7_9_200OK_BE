@@ -62,6 +62,7 @@ public class AuctionScheduler {
           auction.updateStatus(AuctionStatus.FAILED);
 
           auction.updateCurrentPrice(auction.getStopLoss());
+          savePriceHistoryWithViewers(auction, auction.getStopLoss());
         }
         else {
           if(targetPrice < auction.getCurrentPrice()) {
