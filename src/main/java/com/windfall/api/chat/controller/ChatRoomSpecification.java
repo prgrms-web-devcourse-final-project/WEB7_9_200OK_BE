@@ -21,9 +21,9 @@ public interface ChatRoomSpecification {
           unreadCount: 상대방이 보낸 메시지 중 읽지 않은 메시지 개수
           """
   )
-  ApiResponse<?> getChatRooms(
-      @Parameter(description = "필터 범위", required = true, example = "ALL")
-      @RequestParam ChatRoomScope scope,
+  ApiResponse<ChatRoomListResponse> getChatRooms(
+      @Parameter(description = "필터 범위", example = "ALL")
+      @RequestParam(defaultValue = "ALL") ChatRoomScope scope,
 
       @Parameter(description = "페이지(0부터)", example = "0")
       @RequestParam(defaultValue = "0") int page,
