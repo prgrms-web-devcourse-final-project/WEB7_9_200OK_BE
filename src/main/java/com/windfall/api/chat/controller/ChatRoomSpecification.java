@@ -17,13 +17,11 @@ public interface ChatRoomSpecification {
           - scope=ALL: 전체 대화
           - scope=BUY: 구매자로 참여한 대화
           - scope=SELL: 판매자로 참여한 대화
-          
           정렬: lastMessageAt 내림차순(최신순)
-          
           unreadCount: 상대방이 보낸 메시지 중 읽지 않은 메시지 개수
           """
   )
-  ApiResponse<ChatRoomListResponse> getChatRooms(
+  ApiResponse<List<ChatRoomListResponse>> getChatRooms(
       @Parameter(description = "필터 범위 (ALL/BUY/SELL)", example = "ALL")
       @RequestParam(defaultValue = "ALL") ChatRoomScope scope,
 

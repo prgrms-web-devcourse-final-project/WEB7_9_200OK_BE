@@ -18,12 +18,12 @@ public class ChatRoomController implements ChatRoomSpecification {
 
   @Override
   @GetMapping
-  public ApiResponse<ChatRoomListResponse> getChatRooms(
+  public ApiResponse<List<ChatRoomListResponse>> getChatRooms(
       @RequestParam(defaultValue = "ALL") ChatRoomScope scope,
       @RequestParam(defaultValue = "1") Long userId
   ) {
 
-    ChatRoomListResponse response = chatRoomService.getChatRooms(userId, scope);
+    List<ChatRoomListResponse> response = chatRoomService.getChatRooms(userId, scope);
     return ApiResponse.ok("채팅방 목록이 조회되었습니다.", response);
   }
 }
