@@ -19,9 +19,7 @@ public class ChatRoomController implements ChatRoomSpecification {
   @Override
   @GetMapping
   public ApiResponse<ChatRoomListResponse> getChatRooms(
-      @RequestParam ChatRoomScope scope,
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(defaultValue = "ALL") ChatRoomScope scope,
       @RequestParam(defaultValue = "1") Long userId
   ) {
 
