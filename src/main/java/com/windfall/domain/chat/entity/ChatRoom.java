@@ -1,9 +1,12 @@
 package com.windfall.domain.chat.entity;
 
+import com.windfall.domain.chat.enums.ChatMessageType;
 import com.windfall.domain.trade.entity.Trade;
 import com.windfall.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -31,4 +34,7 @@ public class ChatRoom extends BaseEntity {
   @Column(name = "last_message_preview", length = 200)
   private String lastMessagePreview;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "last_message_type")
+  private ChatMessageType lastMessageType;
 }
