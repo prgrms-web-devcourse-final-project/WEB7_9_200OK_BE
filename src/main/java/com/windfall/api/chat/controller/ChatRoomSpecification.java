@@ -1,10 +1,12 @@
 package com.windfall.api.chat.controller;
 
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
+import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Chat", description = "채팅방 API")

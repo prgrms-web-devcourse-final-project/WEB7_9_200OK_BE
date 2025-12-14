@@ -1,8 +1,10 @@
 package com.windfall.api.chat.controller;
 
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
+import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.api.chat.service.ChatRoomService;
 import com.windfall.global.response.ApiResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
