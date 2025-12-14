@@ -23,7 +23,7 @@ public class ChatRoomController implements ChatRoomSpecification {
       @RequestParam(defaultValue = "1") Long userId
   ) {
 
-    ChatRoomListResponse response = chatRoomService.getChatRooms(userId, scope, page, size);
+    ChatRoomListResponse response = chatRoomService.getChatRooms(userId, scope);
     return ApiResponse.ok("채팅방 목록이 조회되었습니다.", response);
   }
 }
