@@ -32,7 +32,7 @@ public interface ChatRoomSpecification {
       @RequestParam(defaultValue = "20") int size,
 
       @Parameter(description = "사용자 ID(임시, 로그인 붙이면 제거 예정)", example = "1")
-      @RequestParam(required = false) Long userId
+      @RequestParam(defaultValue = "1") Long userId
   );
 
 }
