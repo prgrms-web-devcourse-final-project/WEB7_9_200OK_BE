@@ -6,10 +6,13 @@ import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,7 @@ public class AuctionSchedulerService {
   private final AuctionPriceHistoryRepository historyRepository;
   private final AuctionRepository auctionRepository;
   private final RedisTemplate<String, String> redisTemplate;
+  private final SimpMessagingTemplate messagingTemplate;
 
   public void openScheduledAuctions(LocalDateTime now) {
     List<Auction> startingAuctions = auctionRepository.findAllByStatusAndStartedAtLessThanEqual(
@@ -47,10 +51,13 @@ public class AuctionSchedulerService {
 
         if(targetPrice < auction.getStopLoss()) {
           log.info("❌경매 유찰 ( 경매 ID: {}, StopLoss 도달)", auction.getId());
-          auction.updateStatus(AuctionStatus.FAILED);
 
           auction.updateCurrentPrice(auction.getStopLoss());
           savePriceHistoryWithViewers(auction, auction.getStopLoss());
+
+          auction.updateStatus(AuctionStatus.FAILED);
+
+          sendAuctionUpdate(auction.getId(), auction.getStopLoss(), AuctionStatus.FAILED);
         }
         else {
           if(targetPrice < auction.getCurrentPrice()) {
@@ -58,6 +65,8 @@ public class AuctionSchedulerService {
 
             auction.updateCurrentPrice(targetPrice);
             savePriceHistoryWithViewers(auction, targetPrice);
+
+            sendAuctionUpdate(auction.getId(), targetPrice, AuctionStatus.PROCESS);
 
             log.info("📉경매 가격 하락 처리 완료 ( 경매 ID: {}, 가격: {} -> {}",
                 auction.getId(), oldPrice, targetPrice);
@@ -77,5 +86,14 @@ public class AuctionSchedulerService {
 
     AuctionPriceHistory history = AuctionPriceHistory.create(auction, targetPrice, viewerCount);
     historyRepository.save(history);
+  }
+
+  private void sendAuctionUpdate(long auctionId, long currentPrice, AuctionStatus status) {
+    Map<String, Object> message = new HashMap<>();
+    message.put("auctionId", auctionId);
+    message.put("currentPrice", currentPrice);
+    message.put("status", status);
+
+    messagingTemplate.convertAndSend("/topic/auction/" + auctionId, message);
   }
 }
