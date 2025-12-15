@@ -4,14 +4,26 @@ on:
   pull_request:
     branches:
       - main
-      - develop
+      - feature/*
+      - fix/*
+      - refactor/*
+    paths: 'backend/**'
+
+defaults:
+  run:
+    working-directory: backend
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-#    env:
-
+    env:
+      REST_API_KAKAO: ${{secrets.REST_API_KAKAO}}
+      REDIRECT_URI_KAKAO: ${{secrets.REDIRECT_URI_KAKAO}}
+      CLIENT_ID_NAVER: ${{secrets.CLIENT_ID_NAVER}}
+      REDIRECT_URI_NAVER: ${{secrets.REDIRECT_URI_NAVER}}
+      CLIENT_ID_GOOGLE: ${{secrets.CLIENT_ID_GOOGLE}}
+      REDIRECT_URI_GOOGLE: ${{secrets.REDIRECT_URI_GOOGLE}}
 
     steps:
       - name: 리포지토리를 가져옵니다
