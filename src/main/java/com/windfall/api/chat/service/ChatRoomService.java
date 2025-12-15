@@ -5,6 +5,7 @@ import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
+import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,19 @@ public class ChatRoomService {
     if (chatRooms.isEmpty()) {
       return List.of();
     }
+
+    List<ChatRoom> visibleRooms = chatRooms.stream()
+        .filter(this::isVisibleTradeStatus)
+        .toList();
+
+    if (visibleRooms.isEmpty()) {
+      return List.of();
+    }
+  }
+
+  private boolean isVisibleTradeStatus(ChatRoom cr) {
+    TradeStatus status = cr.getTrade().getStatus();
+    return status == TradeStatus.PAYMENT_COMPLETED || status == TradeStatus.PURCHASE_CONFIRMED;
   }
 
 }
