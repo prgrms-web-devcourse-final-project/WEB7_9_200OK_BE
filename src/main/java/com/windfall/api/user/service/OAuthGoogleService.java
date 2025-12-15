@@ -20,11 +20,11 @@ public class OAuthGoogleService {
   //private final JwtService jwtService; // JWT 발급용
   private final RestTemplate restTemplate;
 
-  @Value("${spring.kakao.client.id}")
-  private String kakaoClientId;
+  @Value("${spring.google.client.id}")
+  private String googleClientId;
 
-  @Value("${spring.kakao.redirect.uri}")
-  private String kakaoRedirectUri;
+  @Value("${spring.google.redirect.uri}")
+  private String googleRedirectUri;
 
   public LoginUserResponse loginOrSignup(String code) {
     // 1. code로 access token 발급

@@ -20,11 +20,11 @@ public class OAuthNaverService {
   //private final JwtService jwtService; // JWT 발급용
   private final RestTemplate restTemplate;
 
-  @Value("${spring.kakao.client.id}")
-  private String kakaoClientId;
+  @Value("${spring.naver.client.id}")
+  private String naverClientId;
 
-  @Value("${spring.kakao.redirect.uri}")
-  private String kakaoRedirectUri;
+  @Value("${spring.naver.redirect.uri}")
+  private String naverRedirectUri;
 
   public LoginUserResponse loginOrSignup(String code) {
     // 1. code로 access token 발급
