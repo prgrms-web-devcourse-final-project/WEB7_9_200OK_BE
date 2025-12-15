@@ -3,6 +3,8 @@ package com.windfall.api.chat.service;
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
 import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.api.user.service.UserService;
+import com.windfall.domain.chat.entity.ChatRoom;
+import com.windfall.domain.chat.repository.ChatRoomRepository;
 import com.windfall.domain.user.entity.User;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -14,11 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ChatRoomService {
 
+  private final ChatRoomRepository chatRoomRepository;
   private final UserService userService;
 
   public List<ChatRoomListResponse> getChatRooms(Long userId, ChatRoomScope scope) {
 
     User me = userService.getUserById(userId);
+
+    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(userId,
+        scope.getDescription());
+
+    if (chatRooms.isEmpty()) {
+      return List.of();
+    }
   }
 
 }
