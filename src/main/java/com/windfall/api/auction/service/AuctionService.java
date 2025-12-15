@@ -10,12 +10,15 @@ import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
+import com.windfall.domain.tag.entity.AuctionTag;
+import com.windfall.domain.tag.entity.Tag;
+import com.windfall.domain.tag.repository.AuctionTagRepository;
+import com.windfall.domain.tag.repository.TagRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,9 @@ public class AuctionService {
   private final AuctionPriceHistoryRepository historyRepository;
   private final UserService userService;
 
+  private final TagRepository tagRepository;
+  private final AuctionTagRepository auctionTagRepository;
+
   private final RedisTemplate<String, String> redisTemplate;
 
   @Transactional
@@ -41,6 +47,9 @@ public class AuctionService {
     Auction auction = Auction.create(request, seller);
 
     Auction savedAuction = auctionRepository.save(auction);
+
+    // TODO: 태그 저장 로직 추가
+    saveAuctionTags(savedAuction, request.tags());
 
     return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
@@ -57,6 +66,23 @@ public class AuctionService {
     if (request.startAt().isBefore(LocalDateTime.now().plusDays(1L))
         || request.startAt().isAfter(LocalDateTime.now().plusDays(7L))) {
       throw new ErrorException(ErrorCode.INVALID_TIME);
+    }
+  }
+
+  private void saveAuctionTags(Auction auction, List<String> tagNames) {
+    if (tagNames == null || tagNames.isEmpty()) {
+      return;
+    }
+
+    for (String tagName : tagNames) {
+      String normalizedName = tagName.trim();
+
+      Tag tag = tagRepository.findByTagName(normalizedName)
+          .orElseGet(() -> tagRepository.save(Tag.create(normalizedName))
+          );
+
+      AuctionTag auctionTag = AuctionTag.create(auction, tag);
+      auctionTagRepository.save(auctionTag);
     }
   }
 

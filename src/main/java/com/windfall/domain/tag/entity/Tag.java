@@ -14,6 +14,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Tag extends BaseEntity {
 
-  @Column(nullable = false)
+  @Column(nullable = false, unique = true)
   private String tagName;
+
+  public static Tag create(String name) {
+    return new Tag(name);
+  }
 }

@@ -29,7 +29,7 @@ public record AuctionCreateRequest(
     AuctionCategory category,
 
     @Schema(description = "경매 태그", example = "나이키")
-    List<String> tag,
+    List<String> tags,
 
     @NotNull(message = "경매 시작가는 필수입니다.")
     @Schema(description = "경매 시작가", example = "10000")
