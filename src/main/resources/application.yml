@@ -22,6 +22,24 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  kakao:
+    client:
+      id: ${REST_API_KAKAO}
+    redirect:
+      uri: ${REDIRECT_URI_KAKAO}
+
+  naver:
+    client:
+      id: ${CLIENT_ID_NAVER}
+    redirect:
+      uri: ${REDIRECT_URI_NAVER}
+
+  google:
+    client:
+      id: ${CLIENT_ID_GOOGLE}
+    redirect:
+      uri: ${REDIRECT_URI_GOOGLE}
+
 logging:
   level:
     org.hibernate.orm.jdbc.bind: TRACE
