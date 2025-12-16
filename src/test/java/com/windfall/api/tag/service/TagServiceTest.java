@@ -8,6 +8,7 @@ import static com.windfall.global.exception.ErrorCode.TAG_INVALID_CHAR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.windfall.WindfallApplication;
 import com.windfall.api.tag.factory.AuctionFactory;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -28,7 +29,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 
-@SpringBootTest
+@SpringBootTest(classes = WindfallApplication.class)
 @Transactional
 class TagServiceTest {
 

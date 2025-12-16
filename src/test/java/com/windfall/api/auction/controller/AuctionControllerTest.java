@@ -1,6 +1,7 @@
 package com.windfall.api.auction.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.windfall.WindfallApplication;
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
@@ -29,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @Transactional
-@SpringBootTest
+@SpringBootTest(classes = WindfallApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuctionControllerTest {
 
