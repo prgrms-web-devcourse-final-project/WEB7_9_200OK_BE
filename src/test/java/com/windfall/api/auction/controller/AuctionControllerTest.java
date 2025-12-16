@@ -484,6 +484,29 @@ class AuctionControllerTest {
     }
   }
 
+  @Nested
+  @DisplayName("경매 목록 조회 API")
+  class t4 {
+    @Test
+    @DisplayName("정상 작동")
+    void success() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          get("/api/v1/auctions")
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("readAuctionList"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("OK"))
+          .andExpect(jsonPath("$.message").value("경매 목록 조회에 성공했습니다."))
+          .andDo(print());
+    }
+  }
+
   private LocalDateTime createTime(){
     LocalDateTime now = LocalDateTime.now().plusMinutes(5);
 
