@@ -41,8 +41,7 @@ public class ChatRoomService {
     User me = userService.getUserById(userId);
 
     // 1) 채팅방 조회
-    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(userId,
-        scope.getDescription());
+    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(userId, scope.name());
 
     if (chatRooms.isEmpty()) {
       return List.of();
