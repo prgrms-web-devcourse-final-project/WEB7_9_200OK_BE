@@ -95,7 +95,7 @@ public class ChatRoomService {
 
     // 6) DTO 변환
     return visibleRooms.stream()
-        .map(cr -> toResponse(me.getId(), cr, unreadMap, buyerUserMap))
+        .map(cr -> toResponse(me.getId(), cr, unreadMap, buyerUserMap, auctionThumbMap))
         .toList();
   }
 
@@ -112,7 +112,8 @@ public class ChatRoomService {
       Long userId,
       ChatRoom chatRoom,
       Map<Long, Long> unreadMap,
-      Map<Long, User> buyerUserMap
+      Map<Long, User> buyerUserMap,
+      Map<Long, String> auctionThumbMap
   ) {
     Trade trade = chatRoom.getTrade();
     Auction auction = trade.getAuction();
@@ -124,11 +125,16 @@ public class ChatRoomService {
       partnerInfo = PartnerInfo.from(auction.getSeller());
     } else {
       User partner = buyerUserMap.get(partnerId);
-      partnerInfo = (partner != null)
-          ? PartnerInfo.from(partner) : new PartnerInfo(partnerId, null, null);
+      if (partner == null) {
+        partnerInfo = new PartnerInfo(partnerId, null, null);
+      } else {
+        partnerInfo = PartnerInfo.from(partner);
+      }
     }
 
-    AuctionInfo auctionInfo = AuctionInfo.from(auction);
+    String thumbUrl = auctionThumbMap.get(auction.getId());
+    AuctionInfo auctionInfo = AuctionInfo.from(auction, thumbUrl);
+
     LastMessageInfo lastMessageInfo = LastMessageInfo.from(chatRoom);
 
     long unreadCount = unreadMap.getOrDefault(chatRoom.getId(), 0L);
