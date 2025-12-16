@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @Transactional
-@SpringBootTest(classes = WindfallApplication.class)
+@SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 class AuctionControllerTest {
 
