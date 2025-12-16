@@ -31,7 +31,8 @@ public class TagService {
 
     validateTags(tags);
     saveAuctionTags(auction, tags);
-    //TODO: ES 색인
+
+    tagIndexService.indexTags(tags);
   }
 
   private void saveAuctionTags(Auction auction, List<String> tagNames) {

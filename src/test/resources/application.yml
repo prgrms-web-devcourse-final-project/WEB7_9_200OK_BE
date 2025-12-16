@@ -4,6 +4,10 @@ spring:
     password:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:db_dev;MODE=MySQL
+
+  elasticsearch:
+    Uris: http://localhost:9200
+
   jpa:
     hibernate:
       ddl-auto: create-drop
