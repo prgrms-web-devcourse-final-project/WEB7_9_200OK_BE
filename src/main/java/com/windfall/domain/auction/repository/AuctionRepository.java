@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AuctionRepository extends JpaRepository<Auction,Long> {
+public interface AuctionRepository extends JpaRepository<Auction,Long>, AuctionRepositoryCustom {
 
   List<Auction> findAllByStatusAndStartedAtLessThanEqual(AuctionStatus status, LocalDateTime now);
 
