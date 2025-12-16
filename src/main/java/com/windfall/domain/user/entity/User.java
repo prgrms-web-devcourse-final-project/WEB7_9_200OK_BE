@@ -32,13 +32,23 @@ public class User extends BaseEntity {
   @Column(nullable = false)
   private String email;
 
+  @Column(name = "nickname", nullable = false)
+  private String nickname;
+
+  @Column(name = "profile_image_url")
+  private String profileImageUrl;
+
   // 일대일, 일대다 연관관계 매핑은 다음 pull request 때 진행하겠습니다.
 
   // 필드 추가 시 여기도 손봐주세요.
   @Builder
-  public User(ProviderType provider, String provideruserId, String email) {
+  public User(ProviderType provider, String providerUserId, String email, String nickname,
+      String profileImageUrl) {
+
     this.provider = provider;
-    this.providerUserId = provideruserId;
-    this. email = email;
+    this.providerUserId = providerUserId;
+    this.email = email;
+    this.nickname = nickname;
+    this.profileImageUrl = profileImageUrl;
   }
 }
