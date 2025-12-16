@@ -6,11 +6,16 @@ import com.windfall.api.user.service.UserService;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatMessageRepository;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
+import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.user.entity.User;
+import com.windfall.domain.user.repository.UserRepository;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +27,7 @@ public class ChatRoomService {
 
   private final ChatRoomRepository chatRoomRepository;
   private final ChatMessageRepository chatMessageRepository;
+  private final UserRepository userRepository;
   private final UserService userService;
 
   public List<ChatRoomListResponse> getChatRooms(Long userId, ChatRoomScope scope) {
@@ -49,11 +55,30 @@ public class ChatRoomService {
     chatMessageRepository.countUnreadByChatRoomIds(me.getId(), chatRoomIds)
         .forEach(p -> unreadMap.put(p.getChatRoomId(), p.getCnt()));
 
+    Set<Long> buyerPartnerIds = new HashSet<>();
+
+    for (ChatRoom cr : visibleRooms) {
+      Trade trade = cr.getTrade();
+      Long partnerId = resolvePartnerId(me.getId(), trade);
+
+      if (!partnerId.equals(trade.getSellerId())) {
+        buyerPartnerIds.add(partnerId);
+      }
+    }
+
+    Map<Long, User> buyerUserMap = userRepository.findAllById(buyerPartnerIds).stream()
+        .collect(Collectors.toMap(User::getId, u -> u));
+
+
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {
     TradeStatus status = cr.getTrade().getStatus();
     return status == TradeStatus.PAYMENT_COMPLETED || status == TradeStatus.PURCHASE_CONFIRMED;
+  }
+
+  private Long resolvePartnerId(Long userId, Trade trade) {
+    return userId.equals(trade.getBuyerId()) ? trade.getSellerId() : trade.getBuyerId();
   }
 
 }
