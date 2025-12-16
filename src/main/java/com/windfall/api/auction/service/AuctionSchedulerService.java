@@ -1,5 +1,6 @@
 package com.windfall.api.auction.service;
 
+import com.windfall.api.auction.dto.response.message.AuctionMessage;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.entity.AuctionPriceHistory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -89,10 +90,8 @@ public class AuctionSchedulerService {
   }
 
   private void sendAuctionUpdate(long auctionId, long currentPrice, AuctionStatus status) {
-    Map<String, Object> message = new HashMap<>();
-    message.put("auctionId", auctionId);
-    message.put("currentPrice", currentPrice);
-    message.put("status", status);
+
+    AuctionMessage message = AuctionMessage.from(auctionId, currentPrice, status);
 
     messagingTemplate.convertAndSend("/topic/auction/" + auctionId, message);
   }
