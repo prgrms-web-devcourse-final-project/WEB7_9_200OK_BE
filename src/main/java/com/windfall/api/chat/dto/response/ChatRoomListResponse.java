@@ -3,6 +3,7 @@ package com.windfall.api.chat.dto.response;
 import com.windfall.api.chat.dto.response.info.AuctionInfo;
 import com.windfall.api.chat.dto.response.info.LastMessageInfo;
 import com.windfall.api.chat.dto.response.info.PartnerInfo;
+import com.windfall.domain.chat.entity.ChatRoom;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "채팅방 목록 아이템 DTO")
@@ -25,4 +26,21 @@ public record ChatRoomListResponse(
 
     @Schema(description = "읽지 않은 메시지 수")
     long unreadCount
-) {}
+) {
+    public static ChatRoomListResponse of(
+        ChatRoom chatRoom,
+        PartnerInfo partner,
+        AuctionInfo auction,
+        LastMessageInfo lastMessage,
+        long unreadCount
+    ) {
+        return new ChatRoomListResponse(
+            chatRoom.getId(),
+            chatRoom.getTrade().getId(),
+            partner,
+            auction,
+            lastMessage,
+            unreadCount
+        );
+    }
+}
