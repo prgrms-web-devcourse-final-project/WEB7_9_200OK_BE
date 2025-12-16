@@ -53,11 +53,6 @@ dependencies {
 
     // Elasticsearch
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
-
-    // Elasticsearch Test
-    testImplementation("org.elasticsearch.client:elasticsearch-rest-client:8.11.0")
-    testImplementation("org.testcontainers:junit-jupiter:1.20.3")
-    testImplementation("org.testcontainers:elasticsearch:1.20.3")
 }
 
 tasks.withType<Test> {
