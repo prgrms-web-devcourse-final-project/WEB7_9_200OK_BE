@@ -1,8 +1,8 @@
 package com.windfall.api.auction.dto.response;
 
-import com.windfall.api.auction.dto.response.info.popularInfo;
-import com.windfall.api.auction.dto.response.info.processInfo;
-import com.windfall.api.auction.dto.response.info.scheduledInfo;
+import com.windfall.api.auction.dto.response.info.PopularInfo;
+import com.windfall.api.auction.dto.response.info.ProcessInfo;
+import com.windfall.api.auction.dto.response.info.ScheduledInfo;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,13 +14,26 @@ public record AuctionListReadResponse(
     LocalDateTime serverAt,
 
     @Schema(description = "실시간 인기 랭킹 목록")
-    List<popularInfo> popularList,
+    List<PopularInfo> popularList,
 
     @Schema(description = "경매 진행 중 목록")
-    List<processInfo> processList,
+    List<ProcessInfo> processList,
 
     @Schema(description = "경매 예정 목록")
-    List<scheduledInfo> scheduledList
+    List<ScheduledInfo> scheduledList
 ) {
+  public static AuctionListReadResponse of(
+      LocalDateTime serverAt,
+      List<PopularInfo> popularList,
+      List<ProcessInfo> processList,
+      List<ScheduledInfo> scheduledList
+  ) {
+    return new AuctionListReadResponse(
+        serverAt,
+        popularList,
+        processList,
+        scheduledList
+    );
+  }
 
 }

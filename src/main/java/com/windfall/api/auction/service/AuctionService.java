@@ -5,6 +5,10 @@ import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.auction.dto.response.AuctionListReadResponse;
+import com.windfall.api.auction.dto.response.info.PopularInfo;
+import com.windfall.api.auction.dto.response.info.ProcessInfo;
+import com.windfall.api.auction.dto.response.info.ScheduledInfo;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -15,7 +19,6 @@ import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,16 @@ public class AuctionService {
 
     return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
+
+  public AuctionListReadResponse readAuctionList() {
+    List<ScheduledInfo> scheduleList = auctionRepository.getScheduledInfo(AuctionStatus.SCHEDULED, 15);
+    List<ProcessInfo> processList = auctionRepository.getProcessInfo(AuctionStatus.PROCESS, 15);
+    List<PopularInfo> popularList = auctionRepository.getPopularInfo(AuctionStatus.PROCESS, 15);
+
+    LocalDateTime now = LocalDateTime.now();
+    return AuctionListReadResponse.of(now, popularList,processList, scheduleList);
+  }
+
 
   private void validateAuctionRequest(AuctionCreateRequest request) {
     if (request.startPrice() * 0.9 < request.stopLoss()) {
@@ -173,4 +186,6 @@ public class AuctionService {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
+
+
 }

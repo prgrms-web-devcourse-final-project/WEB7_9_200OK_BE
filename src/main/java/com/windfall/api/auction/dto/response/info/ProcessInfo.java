@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 @Schema(description = "경매 진행 중 응답 DTO")
-public record processInfo(
+public record ProcessInfo(
     @Schema(description = "경매 ID")
     Long auctionId,
 
@@ -15,18 +15,19 @@ public record processInfo(
     String title,
 
     @Schema(description = "시작가")
-    int startPrice,
+    Long startPrice,
 
     @Schema(description = "현재가")
-    int currentPrice,
+    Long currentPrice,
 
     @Schema(description = "하락 퍼센트")
-    double discountRate,
+    Long discountRate,
 
     @Schema(description = "사용자 찜 여부")
-    boolean isLiked,
+    Boolean isLiked,
 
     @Schema(description = "경매 시작 시간")
     LocalDateTime startedAt
 ) {
+
 }

@@ -41,10 +41,8 @@ public class AuctionController implements AuctionSpecification {
   @GetMapping
   public ApiResponse<AuctionListReadResponse> readAuctionList(
   ){
-    // TODO: 추후 프론트 담당이 생길 경우 이야기
-    // TODO: 현재 응답 dto로 할지? vs api를 요청 값만 다르게해서 3번 요청할지
-
-    return ApiResponse.ok(null);
+    AuctionListReadResponse response = auctionService.readAuctionList();
+    return ApiResponse.ok("경매 목록 조회에 성공했습니다.",response);
   }
 
   @Override
