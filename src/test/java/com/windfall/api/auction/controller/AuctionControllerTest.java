@@ -507,6 +507,51 @@ class AuctionControllerTest {
     }
   }
 
+  @Nested
+  @DisplayName("경매 검색 API")
+  class t5{
+
+    @Test
+    @DisplayName("정상 작동")
+    void success() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          get("/api/v1/auctions/search")
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("searchAuction"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("OK"))
+          .andExpect(jsonPath("$.message").value("경매 검색에 성공했습니다."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("가격 범위가 틀릴 때")
+    void t1() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          get("/api/v1/auctions/search")
+              .param("minPrice","10000")
+              .param("maxPrice","100")
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("searchAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("최소 가격은 최대 가격보다 클 수 없습니다."))
+          .andDo(print());
+    }
+  }
+
   private LocalDateTime createTime(){
     LocalDateTime now = LocalDateTime.now().plusMinutes(5);
 

@@ -17,13 +17,18 @@ import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
+import com.windfall.api.auction.dto.response.AuctionSearchResponse;
+import com.windfall.domain.auction.enums.AuctionCategory;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.config.swagger.ApiErrorCodes;
 import com.windfall.global.response.ApiResponse;
+import com.windfall.global.response.SliceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,6 +46,26 @@ public interface AuctionSpecification {
 
   @Operation(summary = "경매 다건 조회", description = "경매 리스트들을 조회합니다.")
   ApiResponse<AuctionListReadResponse> readAuctionList(
+  );
+
+  @Operation(summary = "경매 검색", description = "경매를 검색하여 조회합니다.")
+  ApiResponse<SliceResponse<AuctionSearchResponse>> searchAuction(
+      @Parameter(description = "경매 검색어", example = "테스트")
+      @RequestParam(defaultValue = "") String query,
+
+      @Parameter(description = "경매 카테고리", example = "디지털")
+      @RequestParam(required = false) AuctionCategory category,
+
+      @Parameter(description = "경매 상태", example = "경매 예정")
+      @RequestParam(required = false) AuctionStatus status,
+
+      @Parameter(description = "최소가", example = "100")
+      @RequestParam(required = false) Long minPrice,
+
+      @Parameter(description = "최고가", example = "1000000")
+      @RequestParam(required = false) Long maxPrice,
+
+      Pageable pageable
   );
 
   @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})
