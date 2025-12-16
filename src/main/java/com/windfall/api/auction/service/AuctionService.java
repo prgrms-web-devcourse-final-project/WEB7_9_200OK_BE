@@ -121,17 +121,15 @@ public class AuctionService {
 
     Auction auction = getAuctionById(auctionId);
 
-    Long displayPrice = auction.getDisplayPrice();
+    long displayPrice = auction.getDisplayPrice();
 
-    Double discountRate = null;
+    double discountRate = 0.0;
     if(auction.getStatus() != AuctionStatus.SCHEDULED) {
       discountRate = auction.calculateDiscountRate();
     }
 
-    boolean isSeller = auction.isSeller(userId);
-
-    Long exposedStopLoss = null;
-    if (isSeller) {
+    long exposedStopLoss = 0L;
+    if (auction.isSeller(userId)) {
       exposedStopLoss = auction.getStopLoss();
     }
 

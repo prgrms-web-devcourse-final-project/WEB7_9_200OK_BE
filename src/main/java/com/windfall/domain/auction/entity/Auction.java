@@ -76,6 +76,10 @@ public class Auction extends BaseEntity {
     this.status = status;
   }
 
+  public void updateCurrentPrice(Long price) {
+    this.currentPrice = price;
+  }
+
   public long getDisplayPrice() {
     if (this.status == AuctionStatus.SCHEDULED) {
       return this.startPrice;

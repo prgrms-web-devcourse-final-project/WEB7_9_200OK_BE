@@ -37,9 +37,17 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+
     //querydsl
     annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:7.1:jpa")
     implementation("io.github.openfeign.querydsl:querydsl-jpa:7.1")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+
+
 }
 
 tasks.withType<Test> {
