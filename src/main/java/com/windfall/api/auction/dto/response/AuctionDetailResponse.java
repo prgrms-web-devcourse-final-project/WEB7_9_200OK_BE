@@ -30,28 +30,28 @@ public record AuctionDetailResponse(
     SellerInfo seller,
 
     @Schema(description = "시작가")
-    Long startPrice,
+    long startPrice,
 
     @Schema(description = "현재가 (예정 : 시작가)")
-    Long currentPrice,
+    long currentPrice,
 
     @Schema(description = "최소 보장가 (판매자만)")
-    Long stopLoss,
+    long stopLoss,
 
     @Schema(description = "하락 퍼센트 (예정 : null)")
-    Double discountRate,
+    double discountRate,
 
     @Schema(description = "경매 상태")
     AuctionStatus status,
 
     @Schema(description = "찜 수")
-    Long likeCount,
+    long likeCount,
 
     @Schema(description = "사용자 찜 여부")
     boolean isLiked,
 
     @Schema(description = "실시간 접속자 수")
-    Long viewerCount,
+    long viewerCount,
 
     @Schema(description = "경매 시작 시간")
     LocalDateTime startedAt,
@@ -62,11 +62,11 @@ public record AuctionDetailResponse(
 ) {
   public static AuctionDetailResponse of(
       Auction auction,
-      Long currentPrice,
-      Double discountRate,
-      Long stopLoss,
+      long currentPrice,
+      double discountRate,
+      long stopLoss,
       boolean isLiked,
-      Long viewerCount,
+      long viewerCount,
       List<AuctionHistoryResponse> history
   ) {
     return new AuctionDetailResponse(

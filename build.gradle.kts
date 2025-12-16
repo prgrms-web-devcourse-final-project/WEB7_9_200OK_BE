@@ -37,6 +37,20 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
+    //querydsl
+    annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:7.1:jpa")
+    implementation("io.github.openfeign.querydsl:querydsl-jpa:7.1")
+
+    // JWT
+    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
+    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
+
+// JSON 파싱
+
+    // websocket
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
+
     // Elasticsearch
     implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 
@@ -49,3 +63,24 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+
+//-----------querydsl-----------//
+val querydslDir = file("src/main/generated")
+
+sourceSets {
+    main {
+        java.srcDir(querydslDir)
+    }
+}
+
+tasks.withType<JavaCompile> {
+    options.generatedSourceOutputDirectory.set(querydslDir)
+}
+
+tasks.named("clean") {
+    doLast {
+        querydslDir.deleteRecursively()
+    }
+}
+//--------------------------------//

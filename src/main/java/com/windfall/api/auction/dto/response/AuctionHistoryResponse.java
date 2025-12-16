@@ -11,10 +11,10 @@ public record AuctionHistoryResponse(
     Long historyId,
 
     @Schema(description = "변경된 가격")
-    Long currentPrice,
+    long currentPrice,
 
     @Schema(description = "시점 접속자 수")
-    Long viewerCount,
+    long viewerCount,
 
     @Schema(description = "가격 변동 시점")
     LocalDateTime createdAt
