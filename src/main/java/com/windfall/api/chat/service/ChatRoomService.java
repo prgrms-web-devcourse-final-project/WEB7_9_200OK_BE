@@ -2,7 +2,11 @@ package com.windfall.api.chat.service;
 
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
 import com.windfall.api.chat.dto.response.ChatRoomListResponse;
+import com.windfall.api.chat.dto.response.info.AuctionInfo;
+import com.windfall.api.chat.dto.response.info.LastMessageInfo;
+import com.windfall.api.chat.dto.response.info.PartnerInfo;
 import com.windfall.api.user.service.UserService;
+import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatMessageRepository;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
@@ -69,7 +73,9 @@ public class ChatRoomService {
     Map<Long, User> buyerUserMap = userRepository.findAllById(buyerPartnerIds).stream()
         .collect(Collectors.toMap(User::getId, u -> u));
 
-
+    return visibleRooms.stream()
+        .map(cr -> toResponse(me.getId(), cr, unreadMap, buyerUserMap))
+        .toList();
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {
@@ -79,6 +85,34 @@ public class ChatRoomService {
 
   private Long resolvePartnerId(Long userId, Trade trade) {
     return userId.equals(trade.getBuyerId()) ? trade.getSellerId() : trade.getBuyerId();
+  }
+
+  private ChatRoomListResponse toResponse(
+      Long userId,
+      ChatRoom chatRoom,
+      Map<Long, Long> unreadMap,
+      Map<Long, User> buyerUserMap
+  ) {
+    Trade trade = chatRoom.getTrade();
+    Auction auction = trade.getAuction();
+
+    Long partnerId = resolvePartnerId(userId, trade);
+
+    PartnerInfo partnerInfo;
+    if (partnerId.equals(trade.getSellerId())) {
+      partnerInfo = PartnerInfo.from(auction.getSeller());
+    } else {
+      User partner = buyerUserMap.get(partnerId);
+      partnerInfo = (partner != null)
+          ? PartnerInfo.from(partner) : new PartnerInfo(partnerId, null, null);
+    }
+
+    AuctionInfo auctionInfo = AuctionInfo.from(auction);
+    LastMessageInfo lastMessageInfo = LastMessageInfo.from(chatRoom);
+
+    long unreadCount = unreadMap.getOrDefault(chatRoom.getId(), 0L);
+
+    return ChatRoomListResponse.of(chatRoom, partnerInfo, auctionInfo, lastMessageInfo, unreadCount);
   }
 
 }
