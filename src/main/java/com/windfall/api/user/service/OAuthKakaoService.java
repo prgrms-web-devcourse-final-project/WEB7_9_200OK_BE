@@ -5,8 +5,8 @@
 
 package com.windfall.api.user.service;
 
-import com.windfall.api.user.dto.response.LoginUserResponse;
 import com.windfall.api.user.dto.response.OAuthUserInfo;
+import com.windfall.api.user.dto.response.RegisterUserResponse;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
@@ -38,23 +38,29 @@ public class OAuthKakaoService {
   @Value("${spring.kakao.redirect.uri}")
   private String kakaoRedirectUri;
 
-  public LoginUserResponse loginOrSignup(String code) {
-    System.out.println("파라미터로 받은 코드: " + code);
-    // 0. User 객체 생성. 내부 값 채우기. providerUserId와 email은 어디서 얻어오지?
+  public RegisterUserResponse loginOrSignup(String code) {
 
-    // 1. code로 access token 발급
     String accessToken = requestAccessToken(code);
-
-    // 2. access token으로 사용자 정보 요청
     OAuthUserInfo userInfo = requestUserInfo(accessToken);
 
     // 3. DB에서 회원 확인 후 없으면 생성
-    User user = userRepository.findByProviderUserId(userInfo.providerUserId()).orElseGet(() -> userRepository.save(
-        new User(ProviderType.KAKAO, userInfo.providerUserId(), userInfo.email(), userInfo.nickname(),
-            userInfo.profileImageUrl())
-    ));
+    User user = userRepository.findByProviderUserId(userInfo.providerUserId())
+        .orElseGet(() -> userRepository.save(
+            new User(ProviderType.KAKAO, userInfo.providerUserId(), userInfo.email(),
+                userInfo.nickname(), userInfo.profileImageUrl())
+        ));
 
-    return new LoginUserResponse(user.getEmail(), user.getNickname(), user.getProfileImageUrl());
+// 서버용 JWT 생성
+    String jwtAccessToken = jwtProvider.generateAccessToken(user);
+    String jwtRefreshToken = jwtProvider.generateRefreshToken(user);
+
+    return new RegisterUserResponse(
+        user.getEmail(),
+        user.getNickname(),
+        user.getProfileImageUrl(),
+        jwtAccessToken,
+        jwtRefreshToken
+    );
   }
 
   private String requestAccessToken(String code) {

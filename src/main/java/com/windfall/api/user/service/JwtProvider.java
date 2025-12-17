@@ -17,7 +17,8 @@ public class JwtProvider {
   public JwtProvider(
       @Value("${custom.jwt.secretPattern}") String secretKey,
       @Value("${custom.jwt.expireSecondsAccessToken}") long accessTokenValidity,
-      @Value("${custom.jwt.expireSecondsRefreshToken}") long refreshTokenValidity) {
+      @Value("${custom.jwt.expireSecondsRefreshToken}") long refreshTokenValidity
+  ) {
     this.secretKey = secretKey;
     this.accessTokenValidity = accessTokenValidity;
     this.refreshTokenValidity = refreshTokenValidity;
@@ -38,6 +39,7 @@ public class JwtProvider {
   public String generateRefreshToken(User user) {
     return Jwts.builder()
         .setSubject(user.getProviderUserId())
+        .claim(user.getProviderUserId(), "")
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity * 1000))
         .signWith(SignatureAlgorithm.HS256, secretKey)
