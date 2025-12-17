@@ -19,4 +19,10 @@ public class UserService {
     return userRepository.findById(userId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_USER));
   }
+
+  @Transactional(readOnly = true)
+  public User getUserByProviderUserId(String providerUserId) {
+    return userRepository.findByProviderUserId(providerUserId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_USER));
+  }
 }

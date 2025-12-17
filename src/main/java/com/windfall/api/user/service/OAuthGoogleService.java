@@ -16,8 +16,8 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class OAuthGoogleService {
-  private final UserRepository memberRepository;
-  //private final JwtService jwtService; // JWT 발급용
+  private final UserRepository userRepository;
+  private final JwtProvider jwtProvider; // JWT 발급용
   private final RestTemplate restTemplate;
 
   @Value("${spring.google.client.id}")
@@ -60,6 +60,6 @@ public class OAuthGoogleService {
   private OAuthUserInfo requestUserInfo(String accessToken) {
     // RestTemplate 사용, 카카오 API에 GET 요청
     // JSON 응답 → OAuthUserInfo로 변환
-    return new OAuthUserInfo("", "", "");
+    return new OAuthUserInfo("", "", "", "");
   }
 }

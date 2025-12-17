@@ -5,32 +5,41 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.Date;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JwtService {
+public class JwtProvider {
+  private final String secretKey;
+  private final long accessTokenValidity;
+  private final long refreshTokenValidity;
 
-  private final String secretKey = "JWT_SECRET_KEY"; // application.yml에서 관리 가능
-  private final long accessTokenValidity = 3600_000; // 1시간
-  private final long refreshTokenValidity = 604_800_000; // 7일
+  public JwtProvider(
+      @Value("${custom.jwt.secretPattern}") String secretKey,
+      @Value("${custom.jwt.expireSecondsAccessToken}") long accessTokenValidity,
+      @Value("${custom.jwt.expireSecondsRefreshToken}") long refreshTokenValidity) {
+    this.secretKey = secretKey;
+    this.accessTokenValidity = accessTokenValidity;
+    this.refreshTokenValidity = refreshTokenValidity;
+  }
 
   // Access Token 생성
-  public String generateAccessToken(User member) {
+  public String generateAccessToken(User user) {
     return Jwts.builder()
-        .setSubject(member.getProviderUserId())
-        .claim("username", "")
+        .setSubject(user.getProviderUserId())
+        .claim(user.getProviderUserId(), "")
         .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity))
+        .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity * 1000))
         .signWith(SignatureAlgorithm.HS256, secretKey)
         .compact();
   }
 
   // Refresh Token 생성
-  public String generateRefreshToken(User member) {
+  public String generateRefreshToken(User user) {
     return Jwts.builder()
-        .setSubject(member.getProviderUserId())
+        .setSubject(user.getProviderUserId())
         .setIssuedAt(new Date())
-        .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity))
+        .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity * 1000))
         .signWith(SignatureAlgorithm.HS256, secretKey)
         .compact();
   }
