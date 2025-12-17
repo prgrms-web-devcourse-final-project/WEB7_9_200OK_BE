@@ -11,11 +11,15 @@
 
 package com.windfall.api.user.controller;
 
+import com.windfall.api.user.dto.response.LoginUserResponse;
+import com.windfall.api.user.service.JwtProvider;
 import com.windfall.api.user.service.UserService;
+import com.windfall.domain.user.entity.User;
 import com.windfall.global.response.ApiResponse;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController implements UserSpecification {
 
   private final UserService userService;
+  private final JwtProvider jwtProvider;
 
   // 1. 로그인 화면 요청 url에 필요한 값들. application.yml 참고.
   @Value("${spring.kakao.client.id}")
@@ -80,6 +85,27 @@ public class UserController implements UserSpecification {
       case "google" -> ApiResponse.ok(provider + " 로그인 페이지.", URL_GOOGLE);
       default -> ApiResponse.ok(provider + "는 잘못된 provider입니다.", URL_WRONG);
     };
+  }
+
+  @GetMapping("/auth/basic")
+  public ApiResponse<LoginUserResponse> returnBasicUserInfo(@CookieValue("accessToken") String accessToken) {
+
+    User user = userService.getUserByProviderUserId(jwtProvider.getProviderUserId(accessToken));
+    return ApiResponse.ok("유저 기본 정보가 반환되었습니다.", new LoginUserResponse(user.getEmail(), user.getNickname(), user.getProfileImageUrl()));
+  }
+
+  @GetMapping("/auth/validate-tokens")
+  public ApiResponse<Boolean> validateTokens(@CookieValue("accessToken") String accessToken,
+      @CookieValue("refreshToken") String refreshToken) {
+
+    boolean isAccessValid = jwtProvider.validateToken(accessToken);
+    boolean isRefreshValid = jwtProvider.validateToken(refreshToken);
+
+    if (isAccessValid || isRefreshValid) {
+      return ApiResponse.ok("최소 한 토큰은 정상입니다.", true);
+    } else {
+      return ApiResponse.ok("두 토큰 모두 만료되었습니다.", false);
+    }
   }
 
 }
