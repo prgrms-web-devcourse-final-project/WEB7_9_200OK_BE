@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.testImplementation
+
 plugins {
     java
     id("org.springframework.boot") version "3.5.8"
@@ -37,7 +39,6 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
-
     //querydsl
     annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:7.1:jpa")
     implementation("io.github.openfeign.querydsl:querydsl-jpa:7.1")
@@ -52,7 +53,8 @@ dependencies {
     // websocket
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
-
+    // Elasticsearch
+    //implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 }
 
 tasks.withType<Test> {
