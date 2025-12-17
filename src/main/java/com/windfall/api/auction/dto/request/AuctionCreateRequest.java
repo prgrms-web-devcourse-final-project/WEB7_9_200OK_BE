@@ -4,11 +4,13 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 
 
-@Schema(description = "경매 생성 응답 DTO")
+@Schema(description = "경매 생성 요청 DTO")
 public record AuctionCreateRequest(
 
     @NotNull(message = "판매자 id는 필수입니다.")
@@ -26,6 +28,10 @@ public record AuctionCreateRequest(
     @NotNull(message = "경매 카테고리는 필수입니다.")
     @Schema(description = "경매 카테고리", example = "1")
     AuctionCategory category,
+
+    @Schema(description = "경매 태그", example = "[\"나이키\"]")
+    @Size(max = 5, message = "태그 최대 등록 개수를 초과했습니다.")
+    List<String> tags,
 
     @NotNull(message = "경매 시작가는 필수입니다.")
     @Schema(description = "경매 시작가", example = "10000")

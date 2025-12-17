@@ -1,6 +1,7 @@
 package com.windfall.api.auction.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.windfall.WindfallApplication;
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
@@ -91,6 +92,7 @@ class AuctionControllerTest {
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
+          null,
           10000L,
           9000L,
           50L,
@@ -136,6 +138,7 @@ class AuctionControllerTest {
           null,
           "테스트 설명",
           AuctionCategory.DIGITAL,
+          null,
           10000L,
           9000L,
           50L,
@@ -171,6 +174,7 @@ class AuctionControllerTest {
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
+          null,
           10000L,
           9000L,
           49L,
@@ -206,6 +210,7 @@ class AuctionControllerTest {
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
+          null,
           10000L,
           9001L,
           50L,
@@ -241,6 +246,7 @@ class AuctionControllerTest {
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
+          null,
           10000L,
           9000L,
           50L,
