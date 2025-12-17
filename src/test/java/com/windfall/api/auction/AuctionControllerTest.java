@@ -1,7 +1,16 @@
 package com.windfall.api.auction;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.windfall.WindfallApplication;
+import com.windfall.api.auction.controller.AuctionController;
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
@@ -23,10 +32,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @Transactional
@@ -56,7 +61,7 @@ class AuctionControllerTest {
     User seller = User.builder()
         .email("test@naver.com")
         .provider(ProviderType.NAVER)
-        .provideruserId("test1234")
+        .providerUserId("test1234")
         .build();
     User saveUser = userRepository.save(seller);
     sellerId = saveUser.getId();
@@ -319,7 +324,7 @@ class AuctionControllerTest {
       User seller = User.builder()
           .email("test@naver.com")
           .provider(ProviderType.NAVER)
-          .provideruserId("test1234")
+          .providerUserId("test1234")
           .build();
       User notUser = userRepository.save(seller);
       // when
@@ -430,7 +435,7 @@ class AuctionControllerTest {
       User seller = User.builder()
           .email("test@naver.com")
           .provider(ProviderType.NAVER)
-          .provideruserId("test1234")
+          .providerUserId("test1234")
           .build();
       User notUser = userRepository.save(seller);
       // when

@@ -7,6 +7,7 @@ import static com.windfall.global.exception.ErrorCode.TAG_TOO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.windfall.api.tag.service.TagService;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -57,7 +58,7 @@ class TagServiceTest {
     User seller = userRepository.save(User.builder()
         .email("test@naver.com")
         .provider(ProviderType.NAVER)
-        .provideruserId("test1234")
+        .providerUserId("test1234")
         .build()
     );
 
