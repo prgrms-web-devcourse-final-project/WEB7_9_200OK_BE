@@ -13,7 +13,7 @@ public record AuctionInfo(
     @Schema(description = "경매 대표 이미지 URL")
     String imageUrl
 ) {
-    public static AuctionInfo from(Auction auction, String imageUrl) {
+    public static AuctionInfo of(Auction auction, String imageUrl) {
         return new AuctionInfo(
             auction.getId(),
             auction.getTitle(),

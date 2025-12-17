@@ -134,7 +134,7 @@ public class ChatRoomService {
     }
 
     String thumbUrl = auctionThumbMap.get(auction.getId());
-    AuctionInfo auctionInfo = AuctionInfo.from(auction, thumbUrl);
+    AuctionInfo auctionInfo = AuctionInfo.of(auction, thumbUrl);
 
     LastMessageInfo lastMessageInfo = LastMessageInfo.from(chatRoom);
 
