@@ -1,6 +1,7 @@
 package com.windfall.api.auction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.windfall.WindfallApplication;
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;

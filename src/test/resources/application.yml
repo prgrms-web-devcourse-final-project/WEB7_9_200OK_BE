@@ -4,6 +4,7 @@ spring:
     password:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:db_dev;MODE=MySQL
+
   jpa:
     hibernate:
       ddl-auto: create-drop
