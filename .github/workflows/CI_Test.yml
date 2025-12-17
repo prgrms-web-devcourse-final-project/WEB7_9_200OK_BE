@@ -17,6 +17,7 @@ jobs:
       REDIRECT_URI_NAVER: ${{secrets.REDIRECT_URI_NAVER}}
       CLIENT_ID_GOOGLE: ${{secrets.CLIENT_ID_GOOGLE}}
       REDIRECT_URI_GOOGLE: ${{secrets.REDIRECT_URI_GOOGLE}}
+      SECRET_PATTERN: ${{secrets.SECRET_PATTERN}}
 
     steps:
       - name: 리포지토리를 가져옵니다
