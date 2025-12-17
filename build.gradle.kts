@@ -55,14 +55,10 @@ dependencies {
 
     // Elasticsearch
     //implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
-    //testImplementation ("org.mockito:mockito-core:5.11.0")
-    //testImplementation ("org.springframework.boot:spring-boot-starter-test")
-
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    systemProperty("spring.profiles.active", "test")
 }
 
 

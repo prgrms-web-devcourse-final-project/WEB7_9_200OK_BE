@@ -8,7 +8,6 @@ import static com.windfall.global.exception.ErrorCode.TAG_TOO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-//import com.windfall.ElasticsearchTestConfig;
 import com.windfall.api.tag.factory.AuctionFactory;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -16,7 +15,6 @@ import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
 import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.tag.repository.TagRepository;
-//import com.windfall.domain.tag.repository.TagSearchRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
@@ -25,15 +23,12 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-//@Import(ElasticsearchTestConfig.class)
 class TagServiceTest {
 
   @Autowired
