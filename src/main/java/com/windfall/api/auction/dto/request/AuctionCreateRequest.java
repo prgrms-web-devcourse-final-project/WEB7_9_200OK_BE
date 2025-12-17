@@ -29,9 +29,9 @@ public record AuctionCreateRequest(
     @Schema(description = "경매 카테고리", example = "1")
     AuctionCategory category,
 
-    @Schema(description = "경매 태그", example = "[\"나이키\"]")
     @Size(max = 5, message = "태그 최대 등록 개수를 초과했습니다.")
-    List<String> tags,
+    @Schema(description = "경매 태그", example = "[\"나이키\"]")
+    List<TagInfo> tags,
 
     @NotNull(message = "경매 시작가는 필수입니다.")
     @Schema(description = "경매 시작가", example = "10000")
