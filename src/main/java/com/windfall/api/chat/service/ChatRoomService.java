@@ -76,12 +76,10 @@ public class ChatRoomService {
       }
     }
 
-    Map<Long, User> buyerUserMap;
-    if (buyerPartnerIds.isEmpty()) {
-      buyerUserMap = Map.of();
-    }
-    buyerUserMap = userRepository.findAllById(buyerPartnerIds).stream()
-        .collect(Collectors.toMap(User::getId, u -> u));
+    Map<Long, User> buyerUserMap = buyerPartnerIds.isEmpty()
+        ? Map.of()
+        : userRepository.findAllById(buyerPartnerIds).stream()
+            .collect(Collectors.toMap(User::getId, u -> u));
 
     // 5) auction 대표 이미지 일괄 조회
     List<Long> auctionIds = visibleRooms.stream()
@@ -129,7 +127,7 @@ public class ChatRoomService {
     } else {
       User partner = buyerUserMap.get(partnerId);
       if (partner == null) {
-        partnerInfo = new PartnerInfo(partnerId, null, null);
+        partnerInfo = new PartnerInfo(partnerId, "알 수 없음", null);
       } else {
         partnerInfo = PartnerInfo.from(partner);
       }
@@ -142,7 +140,8 @@ public class ChatRoomService {
 
     long unreadCount = unreadMap.getOrDefault(chatRoom.getId(), 0L);
 
-    return ChatRoomListResponse.of(chatRoom, partnerInfo, auctionInfo, lastMessageInfo, unreadCount);
+    return ChatRoomListResponse.of(chatRoom, partnerInfo, auctionInfo, lastMessageInfo,
+        unreadCount);
   }
 
 }

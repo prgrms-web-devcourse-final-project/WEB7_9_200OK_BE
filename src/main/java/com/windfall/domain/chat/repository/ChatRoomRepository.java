@@ -15,11 +15,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
       join fetch t.auction a
       join fetch a.seller s
       where (
-        :scope = 'ALL' and (t.buyerId = :userId or t.sellerId = :userId)
-      ) or (
-        :scope = 'BUY' and t.buyerId = :userId
-      ) or (
-        :scope = 'SELL' and t.sellerId = :userId
+        (:scope = 'ALL' and (t.buyerId = :userId or t.sellerId = :userId))
+        or (:scope = 'BUY' and t.buyerId = :userId)
+        or (:scope = 'SELL' and t.sellerId = :userId)
       )
       order by coalesce(cr.lastMessageAt, cr.createDate) desc
       """)
