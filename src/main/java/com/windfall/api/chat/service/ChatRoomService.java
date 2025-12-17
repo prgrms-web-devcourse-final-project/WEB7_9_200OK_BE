@@ -40,14 +40,12 @@ public class ChatRoomService {
 
     User me = userService.getUserById(userId);
 
-    // 1) 채팅방 조회
     List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(me.getId(), scope.name());
 
     if (chatRooms.isEmpty()) {
       return List.of();
     }
 
-    // 2) trade 상태 필터링(검증 로직)
     List<ChatRoom> visibleRooms = chatRooms.stream()
         .filter(this::isVisibleTradeStatus)
         .toList();
@@ -56,21 +54,16 @@ public class ChatRoomService {
       return List.of();
     }
 
-    // 3) unreadCount 집계
     List<Long> chatRoomIds = visibleRooms.stream().map(ChatRoom::getId).toList();
-
     Map<Long, Long> unreadMap = new HashMap<>();
     chatMessageRepository.countUnreadByChatRoomIds(me.getId(), chatRoomIds)
         .forEach(p -> unreadMap.put(p.getChatRoomId(), p.getCnt()));
 
-    // 4) buyer 파트너 유저들 일괄 조회
     Set<Long> buyerPartnerIds = new HashSet<>();
-
     for (ChatRoom cr : visibleRooms) {
       Trade trade = cr.getTrade();
       Long partnerId = resolvePartnerId(me.getId(), trade);
 
-      // 상대가 seller면 auction.seller가 이미 있으니 buyer만 모으는 로직
       if (!partnerId.equals(trade.getSellerId())) {
         buyerPartnerIds.add(partnerId);
       }
@@ -81,7 +74,6 @@ public class ChatRoomService {
         : userRepository.findAllById(buyerPartnerIds).stream()
             .collect(Collectors.toMap(User::getId, u -> u));
 
-    // 5) auction 대표 이미지 일괄 조회
     List<Long> auctionIds = visibleRooms.stream()
         .map(cr -> cr.getTrade().getAuction().getId())
         .distinct()
@@ -94,7 +86,6 @@ public class ChatRoomService {
           .forEach(ai -> auctionThumbMap.put(ai.getAuction().getId(), ai.getImage()));
     }
 
-    // 6) DTO 변환
     return visibleRooms.stream()
         .map(cr -> toResponse(me.getId(), cr, unreadMap, buyerUserMap, auctionThumbMap))
         .toList();
