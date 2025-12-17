@@ -186,6 +186,4 @@ public class AuctionService {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
-
-
 }
