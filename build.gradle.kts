@@ -54,7 +54,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     // Elasticsearch
-    //implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
+    implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 }
 
 tasks.withType<Test> {

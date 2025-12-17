@@ -1,0 +1,2 @@
+  elasticsearch:
+    uris: http://localhost:9200
