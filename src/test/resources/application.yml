@@ -17,21 +17,21 @@ spring:
         format_sql: true
   kakao:
     client:
-      id: ${REST_API_KAKAO:dummy}
+      id: ${REST_API_KAKAO}
     redirect:
-      uri: ${REDIRECT_URI_KAKAO:dummy}
+      uri: ${REDIRECT_URI_KAKAO}
 
   naver:
     client:
-      id: ${CLIENT_ID_NAVER:dummy}
+      id: ${CLIENT_ID_NAVER}
     redirect:
-      uri: ${REDIRECT_URI_NAVER:dummy}
+      uri: ${REDIRECT_URI_NAVER}
 
   google:
     client:
-      id: ${CLIENT_ID_GOOGLE:dummy}
+      id: ${CLIENT_ID_GOOGLE}
     redirect:
-      uri: ${REDIRECT_URI_GOOGLE:dummy}
+      uri: ${REDIRECT_URI_GOOGLE}
 
   data:
     redis:
