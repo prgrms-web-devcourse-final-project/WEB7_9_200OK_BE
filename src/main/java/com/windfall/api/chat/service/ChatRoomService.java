@@ -41,7 +41,7 @@ public class ChatRoomService {
     User me = userService.getUserById(userId);
 
     // 1) 채팅방 조회
-    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(userId, scope.name());
+    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(me.getId(), scope.name());
 
     if (chatRooms.isEmpty()) {
       return List.of();
@@ -70,13 +70,17 @@ public class ChatRoomService {
       Trade trade = cr.getTrade();
       Long partnerId = resolvePartnerId(me.getId(), trade);
 
-      // 상대가 seller면 auction.seller(User)가 이미 있으니 buyer만 모으는 로직
+      // 상대가 seller면 auction.seller가 이미 있으니 buyer만 모으는 로직
       if (!partnerId.equals(trade.getSellerId())) {
         buyerPartnerIds.add(partnerId);
       }
     }
 
-    Map<Long, User> buyerUserMap = userRepository.findAllById(buyerPartnerIds).stream()
+    Map<Long, User> buyerUserMap;
+    if (buyerPartnerIds.isEmpty()) {
+      buyerUserMap = Map.of();
+    }
+    buyerUserMap = userRepository.findAllById(buyerPartnerIds).stream()
         .collect(Collectors.toMap(User::getId, u -> u));
 
     // 5) auction 대표 이미지 일괄 조회
