@@ -5,11 +5,6 @@ spring:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:db_dev;MODE=MySQL
 
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
-
   jpa:
     hibernate:
       ddl-auto: create-drop
