@@ -4,6 +4,7 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -29,6 +30,7 @@ public record AuctionCreateRequest(
     AuctionCategory category,
 
     @Schema(description = "경매 태그", example = "[\"나이키\"]")
+    @Size(max = 5, message = "태그 최대 등록 개수를 초과했습니다.")
     List<String> tags,
 
     @NotNull(message = "경매 시작가는 필수입니다.")

@@ -1,15 +1,15 @@
 package com.windfall.api.tag.service;
 
 import static com.windfall.global.exception.ErrorCode.TAG_CONTAINS_SPACE;
-import static com.windfall.global.exception.ErrorCode.TAG_COUNT_EXCEEDED;
 import static com.windfall.global.exception.ErrorCode.TAG_EMPTY;
 import static com.windfall.global.exception.ErrorCode.TAG_INVALID_CHAR;
 import static com.windfall.global.exception.ErrorCode.TAG_TOO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.windfall.api.tag.factory.AuctionFactory;
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.domain.auction.enums.AuctionCategory;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
@@ -19,6 +19,7 @@ import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.exception.ErrorException;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -60,7 +61,20 @@ class TagServiceTest {
         .build()
     );
 
-    auction = auctionRepository.save(AuctionFactory.createTestAuction(seller));
+    auction = Auction.builder()
+        .title("테스트 제목")
+        .description("테스트 설명")
+        .category(AuctionCategory.DIGITAL)
+        .startPrice(10000L)
+        .currentPrice(10000L)
+        .stopLoss(9000L)
+        .dropAmount(50L)
+        .status(AuctionStatus.SCHEDULED)
+        .startedAt(LocalDateTime.now().plusDays(2))
+        .seller(seller)
+        .build();
+
+    auction = auctionRepository.save(auction);
   }
 
   @Test
@@ -112,21 +126,6 @@ class TagServiceTest {
     );
 
     assertEquals(TAG_CONTAINS_SPACE, exception.getErrorCode());
-  }
-
-  @Test
-  @DisplayName("태그 최대 개수를 초과한 경우")
-  public void exception2() {
-    //given
-    List<String> tags = List.of("가방", "고구마", "식탁", "인형", "자전거", "노트북");
-
-    // when & then
-    ErrorException exception = assertThrows(
-        ErrorException.class,
-        () -> tagService.registerAuctionTags(auction, tags)
-    );
-
-    assertEquals(TAG_COUNT_EXCEEDED, exception.getErrorCode());
   }
 
   @Test

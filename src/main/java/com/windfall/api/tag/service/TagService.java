@@ -20,7 +20,6 @@ public class TagService {
   private final AuctionTagRepository auctionTagRepository;
   //private final TagIndexService tagIndexService;
 
-  private static final int MAX_TAG_COUNT = 5;
   private static final int MAX_TAG_LENGTH = 10;
 
   @Transactional
@@ -47,13 +46,6 @@ public class TagService {
   }
 
   private void validateTags(List<String> tagNames) {
-    if (tagNames.size() > MAX_TAG_COUNT) {
-      throw new ErrorException(
-          String.format("태그는 최대 %d개까지 등록할 수 있습니다.", MAX_TAG_COUNT),
-          ErrorCode.TAG_COUNT_EXCEEDED
-      );
-    }
-
     for (String tagName : tagNames) {
       if (tagName.isBlank()) {
         throw new ErrorException(ErrorCode.TAG_EMPTY);

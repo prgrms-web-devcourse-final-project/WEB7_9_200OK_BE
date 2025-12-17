@@ -26,7 +26,6 @@ public enum ErrorCode {
   // 태그
   TAG_EMPTY(HttpStatus.BAD_REQUEST, "태그에 빈 문자열을 등록할 수 없습니다."),
   TAG_TOO_LONG(HttpStatus.BAD_REQUEST, "태그는 최대 글자 수를 초과했습니다."),
-  TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST, "태그는 최대 등록 개수를 초과했습니다."),
   TAG_INVALID_CHAR(HttpStatus.BAD_REQUEST, "태그는 한글, 영어, 숫자만 사용할 수 있습니다."),
   TAG_CONTAINS_SPACE(HttpStatus.BAD_REQUEST, "태그에 공백을 포함할 수 없습니다."),
 
