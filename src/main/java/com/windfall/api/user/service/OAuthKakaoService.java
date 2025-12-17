@@ -43,30 +43,16 @@ public class OAuthKakaoService {
     // 0. User 객체 생성. 내부 값 채우기. providerUserId와 email은 어디서 얻어오지?
 
     // 1. code로 access token 발급
-    System.out.println("카카오로 code값을 통해 accessToken 발급 요청 시작");
     String accessToken = requestAccessToken(code);
-    System.out.println("access token 값 확인 : " + accessToken);
 
     // 2. access token으로 사용자 정보 요청
-    System.out.println("카카오로 accessToken값을 통해 유저 정보 요청 시작");
     OAuthUserInfo userInfo = requestUserInfo(accessToken);
-    System.out.println("User 정보 확인 : ");
-    System.out.println("id : " + userInfo.providerUserId());
-    System.out.println("이메일 : " + userInfo.email());
-    System.out.println("닉네임 : " + userInfo.nickname());
-    System.out.println("이미지 url : " + userInfo.profileImageUrl());
 
     // 3. DB에서 회원 확인 후 없으면 생성
     User user = userRepository.findByProviderUserId(userInfo.providerUserId()).orElseGet(() -> userRepository.save(
         new User(ProviderType.KAKAO, userInfo.providerUserId(), userInfo.email(), userInfo.nickname(),
             userInfo.profileImageUrl())
     ));
-
-    // 4. JWT 발급 -> spring security 넣으면 하겠습니다.
-    //String jwtAccessToken = jwtProvider.generateAccessToken(user);
-    //String jwtRefreshToken = jwtProvider.generateRefreshToken(user);
-    String jwtAccessToken = "access";
-    String jwtRefreshToken = "refresh";
 
     return new LoginUserResponse(user.getEmail(), user.getNickname(), user.getProfileImageUrl());
   }
@@ -93,20 +79,14 @@ public class OAuthKakaoService {
 
       if (body != null && body.containsKey("access_token")) {
         String accessToken = (String) body.get("access_token");
-        System.out.println("accessToken 발급 성공: " + accessToken);
         return accessToken;
       } else {
-        System.out.println("응답 본문 확인: " + body);
         throw new RuntimeException("카카오 access token 발급 실패 - 응답에 access_token 없음");
       }
 
     } catch (HttpClientErrorException e) {
-      System.out.println("카카오 access token 요청 실패!");
-      System.out.println("HTTP 상태 코드: " + e.getStatusCode());
-      System.out.println("응답 본문: " + e.getResponseBodyAsString());
       throw new RuntimeException("카카오 access token 발급 실패", e);
     } catch (Exception e) {
-      System.out.println("기타 예외 발생: " + e.getMessage());
       throw new RuntimeException("카카오 access token 요청 중 오류", e);
     }
   }
@@ -138,9 +118,6 @@ public class OAuthKakaoService {
     String providerUserId = String.valueOf(body.get("id"));
     String nickname = (String) profile.get("nickname");
     String profileImageUrl = (String) profile.get("profile_image_url");
-
-    System.out.println("사용자 정보 확인: email=" + email + ", nickname=" + nickname +
-        ", provideruserid=" + providerUserId);
 
     return new OAuthUserInfo(providerUserId, email, nickname, profileImageUrl);
   }
