@@ -1,14 +1,14 @@
 package com.windfall.api.tag.service;
 
-import static com.windfall.global.exception.ErrorCode.TAG_TOO_LONG;
 import static com.windfall.global.exception.ErrorCode.TAG_CONTAINS_SPACE;
 import static com.windfall.global.exception.ErrorCode.TAG_COUNT_EXCEEDED;
 import static com.windfall.global.exception.ErrorCode.TAG_EMPTY;
 import static com.windfall.global.exception.ErrorCode.TAG_INVALID_CHAR;
+import static com.windfall.global.exception.ErrorCode.TAG_TOO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.windfall.WindfallApplication;
+//import com.windfall.ElasticsearchTestConfig;
 import com.windfall.api.tag.factory.AuctionFactory;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -16,6 +16,7 @@ import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
 import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.tag.repository.TagRepository;
+//import com.windfall.domain.tag.repository.TagSearchRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
@@ -24,13 +25,15 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
-
 
 @SpringBootTest
 @Transactional
+//@Import(ElasticsearchTestConfig.class)
 class TagServiceTest {
 
   @Autowired
@@ -47,6 +50,9 @@ class TagServiceTest {
 
   @Autowired
   private AuctionTagRepository auctionTagRepository;
+
+  //@Mock
+  //private TagSearchRepository tagSearchRepository; // ES Repository를 Mock으로 대체
 
   private Auction auction;
 
@@ -157,6 +163,7 @@ class TagServiceTest {
 
     assertEquals(TAG_INVALID_CHAR, exception.getErrorCode());
   }
+
   @Test
   @DisplayName("태그에 허용되지 않은 문자가 있는 경우2")
   public void exception5() {

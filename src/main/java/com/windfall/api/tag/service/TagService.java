@@ -18,7 +18,7 @@ public class TagService {
 
   private final TagRepository tagRepository;
   private final AuctionTagRepository auctionTagRepository;
-  private final TagIndexService tagIndexService;
+  //private final TagIndexService tagIndexService;
 
   private static final int MAX_TAG_COUNT = 5;
   private static final int MAX_TAG_LENGTH = 10;
@@ -32,7 +32,7 @@ public class TagService {
     validateTags(tags);
     saveAuctionTags(auction, tags);
 
-    tagIndexService.indexTags(tags);
+    //tagIndexService.indexTags(tags);
   }
 
   private void saveAuctionTags(Auction auction, List<String> tagNames) {

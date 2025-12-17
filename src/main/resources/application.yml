@@ -7,8 +7,8 @@ spring:
     hikari:
       auto-commit: false
 
-  elasticsearch:
-    Uris: http://localhost:9200
+#  elasticsearch:
+#    uris: http://localhost:9200
 
   data:
     redis:
