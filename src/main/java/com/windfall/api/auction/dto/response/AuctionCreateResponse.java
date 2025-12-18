@@ -6,6 +6,7 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Schema(description = "경매 생성 응답 DTO")
 public record AuctionCreateResponse(
@@ -24,6 +25,9 @@ public record AuctionCreateResponse(
 
     @Schema(description = "경매 카테고리")
     AuctionCategory category,
+
+    @Schema
+    List<String> tags,
 
     @Schema(description = "경매 시작가")
     Long startPrice,
@@ -45,13 +49,14 @@ public record AuctionCreateResponse(
     LocalDateTime startAt
 ) {
 
-  public static AuctionCreateResponse from(Auction auction, Long sellerId) {
+  public static AuctionCreateResponse from(Auction auction, Long sellerId, List<String> tags) {
     return new AuctionCreateResponse(
         auction.getId(),
         sellerId,
         auction.getTitle(),
         auction.getDescription(),
         auction.getCategory(),
+        tags,
         auction.getStartPrice(),
         auction.getCurrentPrice(),
         auction.getStopLoss(),

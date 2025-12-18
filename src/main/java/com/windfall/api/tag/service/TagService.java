@@ -8,6 +8,7 @@ import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
 import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.tag.repository.TagRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -22,14 +23,16 @@ public class TagService {
   private final AuctionTagRepository auctionTagRepository;
 
   @Transactional
-  public void saveTagIfExist(Auction auction, List<TagInfo> tags) {
+  public List<String> saveTagIfExist(Auction auction, List<TagInfo> tags) {
     if (tags == null || tags.isEmpty()) {
-      return;
+      return List.of();
     }
-    saveTag(auction, tags);
+    return saveTag(auction, tags);
   }
 
-  private void saveTag(Auction auction, List<TagInfo> tags) {
+  private List<String> saveTag(Auction auction, List<TagInfo> tags) {
+    List<String> savedTagNames = new ArrayList<>();
+
     for (TagInfo tag : tags) {
       Tag savedTag = tagRepository.findByTagName(tag.name())
           .orElseGet(() -> tagRepository.save(Tag.create(tag.name()))
@@ -37,7 +40,10 @@ public class TagService {
 
       AuctionTag auctionTag = AuctionTag.create(auction, savedTag);
       auctionTagRepository.save(auctionTag);
+
+      savedTagNames.add(savedTag.getTagName());
     }
+    return savedTagNames;
   }
 
   @Transactional(readOnly = true)

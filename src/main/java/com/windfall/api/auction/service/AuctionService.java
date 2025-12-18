@@ -48,9 +48,9 @@ public class AuctionService {
 
     Auction savedAuction = auctionRepository.save(auction);
 
-    tagService.saveTagIfExist(savedAuction, request.tags());
+    List<String> tags = tagService.saveTagIfExist(savedAuction, request.tags());
 
-    return AuctionCreateResponse.from(savedAuction, seller.getId());
+    return AuctionCreateResponse.from(savedAuction, seller.getId(), tags);
   }
 
   public AuctionListReadResponse readAuctionList() {
