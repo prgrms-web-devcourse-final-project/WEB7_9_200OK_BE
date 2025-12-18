@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/auth/callback")
@@ -37,7 +38,7 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
 
   //   2. 카카오로 회원가입/로그인하는 것을 담당하는 컨트롤러
   @GetMapping("/kakao")
-  public ApiResponse<LoginUserResponse> kakaoCallback(
+  public RedirectView kakaoCallback(
       @RequestParam String code, HttpServletResponse response
   ) {
     // kakaoService에서 code로 access token 요청, 사용자 정보 가져오기
@@ -49,7 +50,11 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
 
     response.addCookie(generateCookieWithAccessToken(registerUserResponse.accessToken()));
     response.addCookie(generateCookieWithRefreshToken(registerUserResponse.refreshToken()));
-    return ApiResponse.ok("카카오 로그인 성공", loginUserResponse);
+    //return ApiResponse.ok("카카오 로그인 성공", loginUserResponse);
+    RedirectView redirectView = new RedirectView();
+    redirectView.setUrl("http://localhost:3000");
+    redirectView.setExposeModelAttributes(false);
+    return redirectView;
   }
 
   //   3. 네이버로 회원가입/로그인하는 것을 담당하는 컨트롤러

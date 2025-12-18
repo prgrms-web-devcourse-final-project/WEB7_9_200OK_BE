@@ -72,7 +72,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     }
 
     // 4. 사용자 정보 가져오기
-    String providerUserId = jwtProvider.getUserId(token);
+    String providerUserId = jwtProvider.getProviderUserId(token);
     User user = userService.getUserByProviderUserId(providerUserId);
     UserDetails userDetails = org.springframework.security.core.userdetails.User
         .withUsername(user.getProviderUserId())
