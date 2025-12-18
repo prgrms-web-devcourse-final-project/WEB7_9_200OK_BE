@@ -14,13 +14,11 @@ import com.windfall.domain.chat.repository.ChatRoomRepository;
 import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.user.entity.User;
-import com.windfall.domain.user.repository.UserRepository;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +31,6 @@ public class ChatRoomService {
   private final UserService userService;
   private final ChatRoomRepository chatRoomRepository;
   private final ChatMessageRepository chatMessageRepository;
-  private final UserRepository userRepository;
   private final AuctionImageRepository auctionImageRepository;
 
   public List<ChatRoomListResponse> getChatRooms(Long userId, ChatRoomScope scope) {
@@ -69,10 +66,7 @@ public class ChatRoomService {
       }
     }
 
-    Map<Long, User> buyerUserMap = buyerPartnerIds.isEmpty()
-        ? Map.of()
-        : userRepository.findAllById(buyerPartnerIds).stream()
-            .collect(Collectors.toMap(User::getId, u -> u));
+    Map<Long, User> buyerUserMap = userService.getUsersMapByIds(buyerPartnerIds);
 
     List<Long> auctionIds = visibleRooms.stream()
         .map(cr -> cr.getTrade().getAuction().getId())
