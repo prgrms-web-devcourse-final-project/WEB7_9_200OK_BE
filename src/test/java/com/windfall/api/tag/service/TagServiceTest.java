@@ -3,6 +3,8 @@ package com.windfall.api.tag.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.windfall.api.auction.dto.request.TagInfo;
+import com.windfall.api.tag.dto.request.SearchTagRequest;
+import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -84,7 +86,7 @@ class TagServiceTest {
     );
 
     // when
-    tagService.registerAuctionTags(auction, tags);
+    tagService.saveTagsIfExist(auction, tags);
 
     // then
     List<Tag> savedTags = tagRepository.findAll();
@@ -102,8 +104,8 @@ class TagServiceTest {
     List<TagInfo> tag2 = List.of();
 
     //when
-    tagService.registerAuctionTags(auction, tag1);
-    tagService.registerAuctionTags(auction, tag2);
+    tagService.saveTagsIfExist(auction, tag1);
+    tagService.saveTagsIfExist(auction, tag2);
 
     //then
     List<Tag> savedTags = tagRepository.findAll();

@@ -23,17 +23,15 @@ public class TagService {
   //private final TagIndexService tagIndexService;
 
   @Transactional
-  public void registerAuctionTags(Auction auction, List<TagInfo> tags) {
+  public void saveTagsIfExist(Auction auction, List<TagInfo> tags) {
     if (tags == null || tags.isEmpty()) {
       return;
     }
-
-    saveAuctionTags(auction, tags);
-
+    saveTags(auction, tags);
     //tagIndexService.indexTags(tags);
   }
 
-  private void saveAuctionTags(Auction auction, List<TagInfo> tags) {
+  private void saveTags(Auction auction, List<TagInfo> tags) {
     for (TagInfo tag : tags) {
       Tag savedTag = tagRepository.findByTagName(tag.name())
           .orElseGet(() -> tagRepository.save(Tag.create(tag.name()))
