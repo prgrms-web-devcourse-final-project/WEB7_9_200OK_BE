@@ -503,6 +503,14 @@ class AuctionControllerTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.status").value("OK"))
           .andExpect(jsonPath("$.message").value("경매 목록 조회에 성공했습니다."))
+          .andExpect(jsonPath("$.data.serverAt").exists())
+          .andExpect(jsonPath("$.data.popularList").exists())
+          .andExpect(jsonPath("$.data.processList").exists())
+          .andExpect(jsonPath("$.data.scheduledList[0].auctionId").exists())
+          .andExpect(jsonPath("$.data.scheduledList[0].title").value("테스트 제목"))
+          .andExpect(jsonPath("$.data.scheduledList[0].startPrice").value("10000"))
+          .andExpect(jsonPath("$.data.scheduledList[0].isLiked").value("false"))
+          .andExpect(jsonPath("$.data.scheduledList[0].startedAt").exists())
           .andDo(print());
     }
   }
