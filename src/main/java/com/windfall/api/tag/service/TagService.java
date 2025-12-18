@@ -1,6 +1,8 @@
 package com.windfall.api.tag.service;
 
 import com.windfall.api.auction.dto.request.TagInfo;
+import com.windfall.api.tag.dto.request.SearchTagRequest;
+import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
@@ -32,12 +34,16 @@ public class TagService {
 
   private void saveAuctionTags(Auction auction, List<TagInfo> tags) {
     for (TagInfo tag : tags) {
-      Tag savedTag = tagRepository.findByTagName(tag.tagName())
-          .orElseGet(() -> tagRepository.save(Tag.create(tag.tagName()))
+      Tag savedTag = tagRepository.findByTagName(tag.name())
+          .orElseGet(() -> tagRepository.save(Tag.create(tag.name()))
           );
 
       AuctionTag auctionTag = AuctionTag.create(auction, savedTag);
       auctionTagRepository.save(auctionTag);
     }
+  }
+
+  public SearchTagResponse searchTag(SearchTagRequest request) {
+    return null;
   }
 }

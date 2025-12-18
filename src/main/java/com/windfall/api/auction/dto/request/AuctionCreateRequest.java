@@ -30,7 +30,14 @@ public record AuctionCreateRequest(
     AuctionCategory category,
 
     @Size(max = 5, message = "태그 최대 등록 개수를 초과했습니다.")
-    @Schema(description = "경매 태그", example = "[\"나이키\"]")
+    @Schema(
+        description = "경매 태그",
+        example = """
+            [
+              { "name": "나이키" },
+              { "name": "운동화" }
+            ]
+            """)
     List<TagInfo> tags,
 
     @NotNull(message = "경매 시작가는 필수입니다.")
@@ -49,4 +56,5 @@ public record AuctionCreateRequest(
     @Schema(description = "경매 시작 시간", example = "2025-12-09T16:50:51")
     LocalDateTime startAt
 ) {
+
 }

@@ -13,9 +13,9 @@ public record TagInfo(
     @Pattern(regexp = "^[^\\s]+$", message = "공백을 포함할 수 없습니다.")
     @Pattern(regexp = "^[가-힣a-zA-Z0-9]+$", message = "한글, 영어, 숫자만 입력 가능합니다.")
     @Schema(description = "단일 경매 태그")
-    String tagName
+    String name
 ) {
-    public static TagInfo from(String tagName) {
-        return new TagInfo(tagName);
+    public static TagInfo from(String name) {
+        return new TagInfo(name);
     }
 }
