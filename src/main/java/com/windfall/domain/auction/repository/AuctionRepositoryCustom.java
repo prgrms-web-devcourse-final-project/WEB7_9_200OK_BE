@@ -16,5 +16,5 @@ public interface AuctionRepositoryCustom {
   List<ScheduledInfo> getScheduledInfo(AuctionStatus status, int limit);
   List<PopularInfo> getPopularInfo(AuctionStatus status, int limit);
 
-  Slice<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category, AuctionStatus status, Long maxPrice, Long maxPrice1);
+  Slice<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category, AuctionStatus status, Long minPrice, Long maxPrice);
 }

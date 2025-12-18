@@ -201,7 +201,7 @@ public class AuctionService {
     }
 
     Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
-        query, category, status, maxPrice, maxPrice);
+        query, category, status, minPrice, maxPrice);
     return SliceResponse.from(auctionSlice);
   }
 }

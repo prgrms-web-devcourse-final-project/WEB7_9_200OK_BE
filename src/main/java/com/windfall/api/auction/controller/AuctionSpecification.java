@@ -28,7 +28,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Pageable;
+import jakarta.validation.constraints.Min;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,10 +54,10 @@ public interface AuctionSpecification {
       @Parameter(description = "경매 검색어", example = "테스트")
       @RequestParam(defaultValue = "") String query,
 
-      @Parameter(description = "경매 카테고리", example = "디지털")
+      @Parameter(description = "경매 카테고리", example = "DIGITAL")
       @RequestParam(required = false) AuctionCategory category,
 
-      @Parameter(description = "경매 상태", example = "경매 예정")
+      @Parameter(description = "경매 상태", example = "SCHEDULED")
       @RequestParam(required = false) AuctionStatus status,
 
       @Parameter(description = "최소가", example = "100")
@@ -65,7 +66,17 @@ public interface AuctionSpecification {
       @Parameter(description = "최고가", example = "1000000")
       @RequestParam(required = false) Long maxPrice,
 
-      Pageable pageable
+      @Parameter(description = "현재 페이지", example = "1")
+      @RequestParam @Min(value = 1,message = "page는 1부터 시작합니다.") int page,
+
+      @Parameter(description = "한 페이지 사이즈", example = "15")
+      @RequestParam(defaultValue = "15") int size,
+
+      @Parameter(description = "정렬받는 내용", example = "startedAt")
+      @RequestParam(defaultValue = "createDate") String sortBy,
+
+      @Parameter(description = "정렬 차림", example = "ASC")
+      @RequestParam(defaultValue = "ASC") Direction sortDirection
   );
 
   @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})
