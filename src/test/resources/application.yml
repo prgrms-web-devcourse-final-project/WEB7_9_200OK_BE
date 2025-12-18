@@ -4,6 +4,7 @@ spring:
     password:
     driver-class-name: org.h2.Driver
     url: jdbc:h2:mem:db_dev;MODE=MySQL
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -45,3 +46,9 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+
+custom:
+  jwt:
+    expireSecondsAccessToken: 3600 # 1시간
+    expireSecondsRefreshToken: 604800 # 7일
+    secretPattern: ${SECRET_PATTERN}

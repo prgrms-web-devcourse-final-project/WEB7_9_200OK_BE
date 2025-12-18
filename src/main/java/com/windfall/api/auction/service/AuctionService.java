@@ -5,6 +5,7 @@ import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.tag.service.TagService;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.dto.response.info.PopularInfo;
 import com.windfall.api.auction.dto.response.info.ProcessInfo;
@@ -32,6 +33,9 @@ public class AuctionService {
   private final AuctionPriceHistoryRepository historyRepository;
   private final UserService userService;
   private final AuctionViewerService viewerService;
+  private final TagService tagService;
+
+  private final RedisTemplate<String, String> redisTemplate;
 
   @Transactional
   public AuctionCreateResponse createAuction(AuctionCreateRequest request) {
@@ -42,6 +46,8 @@ public class AuctionService {
     Auction auction = Auction.create(request, seller);
 
     Auction savedAuction = auctionRepository.save(auction);
+
+    tagService.registerAuctionTags(savedAuction, request.tags());
 
     return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
@@ -166,3 +172,4 @@ public class AuctionService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
 }
+

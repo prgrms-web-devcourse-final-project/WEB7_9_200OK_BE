@@ -1,7 +1,3 @@
-//
-// 팩토리패턴 사용한 생성자 함수는 DTO 짜고 추가하겠습니다.
-// 다른 엔티티와 연관관계 매핑이 필요한 필드는 다음 PR 때 진행하겠습니다.
-// 사유: 다른 엔티티도 push하면 PR에서 검토할 파일 수가 증가하기 때문입니다.
 package com.windfall.domain.user.entity;
 
 import com.windfall.domain.user.enums.ProviderType;
@@ -32,13 +28,21 @@ public class User extends BaseEntity {
   @Column(nullable = false)
   private String email;
 
-  // 일대일, 일대다 연관관계 매핑은 다음 pull request 때 진행하겠습니다.
+  @Column(name = "nickname", nullable = false)
+  private String nickname;
+
+  @Column(name = "profile_image_url")
+  private String profileImageUrl;
 
   // 필드 추가 시 여기도 손봐주세요.
   @Builder
-  public User(ProviderType provider, String provideruserId, String email) {
+  public User(ProviderType provider, String providerUserId, String email, String nickname,
+      String profileImageUrl) {
+
     this.provider = provider;
-    this.providerUserId = provideruserId;
-    this. email = email;
+    this.providerUserId = providerUserId;
+    this.email = email;
+    this.nickname = nickname;
+    this.profileImageUrl = profileImageUrl;
   }
 }

@@ -7,6 +7,9 @@ spring:
     hikari:
       auto-commit: false
 
+#  elasticsearch:
+#    uris: http://localhost:9200
+
   data:
     redis:
       host: localhost
@@ -53,3 +56,9 @@ springdoc:
     operations-sorter: method
   default-produces-media-type: application/json
   default-consumes-media-type: application/json
+
+custom:
+  jwt:
+    expireSecondsAccessToken: 3600 # 1시간
+    expireSecondsRefreshToken: 604800 # 7일
+    secretPattern: ${SECRET_PATTERN}
