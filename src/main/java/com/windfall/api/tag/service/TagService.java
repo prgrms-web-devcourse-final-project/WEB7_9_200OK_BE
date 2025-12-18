@@ -10,6 +10,7 @@ import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.tag.repository.TagRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +44,19 @@ public class TagService {
     }
   }
 
+  @Transactional(readOnly = true)
   public SearchTagResponse searchTag(SearchTagRequest request) {
-    return null;
+    if (request.keyword() == null || request.keyword().isBlank()) {
+      return SearchTagResponse.empty();
+    }
+    String trimmedKeyword = request.keyword().trim();
+
+    List<String> tags = tagRepository
+        .findByKeyword(trimmedKeyword, PageRequest.of(0, 5))
+        .stream()
+        .map(Tag::getTagName)
+        .toList();
+
+    return SearchTagResponse.from(tags);
   }
 }

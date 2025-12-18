@@ -1,14 +1,28 @@
 package com.windfall.api.tag.controller;
 
+import com.windfall.api.tag.dto.request.SearchTagRequest;
+import com.windfall.api.tag.dto.response.SearchTagResponse;
+import com.windfall.api.tag.service.TagService;
+import com.windfall.global.response.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/tags")
 @RequiredArgsConstructor
-public class TagController {
+public class TagController implements TagSpecification{
 
-  //TODO: 태그 검색 컨트롤러
+  private final TagService tagService;
 
+  @GetMapping("/search")
+  public ApiResponse<SearchTagResponse> searchTag(
+      @Valid @ModelAttribute SearchTagRequest request
+  ){
+    SearchTagResponse response = tagService.searchTag(request);
+    return ApiResponse.ok("태그 검색에 성공했습니다.", response);
+  }
 }
