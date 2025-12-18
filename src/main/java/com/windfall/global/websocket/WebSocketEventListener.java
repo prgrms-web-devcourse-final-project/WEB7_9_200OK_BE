@@ -25,18 +25,20 @@ public class WebSocketEventListener {
     String destination = headerAccessor.getDestination();
     String sessionId = headerAccessor.getSessionId();
 
-    if (destination != null && destination.startsWith("/topic/auction/")) {
-      try {
-        Long auctionId = Long.parseLong(destination.replace("/topic/auction/", ""));
-
-        long currentCount = viewerService.addViewer(auctionId, sessionId);
-
-        broadcastViewerCount(auctionId, currentCount);
-
-      } catch (NumberFormatException e) {
-        log.warn("Invalid auction ID in destination: {}", destination);
-      }
+    if (destination == null || !destination.startsWith("/topic/auction/")) {
+      return;
     }
+
+    Long auctionId;
+    try {
+      auctionId = Long.parseLong(destination.replace("/topic/auction/", ""));
+    } catch (NumberFormatException e) {
+      log.warn("Invalid auction ID in destination: {}", destination);
+      return;
+    }
+
+    long currentCount = viewerService.addViewer(auctionId, sessionId);
+    broadcastViewerCount(auctionId, currentCount);
   }
 
   @EventListener
@@ -44,10 +46,12 @@ public class WebSocketEventListener {
     String sessionId = event.getSessionId();
     Long auctionId = viewerService.removeViewer(sessionId);
 
-    if (auctionId != null) {
-      long currentCount = viewerService.getViewerCount(auctionId);
-      broadcastViewerCount(auctionId, currentCount);
+    if (auctionId == null) {
+      return;
     }
+
+    long currentCount = viewerService.getViewerCount(auctionId);
+    broadcastViewerCount(auctionId, currentCount);
   }
 
   public void broadcastViewerCount(Long auctionId, long count) {
