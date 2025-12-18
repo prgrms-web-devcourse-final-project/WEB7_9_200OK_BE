@@ -40,7 +40,7 @@ public class ChatRoomService {
 
     User me = userService.getUserById(userId);
 
-    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(me.getId(), scope.name());
+    List<ChatRoom> chatRooms = chatRoomRepository.findChatRoomForList(me.getId(), scope);
 
     if (chatRooms.isEmpty()) {
       return List.of();
