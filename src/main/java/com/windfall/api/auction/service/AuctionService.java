@@ -5,6 +5,7 @@ import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
+import com.windfall.api.tag.service.TagService;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.api.auction.dto.response.info.PopularInfo;
@@ -24,6 +25,7 @@ import com.windfall.global.response.SliceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -38,6 +40,8 @@ public class AuctionService {
   private final AuctionRepository auctionRepository;
   private final AuctionPriceHistoryRepository historyRepository;
   private final UserService userService;
+  private final AuctionViewerService viewerService;
+  private final TagService tagService;
 
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -50,6 +54,8 @@ public class AuctionService {
     Auction auction = Auction.create(request, seller);
 
     Auction savedAuction = auctionRepository.save(auction);
+
+    tagService.registerAuctionTags(savedAuction, request.tags());
 
     return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
@@ -150,9 +156,8 @@ public class AuctionService {
     }
 
     // TODO: 타 도메인 의존성 처리 (User, Like)
-    // TODO: websocket 실시간 조회수 처리, 가격 하락 처리
 
-    long viewerCount = updateAndViewerCount(auctionId, userId);
+    long viewerCount = viewerService.getViewerCount(auctionId);
 
     List<AuctionHistoryResponse> historyList = getRecentHistories(auctionId);
 
@@ -165,24 +170,6 @@ public class AuctionService {
         viewerCount,
         historyList
     );
-  }
-
-  private long updateAndViewerCount(Long auctionId, Long userId) {
-    String redisKey = "auction:" + auctionId + ":viewers";
-
-    if(userId != null) {
-      redisTemplate.opsForSet().add(redisKey, String.valueOf(userId));
-
-      // 웹소켓 붙이기 전이므로 임시로 TTL 1분 설정
-      redisTemplate.expire(redisKey, java.time.Duration.ofMinutes(1));
-    }
-
-    Long viewerCount = redisTemplate.opsForSet().size(redisKey);
-
-    if (viewerCount == null) {
-      return 0L;
-    }
-    return viewerCount;
   }
 
   private List<AuctionHistoryResponse> getRecentHistories(Long auctionId) {
@@ -203,9 +190,11 @@ public class AuctionService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
 
+
   private void validatePrice(Long minPrice, Long maxPrice){
     if(minPrice != null && maxPrice != null && maxPrice < minPrice){
       throw new ErrorException(ErrorCode.INVALID_PRICE);
     }
   }
 }
+

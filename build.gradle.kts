@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.testImplementation
+
 plugins {
     java
     id("org.springframework.boot") version "3.5.8"
@@ -21,7 +23,7 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     //implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-    //implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-web")
     compileOnly("org.projectlombok:lombok")
@@ -29,14 +31,13 @@ dependencies {
     runtimeOnly("com.mysql:mysql-connector-j")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    //testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     runtimeOnly("com.h2database:h2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
-
 
     //querydsl
     annotationProcessor("io.github.openfeign.querydsl:querydsl-apt:7.1:jpa")
@@ -52,7 +53,8 @@ dependencies {
     // websocket
     implementation("org.springframework.boot:spring-boot-starter-websocket")
 
-
+    // Elasticsearch
+    //implementation("org.springframework.boot:spring-boot-starter-data-elasticsearch")
 }
 
 tasks.withType<Test> {

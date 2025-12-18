@@ -1,5 +1,6 @@
 // RestTemplateConfig는 RestTemplate을 의존성 주입 가능한 빈으로 만듭니다.
 // RestTemplate 타입 객체는 OAuthKakaoService, OAuthNaverService, OAuthGoogleService에서 사용됩니다.
+// 추후 참고 링크: https://velog.io/@rudcjs335/Spring-Boot-FeignClient-VS-RestClient-VS-WebClient
 
 package com.windfall.global.config;
 

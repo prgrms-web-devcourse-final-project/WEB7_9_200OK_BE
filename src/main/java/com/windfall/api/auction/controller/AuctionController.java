@@ -82,8 +82,6 @@ public class AuctionController implements AuctionSpecification {
     Long userId = null; // 비회원 테스트
 
     AuctionDetailResponse response = auctionService.getAuctionDetail(auctionId, userId);
-    // TODO: 유저 찜(Like) 여부 확인
-    // TODO: Redis 실시간 접속자 수 조회 및 조회수 증가
 
     return ApiResponse.ok("경매 상세 정보가 조회되었습니다.", response);
   }
