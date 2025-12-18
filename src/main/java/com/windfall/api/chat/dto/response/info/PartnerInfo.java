@@ -8,7 +8,7 @@ public record PartnerInfo(
     @Schema(description = "상대방 ID")
     Long partnerId,
     @Schema(description = "상대방 닉네임")
-    String nickname,
+    String username,
     @Schema(description = "상대방 프로필 이미지 URL")
     String profileImageUrl
 
