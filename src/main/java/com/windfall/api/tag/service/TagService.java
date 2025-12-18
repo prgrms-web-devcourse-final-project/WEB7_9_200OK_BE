@@ -57,9 +57,10 @@ public class TagService {
   }
 
   @Transactional
-  public void DeleteTag(Auction auction) { // 하드 딜리트
+  public void deleteTag(Auction auction) { // 하드 딜리트
 
     List<AuctionTag> auctionTags = auctionTagRepository.findByAuction(auction);
+
     if (auctionTags.isEmpty()) {
       return;
     }

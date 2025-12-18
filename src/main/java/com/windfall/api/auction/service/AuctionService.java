@@ -107,7 +107,7 @@ public class AuctionService {
 
     validateDeleteAuction(auction, user);
 
-    tagService.DeleteTag(auction);
+    tagService.deleteTag(auction);
 
     auctionRepository.deleteById(auctionId);
   }
