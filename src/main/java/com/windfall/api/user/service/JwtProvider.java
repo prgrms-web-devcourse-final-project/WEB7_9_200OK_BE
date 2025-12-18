@@ -64,16 +64,13 @@ public class JwtProvider {
       Date expiration = claims.getExpiration();
       if (expiration == null) {
         // exp가 없으면 만료로 간주
-        System.out.println("토큰 검사했는데 만료 정보 없음, 비정상");
         return false;
       }
 
       boolean notExpired = expiration.after(new Date());
-      System.out.println("토큰 검사했는데 " + (notExpired ? "정상입니다." : "만료되었습니다."));
       return notExpired;
 
     } catch (JwtException | IllegalArgumentException e) {
-      System.out.println("토큰 검사했는데 비정상입니다.");
       return false;
     }
   }
