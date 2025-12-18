@@ -106,17 +106,13 @@ public class ChatRoomService {
 
     Long partnerId = resolvePartnerId(userId, trade);
 
-    PartnerInfo partnerInfo;
-    if (partnerId.equals(trade.getSellerId())) {
-      partnerInfo = PartnerInfo.from(auction.getSeller());
-    } else {
-      User partner = buyerUserMap.get(partnerId);
-      if (partner == null) {
-        partnerInfo = new PartnerInfo(partnerId, "알 수 없음", null);
-      } else {
-        partnerInfo = PartnerInfo.from(partner);
-      }
-    }
+    User partnerUser = partnerId.equals(trade.getSellerId())
+        ? auction.getSeller()
+        : buyerUserMap.get(partnerId);
+
+    PartnerInfo partnerInfo = (partnerUser != null)
+        ? PartnerInfo.from(partnerUser)
+        : new PartnerInfo(partnerId, "알 수 없음", null);
 
     String thumbUrl = auctionThumbMap.get(auction.getId());
     AuctionInfo auctionInfo = AuctionInfo.of(auction, thumbUrl);
