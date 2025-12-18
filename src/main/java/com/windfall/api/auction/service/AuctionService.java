@@ -15,6 +15,9 @@ import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
+import com.windfall.domain.tag.entity.AuctionTag;
+import com.windfall.domain.tag.entity.Tag;
+import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
@@ -35,6 +38,7 @@ public class AuctionService {
   private final UserService userService;
 
   private final TagService tagService;
+  private final AuctionTagRepository auctionTagRepository;
 
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -147,6 +151,12 @@ public class AuctionService {
 
     List<AuctionHistoryResponse> historyList = getRecentHistories(auctionId);
 
+    List<String> tags = auctionTagRepository.findAllByAuction(auction)
+        .stream()
+        .map(AuctionTag::getTag)
+        .map(Tag::getTagName)
+        .toList();
+
     return AuctionDetailResponse.of(
         auction,
         displayPrice,
@@ -154,7 +164,8 @@ public class AuctionService {
         exposedStopLoss,
         false,
         viewerCount,
-        historyList
+        historyList,
+        tags
     );
   }
 
