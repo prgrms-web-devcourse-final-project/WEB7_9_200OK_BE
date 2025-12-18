@@ -202,3 +202,6 @@ gradle-app.setting
 .gradle/wrapper/gradle-wrapper.jar
 .gradlew
 .gradlew.bat
+
+# QueryDSL generated files
+src/main/generated/
