@@ -62,6 +62,7 @@ class AuctionControllerTest {
         .email("test@naver.com")
         .provider(ProviderType.NAVER)
         .providerUserId("test1234")
+        .nickname("testNickname")
         .build();
     User saveUser = userRepository.save(seller);
     sellerId = saveUser.getId();
@@ -325,6 +326,7 @@ class AuctionControllerTest {
           .email("test@naver.com")
           .provider(ProviderType.NAVER)
           .providerUserId("test1234")
+          .nickname("test1")
           .build();
       User notUser = userRepository.save(seller);
       // when
@@ -436,6 +438,7 @@ class AuctionControllerTest {
           .email("test@naver.com")
           .provider(ProviderType.NAVER)
           .providerUserId("test1234")
+          .nickname("test1")
           .build();
       User notUser = userRepository.save(seller);
       // when
