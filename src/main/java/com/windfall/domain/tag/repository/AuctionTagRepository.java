@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuctionTagRepository extends JpaRepository<AuctionTag, Long> {
 
-  List<AuctionTag> findByAuction(Auction auction);
+  List<AuctionTag> findAllByAuction(Auction auction);
 
   boolean existsByTag(Tag tag);
 }
