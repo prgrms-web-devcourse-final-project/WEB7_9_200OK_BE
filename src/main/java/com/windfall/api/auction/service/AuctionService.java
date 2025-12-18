@@ -48,7 +48,7 @@ public class AuctionService {
 
     Auction savedAuction = auctionRepository.save(auction);
 
-    tagService.saveTagsIfExist(savedAuction, request.tags());
+    tagService.saveTagIfExist(savedAuction, request.tags());
 
     return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
@@ -106,6 +106,8 @@ public class AuctionService {
     Auction auction = getAuctionById(auctionId);
 
     validateDeleteAuction(auction, user);
+
+    tagService.DeleteTag(auction);
 
     auctionRepository.deleteById(auctionId);
   }
