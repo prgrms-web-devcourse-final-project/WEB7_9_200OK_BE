@@ -95,4 +95,3 @@ public record AuctionDetailResponse(
     );
   }
 }
-

@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,8 +22,8 @@ public class AuctionSchedulerService {
 
   private final AuctionPriceHistoryRepository historyRepository;
   private final AuctionRepository auctionRepository;
-  private final RedisTemplate<String, String> redisTemplate;
   private final SimpMessagingTemplate messagingTemplate;
+  private final AuctionViewerService viewerService;
 
   public void openScheduledAuctions(LocalDateTime now) {
     List<Auction> startingAuctions = auctionRepository.findAllByStatusAndStartedAtLessThanEqual(
@@ -76,12 +75,7 @@ public class AuctionSchedulerService {
   }
 
   private void savePriceHistoryWithViewers(Auction auction, long targetPrice) {
-    String redisKey = "auction:" + auction.getId() + ":viewers";
-
-    Long viewerCount = redisTemplate.opsForSet().size(redisKey);
-    if (viewerCount == null) {
-      viewerCount = 0L;
-    }
+    long viewerCount = viewerService.getViewerCount(auction.getId());
 
     AuctionPriceHistory history = AuctionPriceHistory.create(auction, targetPrice, viewerCount);
     historyRepository.save(history);
