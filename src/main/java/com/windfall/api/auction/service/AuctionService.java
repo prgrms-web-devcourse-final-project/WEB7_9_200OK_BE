@@ -54,6 +54,16 @@ public class AuctionService {
     return AuctionCreateResponse.from(savedAuction, seller.getId());
   }
 
+  public SliceResponse<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category,
+      AuctionStatus status, Long minPrice, Long maxPrice) {
+
+    validatePrice(minPrice,maxPrice);
+
+    Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
+        query, category, status, minPrice, maxPrice);
+    return SliceResponse.from(auctionSlice);
+  }
+
   public AuctionListReadResponse readAuctionList() {
     List<ScheduledInfo> scheduleList = auctionRepository.getScheduledInfo(AuctionStatus.SCHEDULED, 15);
     List<ProcessInfo> processList = auctionRepository.getProcessInfo(AuctionStatus.PROCESS, 15);
@@ -193,15 +203,9 @@ public class AuctionService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
 
-
-  public SliceResponse<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category,
-      AuctionStatus status, Long minPrice, Long maxPrice) {
+  private void validatePrice(Long minPrice, Long maxPrice){
     if(minPrice != null && maxPrice != null && maxPrice < minPrice){
       throw new ErrorException(ErrorCode.INVALID_PRICE);
     }
-
-    Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
-        query, category, status, minPrice, maxPrice);
-    return SliceResponse.from(auctionSlice);
   }
 }

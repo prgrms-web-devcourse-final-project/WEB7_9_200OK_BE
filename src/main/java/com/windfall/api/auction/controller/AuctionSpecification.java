@@ -10,6 +10,7 @@ import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
 import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
 import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
 import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_CANCEL;
+import static com.windfall.global.exception.ErrorCode.INVALID_PRICE;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.response.AuctionCancelResponse;
@@ -49,6 +50,7 @@ public interface AuctionSpecification {
   ApiResponse<AuctionListReadResponse> readAuctionList(
   );
 
+  @ApiErrorCodes(INVALID_PRICE)
   @Operation(summary = "경매 검색", description = "경매를 검색하여 조회합니다.")
   ApiResponse<SliceResponse<AuctionSearchResponse>> searchAuction(
       @Parameter(description = "경매 검색어", example = "테스트")
