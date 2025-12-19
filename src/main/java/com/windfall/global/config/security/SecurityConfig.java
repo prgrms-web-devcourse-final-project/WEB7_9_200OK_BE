@@ -1,4 +1,4 @@
-package com.windfall.global.security;
+package com.windfall.global.config.security;
 
 
 import lombok.RequiredArgsConstructor;

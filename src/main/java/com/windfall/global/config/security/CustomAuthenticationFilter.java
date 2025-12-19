@@ -1,4 +1,4 @@
-package com.windfall.global.security;
+package com.windfall.global.config.security;
 
 import com.windfall.api.user.service.JwtProvider;
 import com.windfall.api.user.service.UserService;
