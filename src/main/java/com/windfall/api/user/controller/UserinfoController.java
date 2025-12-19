@@ -24,9 +24,8 @@ public class UserinfoController implements UserInfoSpecification{
   public ApiResponse<UserInfoResponse> getUserInfo(
       @PathVariable Long userid,
       @RequestParam(defaultValue = "1") Long loginId) {
-
     UserInfoResponse response = userInfoService.getUserInfo(userid, loginId);
 
-    return ApiResponse.ok("사용자 정보 조회에 성공했습니다.", null);
+    return ApiResponse.ok("사용자 정보 조회에 성공했습니다.", response);
   }
 }
