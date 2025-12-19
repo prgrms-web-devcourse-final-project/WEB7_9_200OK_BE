@@ -6,12 +6,14 @@ import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
+import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.api.auction.dto.response.info.PopularInfo;
 import com.windfall.api.auction.dto.response.info.ProcessInfo;
 import com.windfall.api.auction.dto.response.info.ScheduledInfo;
 import com.windfall.api.tag.service.TagService;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -21,9 +23,12 @@ import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
+import com.windfall.global.response.SliceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +60,16 @@ public class AuctionService {
     List<String> tags = tagService.saveTagIfExist(savedAuction, request.tags());
 
     return AuctionCreateResponse.from(savedAuction, seller.getId(), tags);
+  }
+
+  public SliceResponse<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category,
+      AuctionStatus status, Long minPrice, Long maxPrice) {
+
+    validatePrice(minPrice,maxPrice);
+
+    Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
+        query, category, status, minPrice, maxPrice);
+    return SliceResponse.from(auctionSlice);
   }
 
   public AuctionListReadResponse readAuctionList() {
@@ -184,6 +199,13 @@ public class AuctionService {
   public Auction getAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
+  }
+
+
+  private void validatePrice(Long minPrice, Long maxPrice){
+    if(minPrice != null && maxPrice != null && maxPrice < minPrice){
+      throw new ErrorException(ErrorCode.INVALID_PRICE);
+    }
   }
 }
 
