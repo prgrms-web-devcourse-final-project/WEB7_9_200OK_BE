@@ -11,6 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface UserInfoSpecification {
 
   @Operation(summary = "사용자 정보", description = "특정 사용자의 정보를 반환합니다.")
-  ApiResponse<UserInfoResponse> redirectToLogin(@PathVariable Long userid);
+  ApiResponse<UserInfoResponse> getUserInfo(@PathVariable Long userid);
 
 }
