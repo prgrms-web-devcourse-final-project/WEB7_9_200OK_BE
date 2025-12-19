@@ -19,5 +19,4 @@ public class UserInfoService {
 
     return userRepository.findByUserInfo(userid, loginId);
   }
-
 }
