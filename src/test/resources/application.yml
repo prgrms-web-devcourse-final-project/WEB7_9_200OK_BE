@@ -52,3 +52,6 @@ custom:
     expireSecondsAccessToken: 3600 # 1시간
     expireSecondsRefreshToken: 604800 # 7일
     secretPattern: ${SECRET_PATTERN}
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
