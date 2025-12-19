@@ -58,6 +58,7 @@ class TagServiceTest {
         .email("test@naver.com")
         .provider(ProviderType.NAVER)
         .providerUserId("test1234")
+        .nickname("testNickname")
         .build()
     );
 
