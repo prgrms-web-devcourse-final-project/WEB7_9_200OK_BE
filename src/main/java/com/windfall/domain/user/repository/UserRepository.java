@@ -20,7 +20,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
   u.email,
   u.profileImageUrl,
   COUNT(r.id),
-  COALESCE(AVG(r.rating), 0.0)
+  COALESCE(CAST(AVG(r.rating / 10.0) as double), 0.0)
   )
   FROM User u
   LEFT JOIN Trade t ON u.id = t.sellerId AND t.status = "PURCHASE_CONFIRMED"
