@@ -1,12 +1,10 @@
 package com.windfall.api.tag.service;
 
-import static com.windfall.global.exception.ErrorCode.TAG_CONTAINS_SPACE;
-import static com.windfall.global.exception.ErrorCode.TAG_EMPTY;
-import static com.windfall.global.exception.ErrorCode.TAG_INVALID_CHAR;
-import static com.windfall.global.exception.ErrorCode.TAG_TOO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.windfall.api.auction.dto.request.TagInfo;
+import com.windfall.api.tag.dto.request.SearchTagRequest;
+import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -18,7 +16,6 @@ import com.windfall.domain.tag.repository.TagRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
-import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,10 +44,8 @@ class TagServiceTest {
   @Autowired
   private AuctionTagRepository auctionTagRepository;
 
-  //@Mock
-  //private TagSearchRepository tagSearchRepository; // ES Repository를 Mock으로 대체
-
-  private Auction auction;
+  private Auction auction1;
+  private Auction auction2;
 
   @BeforeEach
   void setUp() {
@@ -62,8 +57,9 @@ class TagServiceTest {
         .build()
     );
 
-    auction = Auction.builder()
-        .title("테스트 제목")
+    auction1 = auctionRepository.save(
+        Auction.builder()
+        .title("경매1")
         .description("테스트 설명")
         .category(AuctionCategory.DIGITAL)
         .startPrice(10000L)
@@ -73,19 +69,38 @@ class TagServiceTest {
         .status(AuctionStatus.SCHEDULED)
         .startedAt(LocalDateTime.now().plusDays(2))
         .seller(seller)
-        .build();
+        .build()
+    );
 
-    auction = auctionRepository.save(auction);
+    auction2 = auctionRepository.save(
+        Auction.builder()
+            .title("경매2")
+            .description("테스트 설명")
+            .category(AuctionCategory.DIGITAL)
+            .startPrice(100000L)
+            .currentPrice(100000L)
+            .stopLoss(90000L)
+            .dropAmount(1000L)
+            .status(AuctionStatus.SCHEDULED)
+            .startedAt(LocalDateTime.now().plusDays(1))
+            .seller(seller)
+            .build()
+    );
   }
 
   @Test
-  @DisplayName("태그 등록 후 Tag와 AuctionTag에 값이 저장되는 경우")
-  void success1() {
+  @DisplayName("[태그 등록1] 태그 등록 후 Tag와 AuctionTag에 값이 저장되는 경우")
+  void createTag1() {
     // given
-    List<String> tags = List.of("고기", "고등어", "군고구마", "고등어");
+    List<TagInfo> tags = List.of(
+        TagInfo.from("고기"),
+        TagInfo.from("고등어"),
+        TagInfo.from("군고구마"),
+        TagInfo.from("고등어")
+    );
 
     // when
-    tagService.registerAuctionTags(auction, tags);
+    tagService.saveTagIfExist(auction1, tags);
 
     // then
     List<Tag> savedTags = tagRepository.findAll();
@@ -96,15 +111,15 @@ class TagServiceTest {
   }
 
   @Test
-  @DisplayName("사용자가 등록한 태그가 없는 경우")
-  public void success2() {
+  @DisplayName("[태그 등록2] 사용자가 등록한 태그가 없는 경우")
+  public void createTag2() {
     //given
-    List<String> tag1 = null;
-    List<String> tag2 = List.of();
+    List<TagInfo> tag1 = null;
+    List<TagInfo> tag2 = List.of();
 
     //when
-    tagService.registerAuctionTags(auction, tag1);
-    tagService.registerAuctionTags(auction, tag2);
+    tagService.saveTagIfExist(auction1, tag1);
+    tagService.saveTagIfExist(auction2, tag2);
 
     //then
     List<Tag> savedTags = tagRepository.findAll();
@@ -115,77 +130,112 @@ class TagServiceTest {
   }
 
   @Test
-  @DisplayName("태그에 공백이 있는 경우")
-  public void exception1() {
-    //given
-    List<String> tags = List.of("가방", "고구마", "식 탁");
+  @DisplayName("[태그 검색1] DB에 저장된 태그가 5개 이상일 때, 태그 자동완성을 응답하는 경우")
+  void searchTag1() {
+    // given: DB에 태그 데이터 저장
+    tagRepository.save(Tag.create("나무"));
+    tagRepository.save(Tag.create("나비"));
+    tagRepository.save(Tag.create("나이키"));
+    tagRepository.save(Tag.create("나이키에어"));
+    tagRepository.save(Tag.create("나이키운동화"));
+    tagRepository.save(Tag.create("나침반")); // 6번째
 
-    // when & then
-    ErrorException exception = assertThrows(
-        ErrorException.class,
-        () -> tagService.registerAuctionTags(auction, tags)
-    );
+    SearchTagRequest request = new SearchTagRequest("나");
 
-    assertEquals(TAG_CONTAINS_SPACE, exception.getErrorCode());
+    // when
+    SearchTagResponse response = tagService.searchTag(request);
+
+    // then: 최대 5개만 반환 확인
+    assertEquals(5, response.tags().size());
+    assertEquals(List.of("나무", "나비", "나이키", "나이키에어", "나이키운동화"),
+        response.tags());
+  }
+  @Test
+  @DisplayName("[태그 검색2] 태그 검색어로 앞, 뒤 공백을 넣는 경우")
+  void searchTag2() {
+    // given: DB에 태그 데이터 저장
+    tagRepository.save(Tag.create("나무"));
+    tagRepository.save(Tag.create("나비"));
+    tagRepository.save(Tag.create("나이키"));
+    tagRepository.save(Tag.create("나이키에어"));
+
+    SearchTagRequest request = new SearchTagRequest(" 나 ");
+
+    // when
+    SearchTagResponse response = tagService.searchTag(request);
+
+    // then
+    assertEquals(4, response.tags().size());
+    assertEquals(List.of("나무", "나비", "나이키", "나이키에어"), response.tags());
   }
 
   @Test
-  @DisplayName("단일 태그의 값이 없는 경우")
-  public void exception3() {
-    //given
-    List<String> tags = List.of("가방", "고구마", "", "식탁");
+  @DisplayName("[태그 검색3] 태그 검색어로 사이 공백을 넣는 경우")
+  void searchTag3() {
+    // given: DB에 태그 데이터 저장
+    tagRepository.save(Tag.create("나이키"));
+    tagRepository.save(Tag.create("나이키에어"));
 
-    // when & then
-    ErrorException exception = assertThrows(
-        ErrorException.class,
-        () -> tagService.registerAuctionTags(auction, tags)
-    );
+    SearchTagRequest request = new SearchTagRequest("나 이키");
 
-    assertEquals(TAG_EMPTY, exception.getErrorCode());
+    // when
+    SearchTagResponse response = tagService.searchTag(request);
+
+    // then
+    assertEquals(0, response.tags().size());
+    assertEquals(List.of(), response.tags());
   }
 
   @Test
-  @DisplayName("태그에 허용되지 않은 문자가 있는 경우1")
-  public void exception4() {
+  @DisplayName("[태그 삭제1] 경매 게시물에 태그가 없는데 삭제하는 경우")
+  void deleteTag1() {
     //given
-    List<String> tags = List.of("가%방", "고구마", "식탁");
+    Tag tag1 = tagRepository.save(Tag.create("나무"));
+    Tag tag2 = tagRepository.save(Tag.create("나비"));
 
-    // when & then
-    ErrorException exception = assertThrows(
-        ErrorException.class,
-        () -> tagService.registerAuctionTags(auction, tags)
-    );
+    auctionTagRepository.save(AuctionTag.create(auction1, tag1));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag2));
 
-    assertEquals(TAG_INVALID_CHAR, exception.getErrorCode());
+    // when
+    tagService.deleteTag(auction2);
+
+    // then
+    assertEquals(2, auctionTagRepository.count());
+    assertEquals(2, tagRepository.count());
   }
 
   @Test
-  @DisplayName("태그에 허용되지 않은 문자가 있는 경우2")
-  public void exception5() {
+  @DisplayName("[태그 삭제2] 경매 게시물에 태그가 있는데 삭제하는 경우")
+  void deleteTag2() {
     //given
-    List<String> tags = List.of("가방", "고구마🍠", "식탁");
+    Tag tag1 = tagRepository.save(Tag.create("나무"));
+    Tag tag2 = tagRepository.save(Tag.create("나비"));
 
-    // when & then
-    ErrorException exception = assertThrows(
-        ErrorException.class,
-        () -> tagService.registerAuctionTags(auction, tags)
-    );
+    auctionTagRepository.save(AuctionTag.create(auction1, tag1));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag2));
 
-    assertEquals(TAG_INVALID_CHAR, exception.getErrorCode());
+    // when
+    tagService.deleteTag(auction1);
+
+    // then
+    assertEquals(0, auctionTagRepository.count());
+    assertEquals(0, tagRepository.count());
   }
 
   @Test
-  @DisplayName("태그가 최대 글자 수를 초과한 경우")
-  public void exception6() {
-    //given
-    List<String> tags = List.of("가방", "고구마진짜맛있어요꼭사세요", "식탁");
+  @DisplayName("[태그 삭제3] 공유 중인 태그를 삭제하는 경우")
+  void deleteTag3() {
+    // given
+    Tag sharedTag = tagRepository.save(Tag.create("공유태그"));
 
-    // when & then
-    ErrorException exception = assertThrows(
-        ErrorException.class,
-        () -> tagService.registerAuctionTags(auction, tags)
-    );
+    auctionTagRepository.save(AuctionTag.create(auction1, sharedTag));
+    auctionTagRepository.save(AuctionTag.create(auction2, sharedTag));
 
-    assertEquals(TAG_TOO_LONG, exception.getErrorCode());
+    // when
+    tagService.deleteTag(auction1);
+
+    // then
+    assertEquals(1, auctionTagRepository.count());
+    assertEquals(1, tagRepository.count());
   }
 }
