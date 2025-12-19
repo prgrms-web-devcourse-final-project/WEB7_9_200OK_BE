@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "UserInfo", description = "사용자 정보 API")
 public interface UserInfoSpecification {
 
-  @Operation(summary = "로그인 URL 반환", description = "provider에 맞는 로그인 url을 반환합니다.")
+  @Operation(summary = "사용자 정보", description = "특정 사용자의 정보를 반환합니다.")
   ApiResponse<UserInfoResponse> redirectToLogin(@PathVariable Long userid);
 
 }
