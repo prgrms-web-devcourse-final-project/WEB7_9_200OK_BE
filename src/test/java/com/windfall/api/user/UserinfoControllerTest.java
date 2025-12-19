@@ -147,7 +147,7 @@ class UserinfoControllerTest {
     //given
     //when
     ResultActions resultActions = mockMvc.perform( //임의로 요청 보내기
-        get("/api/v1/users/{userid}?loginId=1", userId1)
+        get("/api/v1/users/{userid}?loginId={loginId}", userId1, userId1)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
     );
@@ -172,7 +172,7 @@ class UserinfoControllerTest {
     //given
     //when
     ResultActions resultActions = mockMvc.perform( //임의로 요청 보내기
-        get("/api/v1/users/{userid}?loginId=2", userId1)
+        get("/api/v1/users/{userid}?loginId={loginId}", userId1, userId2)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
     );
