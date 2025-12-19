@@ -7,11 +7,19 @@ import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
+import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.api.auction.service.AuctionInteractionService;
 import com.windfall.api.auction.service.AuctionService;
+import com.windfall.domain.auction.enums.AuctionCategory;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.global.response.ApiResponse;
+import com.windfall.global.response.SliceResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -41,6 +49,26 @@ public class AuctionController implements AuctionSpecification {
   ){
     AuctionCreateResponse response = auctionService.createAuction(request);
     return ApiResponse.created("경매가 생성되었습니다.",response);
+  }
+
+  @Override
+  @GetMapping("/search")
+  public ApiResponse<SliceResponse<AuctionSearchResponse>> searchAuction(
+      @RequestParam(defaultValue = "") String query,
+      @RequestParam(required = false) AuctionCategory category,
+      @RequestParam(required = false) AuctionStatus status,
+      @RequestParam(defaultValue = "0") Long minPrice,
+      @RequestParam(required = false) Long maxPrice,
+      @RequestParam @Min(value = 1,message = "page는 1부터 시작합니다.") int page,
+      @RequestParam(defaultValue = "15") int size,
+      @RequestParam(defaultValue = "createDate") String sortBy,
+      @RequestParam(defaultValue = "ASC") Direction sortDirection
+      // TODO 태그 관련 + 필터링(최신순, 인기순, 오래된 순 등등)
+  ){
+
+    PageRequest pageable = PageRequest.of(page,size, Sort.by(sortDirection,sortBy));
+    SliceResponse<AuctionSearchResponse> response = auctionService.searchAuction(pageable,query, category, status, minPrice, maxPrice);
+    return ApiResponse.ok("경매 검색에 성공했습니다.", response);
   }
 
   @Override

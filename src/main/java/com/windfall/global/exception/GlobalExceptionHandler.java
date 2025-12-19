@@ -1,13 +1,12 @@
 package com.windfall.global.exception;
 
-
 import com.windfall.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 @RestControllerAdvice
 @Slf4j
@@ -20,10 +19,23 @@ public class GlobalExceptionHandler {
     }
 
   // @Valid 유효성 검사 실패 시 발생하는 예외 처리
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ApiResponse<?> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+  @ExceptionHandler({
+      MethodArgumentNotValidException.class,
+      HandlerMethodValidationException.class
+  })
+  public ApiResponse<?> handleMethodArgumentNotValid(Exception e) {
+    String message = "";
+    if(e instanceof MethodArgumentNotValidException methodException){
+      message = methodException.getBindingResult().getFieldError().getDefaultMessage();
+    }
 
-    String message = e.getBindingResult().getFieldError().getDefaultMessage();
+    if(e instanceof HandlerMethodValidationException handlerException){
+      message = handlerException.getParameterValidationResults()
+          .getFirst()
+          .getResolvableErrors()
+          .getFirst()
+          .getDefaultMessage();
+    }
 
     log.warn("MethodArgumentNotValidException {}", e.getMessage());
     return ApiResponse.fail(HttpStatus.BAD_REQUEST,message);

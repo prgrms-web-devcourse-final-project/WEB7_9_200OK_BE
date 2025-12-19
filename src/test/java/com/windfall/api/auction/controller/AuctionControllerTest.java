@@ -61,6 +61,7 @@ class AuctionControllerTest {
         .email("test@naver.com")
         .provider(ProviderType.NAVER)
         .providerUserId("test1234")
+        .nickname("testNickname")
         .build();
     User saveUser = userRepository.save(seller);
     sellerId = saveUser.getId();
@@ -324,6 +325,7 @@ class AuctionControllerTest {
           .email("test@naver.com")
           .provider(ProviderType.NAVER)
           .providerUserId("test1234")
+          .nickname("test1")
           .build();
       User notUser = userRepository.save(seller);
       // when
@@ -435,6 +437,7 @@ class AuctionControllerTest {
           .email("test@naver.com")
           .provider(ProviderType.NAVER)
           .providerUserId("test1234")
+          .nickname("test1")
           .build();
       User notUser = userRepository.save(seller);
       // when
@@ -513,6 +516,93 @@ class AuctionControllerTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.status").value("OK"))
           .andExpect(jsonPath("$.message").value("경매 목록 조회에 성공했습니다."))
+          .andExpect(jsonPath("$.data.serverAt").exists())
+          .andExpect(jsonPath("$.data.popularList").exists())
+          .andExpect(jsonPath("$.data.processList").exists())
+          .andExpect(jsonPath("$.data.scheduledList[0].auctionId").exists())
+          .andExpect(jsonPath("$.data.scheduledList[0].title").value("테스트 제목"))
+          .andExpect(jsonPath("$.data.scheduledList[0].startPrice").value("10000"))
+          .andExpect(jsonPath("$.data.scheduledList[0].isLiked").value("false"))
+          .andExpect(jsonPath("$.data.scheduledList[0].startedAt").exists())
+          .andDo(print());
+    }
+  }
+
+  @Nested
+  @DisplayName("경매 검색 API")
+  class t5{
+
+    @Test
+    @DisplayName("정상 작동")
+    void success() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          get("/api/v1/auctions/search")
+              .param("page","1")
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("searchAuction"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("OK"))
+          .andExpect(jsonPath("$.message").value("경매 검색에 성공했습니다."))
+          .andExpect(jsonPath("$.data.slice[0].auctionId").exists())
+          .andExpect(jsonPath("$.data.slice[0].title").value("테스트 제목"))
+          .andExpect(jsonPath("$.data.slice[0].startPrice").value("10000"))
+          .andExpect(jsonPath("$.data.slice[0].currentPrice").value("10000"))
+          .andExpect(jsonPath("$.data.slice[0].discountRate").value("0"))
+          .andExpect(jsonPath("$.data.slice[0].isLiked").value("false"))
+          .andExpect(jsonPath("$.data.slice[0].startedAt").exists())
+          .andExpect(jsonPath("$.data.slice[0].status").value(AuctionStatus.SCHEDULED.name()))
+          .andExpect(jsonPath("$.data.hasNext").value("false"))
+          .andExpect(jsonPath("$.data.page").value("1"))
+          .andExpect(jsonPath("$.data.size").value("15"))
+          .andExpect(jsonPath("$.data.timeStamp").exists())
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("가격 범위가 틀릴 때")
+    void fail1() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          get("/api/v1/auctions/search")
+              .param("page","1")
+              .param("minPrice","10000")
+              .param("maxPrice","100")
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("searchAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("최소 가격은 최대 가격보다 클 수 없습니다."))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("현재 페이지가 1보다 작을 때")
+    void fail2() throws Exception{
+      // when
+      ResultActions resultActions = mockMvc.perform(
+          get("/api/v1/auctions/search")
+              .param("page","0")
+              .accept(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(AuctionController.class))
+          .andExpect(handler().methodName("searchAuction"))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.status").value("BAD_REQUEST"))
+          .andExpect(jsonPath("$.message").value("page는 1부터 시작합니다."))
           .andDo(print());
     }
   }

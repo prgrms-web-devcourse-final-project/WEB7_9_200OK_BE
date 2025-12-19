@@ -1,14 +1,17 @@
 package com.windfall.api.tag.service;
 
+import com.windfall.api.auction.dto.request.TagInfo;
+import com.windfall.api.tag.dto.request.SearchTagRequest;
+import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
 import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.tag.repository.TagRepository;
-import com.windfall.global.exception.ErrorCode;
-import com.windfall.global.exception.ErrorException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,52 +21,68 @@ public class TagService {
 
   private final TagRepository tagRepository;
   private final AuctionTagRepository auctionTagRepository;
-  //private final TagIndexService tagIndexService;
-
-  private static final int MAX_TAG_LENGTH = 10;
 
   @Transactional
-  public void registerAuctionTags(Auction auction, List<String> tags) {
+  public List<String> saveTagIfExist(Auction auction, List<TagInfo> tags) {
     if (tags == null || tags.isEmpty()) {
+      return List.of();
+    }
+    return saveTag(auction, tags);
+  }
+
+  private List<String> saveTag(Auction auction, List<TagInfo> tags) {
+    List<String> savedTagNames = new ArrayList<>();
+
+    for (TagInfo tag : tags) {
+      Tag savedTag = tagRepository.findByTagName(tag.name())
+          .orElseGet(() -> tagRepository.save(Tag.create(tag.name()))
+          );
+
+      AuctionTag auctionTag = AuctionTag.create(auction, savedTag);
+      auctionTagRepository.save(auctionTag);
+
+      savedTagNames.add(savedTag.getTagName());
+    }
+    return savedTagNames;
+  }
+
+  @Transactional(readOnly = true)
+  public SearchTagResponse searchTag(SearchTagRequest request) {
+    if (request.keyword() == null || request.keyword().isBlank()) {
+      return SearchTagResponse.empty();
+    }
+    String trimmedKeyword = request.keyword().trim();
+
+    List<String> tags = tagRepository
+        .findByKeyword(trimmedKeyword, PageRequest.of(0, 5))
+        .stream()
+        .map(Tag::getTagName)
+        .toList();
+
+    return SearchTagResponse.from(tags);
+  }
+
+  @Transactional
+  public void deleteTag(Auction auction) { // 하드 딜리트
+
+    List<AuctionTag> auctionTags = auctionTagRepository.findAllByAuction(auction);
+
+    if (auctionTags.isEmpty()) {
       return;
     }
 
-    validateTags(tags);
-    saveAuctionTags(auction, tags);
+    List<Tag> tags = auctionTags.stream()
+        .map(AuctionTag::getTag)
+        .distinct()
+        .toList();
 
-    //tagIndexService.indexTags(tags);
-  }
+    auctionTagRepository.deleteAll(auctionTags);
 
-  private void saveAuctionTags(Auction auction, List<String> tagNames) {
-    for (String tagName : tagNames) {
-      Tag tag = tagRepository.findByTagName(tagName)
-          .orElseGet(() -> tagRepository.save(Tag.create(tagName))
-          );
+    for (Tag tag : tags) {
+      boolean isUsedElsewhere = auctionTagRepository.existsByTag(tag);
 
-      AuctionTag auctionTag = AuctionTag.create(auction, tag);
-      auctionTagRepository.save(auctionTag);
-    }
-  }
-
-  private void validateTags(List<String> tagNames) {
-    for (String tagName : tagNames) {
-      if (tagName.isBlank()) {
-        throw new ErrorException(ErrorCode.TAG_EMPTY);
-      }
-
-      if (tagName.contains(" ")) {
-        throw new ErrorException(ErrorCode.TAG_CONTAINS_SPACE);
-      }
-
-      if (!tagName.matches("^[가-힣a-zA-Z0-9]+$")) {
-        throw new ErrorException(ErrorCode.TAG_INVALID_CHAR);
-      }
-
-      if (tagName.length() > MAX_TAG_LENGTH) {
-        throw new ErrorException(
-            String.format("태그는 최대 %d글자까지 가능합니다.", MAX_TAG_LENGTH),
-            ErrorCode.TAG_TOO_LONG
-        );
+      if (!isUsedElsewhere) {
+        tagRepository.delete(tag);
       }
     }
   }

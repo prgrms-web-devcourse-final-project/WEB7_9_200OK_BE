@@ -1,53 +1,64 @@
 package com.windfall.domain.auction.repository;
 
+
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.api.auction.dto.response.info.PopularInfo;
 import com.windfall.api.auction.dto.response.info.ProcessInfo;
 import com.windfall.api.auction.dto.response.info.ScheduledInfo;
+import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
+
 
 import static com.windfall.domain.auction.entity.QAuction.auction;
 import static com.windfall.domain.auction.entity.QAuctionImage.auctionImage;
 import static com.windfall.domain.auction.entity.QAuctionPriceHistory.auctionPriceHistory;
 
 @RequiredArgsConstructor
-public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom{
+public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
   private final JPAQueryFactory queryFactory;
 
   @Override
-  public List<ProcessInfo> getProcessInfo(AuctionStatus status, int limit){
+  public List<ProcessInfo> getProcessInfo(AuctionStatus status, int limit) {
     return queryFactory
-            .select(Projections.constructor(ProcessInfo.class,
-                auction.id,
-                JPAExpressions
-                    .select(auctionImage.image)
-                    .from(auctionImage)
-                    .where(auctionImage.auction.id.eq(auction.id))
-                    .orderBy(auctionImage.id.asc())
-                    .limit(1),
-                auction.title,
-                auction.startPrice,
-                auction.currentPrice,
-                calculateDiscountRate(),
-                Expressions.constant(false),
-                auction.startedAt
-            ))
-            .from(auction)
-            .where(auction.status.eq(status))
-            .orderBy(auction.startedAt.asc())
-            .limit(limit)
-            .fetch();
+        .select(Projections.constructor(ProcessInfo.class,
+            auction.id,
+            JPAExpressions
+                .select(auctionImage.image)
+                .from(auctionImage)
+                .where(auctionImage.auction.id.eq(auction.id))
+                .orderBy(auctionImage.id.asc())
+                .limit(1),
+            auction.title,
+            auction.startPrice,
+            auction.currentPrice,
+            calculateDiscountRate(),
+            Expressions.constant(false),
+            auction.startedAt
+        ))
+        .from(auction)
+        .where(auction.status.eq(status))
+        .orderBy(auction.startedAt.asc())
+        .limit(limit)
+        .fetch();
   }
 
   @Override
-  public List<ScheduledInfo> getScheduledInfo(AuctionStatus status, int limit){
+  public List<ScheduledInfo> getScheduledInfo(AuctionStatus status, int limit) {
     return queryFactory
         .select(Projections.constructor(ScheduledInfo.class,
             auction.id,
@@ -70,7 +81,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom{
   }
 
   @Override
-  public List<PopularInfo> getPopularInfo(AuctionStatus status, int limit){
+  public List<PopularInfo> getPopularInfo(AuctionStatus status, int limit) {
     return queryFactory
         .select(Projections.constructor(PopularInfo.class,
             auction.id,
@@ -89,11 +100,50 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom{
         ))
         .from(auction)
         .where(auction.status.eq(status))
-        .leftJoin(auctionPriceHistory)
-        .on(auction.id.eq(auctionPriceHistory.auction.id))
-        .orderBy(auctionPriceHistory.viewerCount.desc())
+        .orderBy(maxViewerCount().desc())
         .limit(limit)
         .fetch();
+  }
+
+  @Override
+  public Slice<AuctionSearchResponse> searchAuction(Pageable pageable, String query,
+      AuctionCategory category, AuctionStatus status, Long minPrice, Long maxPrice) {
+    int pageSize = pageable.getPageSize();
+    boolean hasNext = false;
+    List<AuctionSearchResponse> auctionList = queryFactory.select(
+            Projections.constructor(AuctionSearchResponse.class,
+                auction.id,
+                JPAExpressions
+                    .select(auctionImage.image)
+                    .from(auctionImage)
+                    .where(auctionImage.auction.id.eq(auction.id))
+                    .orderBy(auctionImage.id.asc())
+                    .limit(1),
+                auction.title,
+                auction.startPrice,
+                auction.currentPrice,
+                calculateDiscountRate(),
+                Expressions.constant(false),
+                auction.startedAt,
+                auction.status
+            ))
+        .from(auction)
+        .where(
+            containsQuery(query),
+            eqCategory(category),
+            eqStatus(status),
+            priceBetween(minPrice, maxPrice)
+        )
+        .orderBy(auctionSort(pageable))
+        .offset(pageable.getOffset() - pageSize)
+        .limit(pageSize + 1)
+        .fetch();
+
+    if (auctionList.size() > pageSize) {
+      auctionList.remove(pageSize);
+      hasNext = true;
+    }
+    return new SliceImpl<>(auctionList, pageable, hasNext);
   }
 
   private NumberExpression<Long> calculateDiscountRate() {
@@ -104,4 +154,62 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom{
         auction.startPrice
     );
   }
+
+  private OrderSpecifier<?> auctionSort(Pageable page) {
+    Sort.Order order = page.getSort().stream().findFirst().orElse(null);
+
+    if (order != null) {
+      Order direction = order.getDirection().isAscending() ? Order.ASC : Order.DESC;
+
+      switch (order.getProperty()) {
+        case "createDate":
+          return new OrderSpecifier<>(direction, auction.createDate);
+        case "viewCount":
+          return new OrderSpecifier<>(direction, maxViewerCount());
+        case "startedAt":
+          return new OrderSpecifier<>(direction, auction.startedAt);
+      }
+    }
+
+    return null;
+  }
+
+private NumberExpression<Long> maxViewerCount() {
+  return Expressions.numberTemplate(
+      Long.class,
+      "({0})",
+      JPAExpressions
+          .select(auctionPriceHistory.viewerCount.max())
+          .from(auctionPriceHistory)
+          .where(auctionPriceHistory.auction.id.eq(auction.id))
+  );
+}
+
+private BooleanExpression containsQuery(String query) {
+  return auction.title.containsIgnoreCase(query)
+      .or(auction.description.containsIgnoreCase(query));
+}
+
+private BooleanExpression eqCategory(AuctionCategory category) {
+  if (category == null) {
+    return null;
+  }
+  return auction.category.eq(category);
+}
+
+private BooleanExpression eqStatus(AuctionStatus status) {
+  if (status == null) {
+    return null;
+  }
+  return auction.status.eq(status);
+}
+
+private BooleanExpression priceBetween(Long minPrice, Long maxPrice) {
+  if (maxPrice == null) {
+    return null; // 전체 가격 범위
+  }
+
+  return auction.currentPrice.between(minPrice, maxPrice);
+}
+
 }
