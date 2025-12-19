@@ -1,16 +1,21 @@
 package com.windfall.api.auction.controller;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.api.auction.dto.request.SellerEmojiRequest;
 import com.windfall.api.auction.dto.response.AuctionCancelResponse;
 import com.windfall.api.auction.dto.response.AuctionCreateResponse;
 import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
+import com.windfall.api.auction.service.AuctionInteractionService;
 import com.windfall.api.auction.service.AuctionService;
-import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuctionController implements AuctionSpecification {
 
   private final AuctionService auctionService;
+  private final AuctionInteractionService interactionService;
 
   @Override
   @PostMapping
@@ -67,16 +73,13 @@ public class AuctionController implements AuctionSpecification {
     return ApiResponse.ok(null);
   }
 
-  @Override
-  @PostMapping("/{auctionId}/emojis/{emojiType}")
-  public ApiResponse<Void> sendEmoji(
-      @PathVariable Long auctionId,
-      @PathVariable EmojiType emojiType,
-      @RequestBody Long userId) {
+  @MessageMapping("/auctions/{auctionId}/emoji")
+  public void sendEmoji(
+      @DestinationVariable Long auctionId,
+      @Payload SellerEmojiRequest request,
+      @Header(value = "userId", defaultValue = "1") Long userId) {
 
-    //TODO: Redis Pub/Sub으로 이모지 발생 로직 구현
-
-    return ApiResponse.ok(null);
+    interactionService.broadcastSellerEmoji(auctionId, userId, request.emojiType());
   }
 
   @Override
