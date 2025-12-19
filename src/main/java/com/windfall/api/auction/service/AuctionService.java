@@ -17,6 +17,9 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
+import com.windfall.domain.tag.entity.AuctionTag;
+import com.windfall.domain.tag.entity.Tag;
+import com.windfall.domain.tag.repository.AuctionTagRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
@@ -40,6 +43,7 @@ public class AuctionService {
   private final UserService userService;
   private final AuctionViewerService viewerService;
   private final TagService tagService;
+  private final AuctionTagRepository auctionTagRepository;
 
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -53,9 +57,9 @@ public class AuctionService {
 
     Auction savedAuction = auctionRepository.save(auction);
 
-    tagService.registerAuctionTags(savedAuction, request.tags());
+    List<String> tags = tagService.saveTagIfExist(savedAuction, request.tags());
 
-    return AuctionCreateResponse.from(savedAuction, seller.getId());
+    return AuctionCreateResponse.from(savedAuction, seller.getId(), tags);
   }
 
   public SliceResponse<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category,
@@ -122,6 +126,8 @@ public class AuctionService {
 
     validateDeleteAuction(auction, user);
 
+    tagService.deleteTag(auction);
+
     auctionRepository.deleteById(auctionId);
   }
 
@@ -159,6 +165,12 @@ public class AuctionService {
 
     List<AuctionHistoryResponse> historyList = getRecentHistories(auctionId);
 
+    List<String> tags = auctionTagRepository.findAllByAuction(auction)
+        .stream()
+        .map(AuctionTag::getTag)
+        .map(Tag::getTagName)
+        .toList();
+
     return AuctionDetailResponse.of(
         auction,
         displayPrice,
@@ -166,7 +178,8 @@ public class AuctionService {
         exposedStopLoss,
         false,
         viewerCount,
-        historyList
+        historyList,
+        tags
     );
   }
 
