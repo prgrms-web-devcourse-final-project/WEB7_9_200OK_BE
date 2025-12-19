@@ -21,7 +21,6 @@ import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +34,6 @@ public class AuctionService {
   private final UserService userService;
   private final AuctionViewerService viewerService;
   private final TagService tagService;
-
-  private final RedisTemplate<String, String> redisTemplate;
 
   @Transactional
   public AuctionCreateResponse createAuction(AuctionCreateRequest request) {
