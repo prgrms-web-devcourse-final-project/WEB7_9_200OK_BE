@@ -1,10 +1,11 @@
 package com.windfall.api.auction.service;
 
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
+
 import com.windfall.api.auction.dto.response.message.SellerEmojiMessage;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.domain.auction.repository.AuctionRepository;
-import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,6 @@ public class AuctionInteractionService {
 
   private Auction findAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
-        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
+        .orElseThrow(() -> new ErrorException(NOT_FOUND_AUCTION));
   }
 }
