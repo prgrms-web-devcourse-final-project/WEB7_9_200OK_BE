@@ -1,4 +1,4 @@
-package com.windfall.global.security;
+package com.windfall.global.config.security;
 
 import com.windfall.api.user.service.JwtProvider;
 import com.windfall.api.user.service.UserService;
@@ -27,6 +27,12 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     logger.debug("CustomAuthenticationFilter called");
 
     try {
