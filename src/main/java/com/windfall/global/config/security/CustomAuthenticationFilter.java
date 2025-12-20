@@ -6,6 +6,7 @@ import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,7 +27,8 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
 
     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
       filterChain.doFilter(request, response);
@@ -50,43 +52,46 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     }
   }
 
-  private void authenticate(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+  private void authenticate(HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
+
     String path = request.getRequestURI();
 
-    // 1. 예외 URL 패스
-    if (path.startsWith("/api/v1") ||
+    if (path.equals("/") ||
+        path.equals("/error") ||
+        path.equals("/favicon.ico") ||
+        path.startsWith("/api/v1/auth") ||
+        path.startsWith("/h2-console") ||
         path.startsWith("/swagger-ui") ||
         path.startsWith("/v3/api-docs") ||
         path.startsWith("/swagger-resources") ||
         path.startsWith("/webjars")) {
+
       filterChain.doFilter(request, response);
       return;
     }
 
-    // 2. Authorization 헤더 확인
-    final String authHeader = request.getHeader("Authorization");
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+    String token = resolveToken(request);
+    if (token == null || token.isBlank()) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
-    String token = authHeader.substring(7); // "Bearer " 제거
-    // 3. accessToken 검증
     if (!jwtProvider.validateToken(token)) {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       return;
     }
 
-    // 4. 사용자 정보 가져오기
     String providerUserId = jwtProvider.getProviderUserId(token);
     User user = userService.getUserByProviderUserId(providerUserId);
+
     UserDetails userDetails = org.springframework.security.core.userdetails.User
         .withUsername(user.getProviderUserId())
         .password("") // OAuth라 빈 문자열 넣기.
-        .authorities("ROLE_USER")    // 권한 설정
+        .authorities("ROLE_USER")
         .build();
 
-    // 5. SecurityContext 세팅
     UsernamePasswordAuthenticationToken authentication =
         new UsernamePasswordAuthenticationToken(
             userDetails,
@@ -96,7 +101,23 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    // 6. 다음 필터로 진행
     filterChain.doFilter(request, response);
+  }
+
+  private String resolveToken(HttpServletRequest request) {
+    String authHeader = request.getHeader("Authorization");
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+      return authHeader.substring(7);
+    }
+
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) return null;
+
+    for (Cookie c : cookies) {
+      if ("accessToken".equals(c.getName())) {
+        return c.getValue();
+      }
+    }
+    return null;
   }
 }
