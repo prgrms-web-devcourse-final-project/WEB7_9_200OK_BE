@@ -23,6 +23,7 @@ public class SecurityConfig {
             .requestMatchers("/favicon.ico").permitAll()
             .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers("/**").permitAll()
+            .requestMatchers("/ws-stomp/**").permitAll()
             .anyRequest().authenticated())
         .csrf((csrf) -> csrf.disable())
         .headers((headers) -> headers
