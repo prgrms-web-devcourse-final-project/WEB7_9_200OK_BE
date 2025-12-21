@@ -56,7 +56,7 @@ class AuctionLikeServiceTest {
     // then
     verify(auctionLikeRepository, times(1)).save(any(AuctionLike.class));
     verify(auctionLikeRepository, never()).delete(any());
-    assertThat(response.like()).isTrue();
+    assertThat(response.isLiked()).isTrue();
     assertThat(response.likeCount()).isEqualTo(1L);
   }
 
@@ -76,7 +76,7 @@ class AuctionLikeServiceTest {
     // then
     verify(auctionLikeRepository, times(1)).delete(existingLike);
     verify(auctionLikeRepository, never()).save(any());
-    assertThat(response.like()).isFalse();
+    assertThat(response.isLiked()).isFalse();
     assertThat(response.likeCount()).isEqualTo(0L);
   }
 

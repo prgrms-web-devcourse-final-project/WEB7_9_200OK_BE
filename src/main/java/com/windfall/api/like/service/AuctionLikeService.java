@@ -25,19 +25,19 @@ public class AuctionLikeService {
 
     Optional<AuctionLike> existingLike = getAuctionLike(userId, auction);
 
-    boolean like;
+    boolean isLiked;
 
     if (existingLike.isPresent()) {
       auctionLikeRepository.delete(existingLike.get());
-      like = false;
+      isLiked = false;
     } else {
       auctionLikeRepository.save(AuctionLike.create(auction, userId));
-      like = true;
+      isLiked = true;
     }
 
     long likeCount = auctionLikeRepository.countByAuction(auction);
 
-    return AuctionLikeResponse.of(like, likeCount);
+    return AuctionLikeResponse.of(isLiked, likeCount);
   }
 
   private Auction getAuction(Long auctionId) {

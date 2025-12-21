@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Auction Like", description = "경매 찜 API")
 public interface AuctionLikeSpecification {
@@ -20,6 +20,7 @@ public interface AuctionLikeSpecification {
       @Parameter(description = "경매 ID", required = true, example = "1")
       @PathVariable Long auctionId,
 
-      @RequestBody Long userId
+      @Parameter(description = "로그인 구현 후, 제거 예정", required = true, example = "1")
+      @RequestParam Long userId
   );
 }
