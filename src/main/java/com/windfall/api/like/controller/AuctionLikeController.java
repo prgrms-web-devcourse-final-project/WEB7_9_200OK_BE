@@ -25,6 +25,5 @@ public class AuctionLikeController implements AuctionLikeSpecification{
   ) {
     AuctionLikeResponse response = auctionLikeService.toggleLike(auctionId, userId);
     return ApiResponse.ok("찜 토글을 성공했습니다.", response);
-
   }
 }

@@ -40,12 +40,12 @@ public class AuctionLikeService {
     return AuctionLikeResponse.of(like, likeCount);
   }
 
-  private Optional<AuctionLike> getAuctionLike(Long userId, Auction auction) {
-    return auctionLikeRepository.findByAuctionAndUserId(auction, userId);
-  }
-
   private Auction getAuction(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
+  }
+
+  private Optional<AuctionLike> getAuctionLike(Long userId, Auction auction) {
+    return auctionLikeRepository.findByAuctionAndUserId(auction, userId);
   }
 }
