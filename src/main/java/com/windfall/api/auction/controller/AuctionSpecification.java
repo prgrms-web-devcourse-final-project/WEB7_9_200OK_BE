@@ -30,7 +30,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -89,10 +92,12 @@ public interface AuctionSpecification {
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION})
-  @Operation(summary = "경매 가격 변동 내역 조회", description = "특정 경매의 가격 변동 내역을 조회합니다.")
-  ApiResponse<AuctionHistoryResponse> getAuctionHistory(
+  @Operation(summary = "경매 가격 변동 내역 조회", description = "특정 경매의 가격 변동 내역을 조회합니다.( 10개씩 최신순 무한 스크롤 )")
+  ApiResponse<SliceResponse<AuctionHistoryResponse>> getAuctionHistory(
       @Parameter(description = "경매 ID", required = true, example = "1")
-      @PathVariable Long auctionId
+      @PathVariable Long auctionId,
+
+      @ParameterObject Pageable pageable
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_NOT_PROCESS ,INVALID_AUCTION_SELLER})
