@@ -1,10 +1,10 @@
-package com.windfall.api.tag.service;
+package com.windfall.api.tag;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.windfall.api.auction.dto.request.TagInfo;
-import com.windfall.api.tag.dto.request.SearchTagRequest;
 import com.windfall.api.tag.dto.response.SearchTagResponse;
+import com.windfall.api.tag.service.TagService;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -59,17 +59,17 @@ class TagServiceTest {
 
     auction1 = auctionRepository.save(
         Auction.builder()
-        .title("경매1")
-        .description("테스트 설명")
-        .category(AuctionCategory.DIGITAL)
-        .startPrice(10000L)
-        .currentPrice(10000L)
-        .stopLoss(9000L)
-        .dropAmount(50L)
-        .status(AuctionStatus.SCHEDULED)
-        .startedAt(LocalDateTime.now().plusDays(2))
-        .seller(seller)
-        .build()
+            .title("경매1")
+            .description("테스트 설명")
+            .category(AuctionCategory.DIGITAL)
+            .startPrice(10000L)
+            .currentPrice(10000L)
+            .stopLoss(9000L)
+            .dropAmount(50L)
+            .status(AuctionStatus.SCHEDULED)
+            .startedAt(LocalDateTime.now().plusDays(2))
+            .seller(seller)
+            .build()
     );
 
     auction2 = auctionRepository.save(
@@ -140,7 +140,7 @@ class TagServiceTest {
     tagRepository.save(Tag.create("나이키운동화"));
     tagRepository.save(Tag.create("나침반")); // 6번째
 
-    SearchTagRequest request = new SearchTagRequest("나");
+    String request = "나";
 
     // when
     SearchTagResponse response = tagService.searchTag(request);
@@ -150,6 +150,7 @@ class TagServiceTest {
     assertEquals(List.of("나무", "나비", "나이키", "나이키에어", "나이키운동화"),
         response.tags());
   }
+
   @Test
   @DisplayName("[태그 검색2] 태그 검색어로 앞, 뒤 공백을 넣는 경우")
   void searchTag2() {
@@ -159,7 +160,7 @@ class TagServiceTest {
     tagRepository.save(Tag.create("나이키"));
     tagRepository.save(Tag.create("나이키에어"));
 
-    SearchTagRequest request = new SearchTagRequest(" 나 ");
+    String request = " 나 ";
 
     // when
     SearchTagResponse response = tagService.searchTag(request);
@@ -176,7 +177,7 @@ class TagServiceTest {
     tagRepository.save(Tag.create("나이키"));
     tagRepository.save(Tag.create("나이키에어"));
 
-    SearchTagRequest request = new SearchTagRequest("나 이키");
+    String request = "나 이키";
 
     // when
     SearchTagResponse response = tagService.searchTag(request);

@@ -4,7 +4,6 @@ import com.windfall.domain.auction.entity.Auction;
 import com.windfall.api.auction.dto.response.info.SellerInfo;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
-import com.windfall.domain.tag.entity.AuctionTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
