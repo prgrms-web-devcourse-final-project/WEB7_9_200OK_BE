@@ -10,7 +10,7 @@ public record SellerInfo(
     Long sellerId,
 
     @Schema(description = "판매자 닉네임")
-    String nickname,
+    String username,
 
     @Schema(description = "판매자 프로필 이미지 URL")
     String profileImageUrl,
