@@ -26,6 +26,7 @@ public class SecurityConfig {
             .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/**").permitAll()
+            .requestMatchers("/ws-stomp/**").permitAll()
             .anyRequest().authenticated())
         .csrf((csrf) -> csrf.disable())
         .headers((headers) -> headers
