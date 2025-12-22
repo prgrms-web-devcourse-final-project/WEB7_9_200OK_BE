@@ -36,6 +36,7 @@ public class SecurityConfig {
             .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .requestMatchers("/**").permitAll()
             .anyRequest().authenticated()
         )
 

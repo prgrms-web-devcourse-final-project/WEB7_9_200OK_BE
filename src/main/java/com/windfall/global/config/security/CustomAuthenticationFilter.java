@@ -30,56 +30,31 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
+    // preflight 통과
     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    logger.debug("CustomAuthenticationFilter called");
+    String token = resolveToken(request);
 
-    try {
-      authenticate(request, response, filterChain);
-    } catch (Exception e) {
-      // JWT 검증 등 일반 예외 처리
-      response.setContentType("application/json");
-      response.setStatus(HttpStatus.UNAUTHORIZED.value());
-      response.getWriter().write("""
-        {
-            "resultCode": "%s",
-            "msg": "%s"
-        }
-        """.formatted(ErrorCode.INVALID_TOKEN, ErrorCode.INVALID_TOKEN.getMessage()));
-    }
-  }
-
-  private void authenticate(HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain filterChain) throws ServletException, IOException {
-
-    String path = request.getRequestURI();
-
-    if (path.equals("/") ||
-        path.equals("/error") ||
-        path.equals("/favicon.ico") ||
-        path.startsWith("/api/v1/auth") ||
-        path.startsWith("/h2-console") ||
-        path.startsWith("/swagger-ui") ||
-        path.startsWith("/v3/api-docs") ||
-        path.startsWith("/swagger-resources") ||
-        path.startsWith("/webjars")) {
-
+    if (token == null || token.isBlank()) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    String token = resolveToken(request);
-    if (token == null || token.isBlank()) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
-
     if (!jwtProvider.validateToken(token)) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json;charset=UTF-8");
+      response.setStatus(HttpStatus.UNAUTHORIZED.value());
+      response.getWriter().write("""
+        {
+          "resultCode": "%s",
+          "msg": "%s"
+        }
+        """.formatted(
+          ErrorCode.INVALID_TOKEN.name(),
+          ErrorCode.INVALID_TOKEN.getMessage()
+      ));
       return;
     }
 
@@ -88,7 +63,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
     UserDetails userDetails = org.springframework.security.core.userdetails.User
         .withUsername(user.getProviderUserId())
-        .password("") // OAuth라 빈 문자열 넣기.
+        .password("")
         .authorities("ROLE_USER")
         .build();
 
@@ -98,7 +73,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             null,
             userDetails.getAuthorities()
         );
-    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+    authentication.setDetails(
+        new WebAuthenticationDetailsSource().buildDetails(request)
+    );
+
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
     filterChain.doFilter(request, response);
