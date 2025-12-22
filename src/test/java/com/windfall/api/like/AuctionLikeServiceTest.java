@@ -46,9 +46,9 @@ class AuctionLikeServiceTest {
   void success1() {
     // given
     when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
-    when(auctionLikeRepository.findByAuctionAndUserId(auction, userId)).thenReturn(
+    when(auctionLikeRepository.findByAuctionIdAndUserId(auctionId, userId)).thenReturn(
         Optional.empty());
-    when(auctionLikeRepository.countByAuction(auction)).thenReturn(1L);
+    when(auctionLikeRepository.countByAuctionId(auctionId)).thenReturn(1L);
 
     // when
     AuctionLikeResponse response = auctionLikeService.toggleLike(auctionId, userId);
@@ -66,9 +66,9 @@ class AuctionLikeServiceTest {
     // given
     AuctionLike existingLike = AuctionLike.create(auction, userId);
     when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
-    when(auctionLikeRepository.findByAuctionAndUserId(auction, userId)).thenReturn(
+    when(auctionLikeRepository.findByAuctionIdAndUserId(auctionId, userId)).thenReturn(
         Optional.of(existingLike));
-    when(auctionLikeRepository.countByAuction(auction)).thenReturn(0L);
+    when(auctionLikeRepository.countByAuctionId(auctionId)).thenReturn(0L);
 
     // when
     AuctionLikeResponse response = auctionLikeService.toggleLike(auctionId, userId);

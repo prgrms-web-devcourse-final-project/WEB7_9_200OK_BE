@@ -23,7 +23,7 @@ public class AuctionLikeService {
   public AuctionLikeResponse toggleLike(Long auctionId, Long userId) {
     Auction auction = getAuction(auctionId);
 
-    Optional<AuctionLike> existingLike = getAuctionLike(userId, auction);
+    Optional<AuctionLike> existingLike = getAuctionLike(auctionId, userId);
 
     boolean isLiked;
 
@@ -35,7 +35,7 @@ public class AuctionLikeService {
       isLiked = true;
     }
 
-    long likeCount = auctionLikeRepository.countByAuction(auction);
+    long likeCount = getLikeCount(auctionId);
 
     return AuctionLikeResponse.of(isLiked, likeCount);
   }
@@ -45,7 +45,13 @@ public class AuctionLikeService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
 
-  private Optional<AuctionLike> getAuctionLike(Long userId, Auction auction) {
-    return auctionLikeRepository.findByAuctionAndUserId(auction, userId);
+  @Transactional(readOnly = true)
+  public Optional<AuctionLike> getAuctionLike(Long auctionId, Long userId) {
+    return auctionLikeRepository.findByAuctionIdAndUserId(auctionId, userId);
+  }
+
+  @Transactional(readOnly = true)
+  public long getLikeCount(Long auctionId) {
+    return auctionLikeRepository.countByAuctionId(auctionId);
   }
 }

@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AuctionLikeRepository extends JpaRepository<AuctionLike, Long> {
 
-  Optional<AuctionLike> findByAuctionAndUserId(Auction auction, Long userId);
+  Optional<AuctionLike> findByAuctionIdAndUserId(Long auctionId, Long userId);
 
-  long countByAuction(Auction auction);
+  long countByAuctionId(Long auctionId);
 }
