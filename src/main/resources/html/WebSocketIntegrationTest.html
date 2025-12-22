@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>이모지 테스트</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h2>🔥 경매 이모지 테스트</h2>
+<div>
+  <button onclick="connect()">1. 연결하기</button>
+  <button onclick="sendEmoji('FIRE')">2. 🔥 불꽃 쏘기</button>
+  <button onclick="sendEmoji('LIKE')">3. 👍 좋아요 쏘기</button>
+</div>
+<hr/>
+<h3>📩 받은 메시지 (구독 화면)</h3>
+<div id="messages"></div>
+
+<script>
+  var stompClient = null;
+
+  function connect() {
+    // 1. 연결 주소: WebSocketConfig의 addEndpoint 주소
+    var socket = new SockJS('http://localhost:8080/ws-stomp');
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+      console.log('Connected: ' + frame);
+      alert("연결 성공!");
+
+      // 2. 구독 주소: /topic/auction/{경매ID}
+      // (경매 ID는 1번이라고 가정)
+      stompClient.subscribe('/topic/auction/1', function (message) {
+        showEmoji(JSON.parse(message.body));
+      });
+    });
+  }
+
+  function sendEmoji(type) {
+    // 3. 전송 주소: /pub + 컨트롤러 매핑 주소
+    // Config에서 "/pub" 설정, Controller에서 "/auctions/1/emoji" 설정
+    // => 합쳐서 "/pub/auctions/1/emoji"
+
+    var payload = JSON.stringify({
+      'emojiType': type
+    });
+
+    // 헤더에 userId를 담아서 보냄 (우리가 만든 임시 로직)
+    stompClient.send("/app/auctions/1/emoji", { 'userId': '1' }, payload);
+  }
+
+  function showEmoji(message) {
+    var messagesDiv = document.getElementById("messages");
+    var p = document.createElement("p");
+    p.style.fontSize = "20px";
+    // 서버가 보내준 메시지 출력
+    p.textContent = `[경매방 ${message.auctionId}] ${message.emojiType} 이모지가 도착했습니다!`;
+    messagesDiv.appendChild(p);
+  }
+</script>
+</body>
+</html>
