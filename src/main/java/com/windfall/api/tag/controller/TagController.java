@@ -1,6 +1,5 @@
 package com.windfall.api.tag.controller;
 
-import com.windfall.api.tag.dto.request.SearchTagRequest;
 import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.api.tag.service.TagService;
 import com.windfall.global.response.ApiResponse;
@@ -20,7 +19,7 @@ public class TagController implements TagSpecification{
   @Override
   @GetMapping("/search")
   public ApiResponse<SearchTagResponse> searchTag(
-      @RequestParam SearchTagRequest keyword
+      @RequestParam String keyword
   ) {
     SearchTagResponse response = tagService.searchTag(keyword);
     return ApiResponse.ok("태그 검색에 성공했습니다.", response);
