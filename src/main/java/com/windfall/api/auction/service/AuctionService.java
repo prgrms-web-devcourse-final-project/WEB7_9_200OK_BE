@@ -10,6 +10,7 @@ import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.api.auction.dto.response.info.PopularInfo;
 import com.windfall.api.auction.dto.response.info.ProcessInfo;
 import com.windfall.api.auction.dto.response.info.ScheduledInfo;
+import com.windfall.api.like.service.AuctionLikeService;
 import com.windfall.api.tag.service.TagService;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
@@ -17,6 +18,7 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
+import com.windfall.domain.like.entity.AuctionLike;
 import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
 import com.windfall.domain.tag.repository.AuctionTagRepository;
@@ -26,6 +28,7 @@ import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.SliceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -44,6 +47,7 @@ public class AuctionService {
   private final AuctionViewerService viewerService;
   private final TagService tagService;
   private final AuctionTagRepository auctionTagRepository;
+  private final AuctionLikeService auctionLikeService;
 
   private final RedisTemplate<String, String> redisTemplate;
 
@@ -159,7 +163,7 @@ public class AuctionService {
       exposedStopLoss = auction.getStopLoss();
     }
 
-    // TODO: 타 도메인 의존성 처리 (User, Like)
+    // TODO: 타 도메인 의존성 처리 (User)
 
     long viewerCount = viewerService.getViewerCount(auctionId);
 
@@ -171,12 +175,16 @@ public class AuctionService {
         .map(Tag::getTagName)
         .toList();
 
+    boolean isLiked = isLiked(auctionId, userId);
+    long likeCount = auctionLikeService.getLikeCount(auctionId);
+
     return AuctionDetailResponse.of(
         auction,
         displayPrice,
         discountRate,
         exposedStopLoss,
-        false,
+        isLiked,
+        likeCount,
         viewerCount,
         historyList,
         tags
@@ -196,16 +204,24 @@ public class AuctionService {
       throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
     }
   }
+
   public Auction getAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
-
 
   private void validatePrice(Long minPrice, Long maxPrice){
     if(minPrice != null && maxPrice != null && maxPrice < minPrice){
       throw new ErrorException(ErrorCode.INVALID_PRICE);
     }
   }
-}
 
+  private boolean isLiked(Long auctionId, Long userId) {
+    boolean isLiked = false;
+    Optional<AuctionLike> auctionLike = auctionLikeService.getAuctionLike(auctionId, userId);
+    if (auctionLike.isPresent()) {
+      isLiked = true;
+    }
+    return isLiked;
+  }
+}
