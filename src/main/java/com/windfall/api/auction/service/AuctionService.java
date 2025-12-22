@@ -183,6 +183,18 @@ public class AuctionService {
     );
   }
 
+  public SliceResponse<AuctionHistoryResponse> getAuctionHistory(Long auctionId,
+      Pageable pageable) {
+
+    getAuctionById(auctionId);
+
+    Slice<AuctionHistoryResponse> historySlice = historyRepository.findByAuction_IdOrderByCreateDateDesc(
+            auctionId, pageable)
+        .map(AuctionHistoryResponse::from);
+
+    return SliceResponse.from(historySlice);
+  }
+
   private List<AuctionHistoryResponse> getRecentHistories(Long auctionId) {
 
     return historyRepository.findTop5ByAuction_IdOrderByCreateDateDesc(auctionId)
@@ -196,11 +208,11 @@ public class AuctionService {
       throw new ErrorException(ErrorCode.INVALID_AUCTION_SELLER);
     }
   }
+
   public Auction getAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
-
 
   private void validatePrice(Long minPrice, Long maxPrice){
     if(minPrice != null && maxPrice != null && maxPrice < minPrice){
