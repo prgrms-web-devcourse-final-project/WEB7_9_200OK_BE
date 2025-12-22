@@ -4,7 +4,6 @@ import com.windfall.domain.auction.entity.Auction;
 import com.windfall.api.auction.dto.response.info.SellerInfo;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
-import com.windfall.domain.tag.entity.AuctionTag;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -70,6 +69,7 @@ public record AuctionDetailResponse(
       double discountRate,
       long stopLoss,
       boolean isLiked,
+      long likeCount,
       long viewerCount,
       List<AuctionHistoryResponse> history,
       List<String> tags
@@ -86,7 +86,7 @@ public record AuctionDetailResponse(
         stopLoss,
         discountRate,
         auction.getStatus(),
-        0L, // auction.getLikeCount(),
+        likeCount,
         isLiked,
         viewerCount,
         auction.getStartedAt(),
