@@ -69,6 +69,7 @@ public record AuctionDetailResponse(
       double discountRate,
       long stopLoss,
       boolean isLiked,
+      long likeCount,
       long viewerCount,
       List<AuctionHistoryResponse> history,
       List<String> tags
@@ -85,7 +86,7 @@ public record AuctionDetailResponse(
         stopLoss,
         discountRate,
         auction.getStatus(),
-        0L, // auction.getLikeCount(),
+        likeCount,
         isLiked,
         viewerCount,
         auction.getStartedAt(),
