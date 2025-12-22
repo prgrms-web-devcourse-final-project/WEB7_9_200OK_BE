@@ -4,14 +4,11 @@ import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_CANCEL;
 import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
 import static com.windfall.global.exception.ErrorCode.INVALID_AUCTION_SELLER;
 import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
+import static com.windfall.global.exception.ErrorCode.INVALID_PRICE;
 import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
-import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
-import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
-import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_CANCEL;
-import static com.windfall.global.exception.ErrorCode.INVALID_PRICE;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.request.SellerEmojiRequest;
@@ -23,9 +20,7 @@ import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
-import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.global.config.swagger.ApiErrorCodes;
-import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,12 +28,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -98,10 +93,12 @@ public interface AuctionSpecification {
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION})
-  @Operation(summary = "경매 가격 변동 내역 조회", description = "특정 경매의 가격 변동 내역을 조회합니다.")
-  ApiResponse<AuctionHistoryResponse> getAuctionHistory(
+  @Operation(summary = "경매 가격 변동 내역 조회", description = "특정 경매의 가격 변동 내역을 조회합니다.( 10개씩 최신순 무한 스크롤 )")
+  ApiResponse<SliceResponse<AuctionHistoryResponse>> getAuctionHistory(
       @Parameter(description = "경매 ID", required = true, example = "1")
-      @PathVariable Long auctionId
+      @PathVariable Long auctionId,
+
+      @ParameterObject Pageable pageable
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION})

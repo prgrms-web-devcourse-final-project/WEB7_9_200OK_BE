@@ -1,7 +1,7 @@
 package com.windfall.api.auction.dto.response;
 
-import com.windfall.domain.auction.entity.Auction;
 import com.windfall.api.auction.dto.response.info.SellerInfo;
+import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -60,7 +60,10 @@ public record AuctionDetailResponse(
     List<AuctionHistoryResponse> recentPriceHistory,
 
     @Schema(description = "태그 목록")
-    List<String> tags
+    List<String> tags,
+
+    @Schema(description = "서버 시간")
+    LocalDateTime serverTime
 
 ) {
   public static AuctionDetailResponse of(
@@ -91,7 +94,8 @@ public record AuctionDetailResponse(
         viewerCount,
         auction.getStartedAt(),
         history,
-        tags
+        tags,
+        LocalDateTime.now()
     );
   }
 }
