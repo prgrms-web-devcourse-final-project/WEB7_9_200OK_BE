@@ -35,6 +35,7 @@ public class SecurityConfig {
             .requestMatchers("/api/v1/auth/**").permitAll()
             .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+            .requestMatchers("/ws-stomp/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
             .requestMatchers("/**").permitAll()
             .anyRequest().authenticated()
@@ -49,7 +50,6 @@ public class SecurityConfig {
                   """);
             })
         )
-
         .addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
