@@ -3,6 +3,7 @@ package com.windfall.api.auction.controller;
 import com.windfall.api.auction.dto.response.ImageUploadResponse;
 import com.windfall.api.auction.service.AuctionImageService;
 import com.windfall.global.response.ApiResponse;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -23,7 +24,7 @@ public class AuctionImageController implements AuctionImageSpecification{
   @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ApiResponse<List<ImageUploadResponse>> upload (
-      @RequestPart(name = "uploadFiles", required = false) List<MultipartFile> files
+      @Size(max = 10,message = "이미지 등록 개수를 초과했습니다.") @RequestPart(name = "uploadFiles", required = false) List<MultipartFile> files
   ) {
     List<ImageUploadResponse> imageIds = auctionImageService.upload(files);
 
