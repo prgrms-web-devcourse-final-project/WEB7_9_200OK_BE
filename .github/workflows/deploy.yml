@@ -2,7 +2,7 @@ name: CI/CD Zero Downtime Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
   build-deploy:
