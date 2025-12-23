@@ -40,7 +40,7 @@ public record AuctionCreateRequest(
             """)
     List<TagInfo> tags,
 
-    @NotNull
+    @NotNull(message = "이미지는 필수 항목입니다.")
     @Size(max = 10,message = "이미지 등록 개수를 초과했습니다.")
     @Schema(description = "경매 이미지", example = "[1,2,3,4]")
     List<Long> imageIds,
