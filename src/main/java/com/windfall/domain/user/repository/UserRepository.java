@@ -1,7 +1,6 @@
 package com.windfall.domain.user.repository;
 
 import com.windfall.api.user.dto.response.UserInfoResponse;
-import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.user.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,4 +28,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   GROUP BY u.id, u.nickname, u.email, u.profileImageUrl
 """)
   UserInfoResponse findByUserInfo(@Param("id") Long id, @Param("loginId") Long loginId);
+
+  boolean existsByEmail(String email);
 }

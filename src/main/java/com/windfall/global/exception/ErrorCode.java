@@ -25,6 +25,11 @@ public enum ErrorCode {
   AUCTION_CANNOT_DELETE(HttpStatus.CONFLICT, "현재 상태의 경매는 삭제할 수 없습니다."),
   AUCTION_CANNOT_CANCEL(HttpStatus.CONFLICT, "현재 상태의 경매는 취소할 수 없습니다."),
 
+  // 경매 이미지
+  INVALID_S3_UPLOAD(HttpStatus.BAD_GATEWAY,"S3 이미지 업로드 실패했습니다."),
+  INVALID_IMAGE_STATUS(HttpStatus.BAD_REQUEST, "경매에 연결할 수 없는 이미지 상태입니다."),
+
+
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
