@@ -61,7 +61,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
-          # 환경 변수 주입
           envs: >
             DOCKER_USERNAME, DOCKER_PASSWORD,
             DB_JDBC_URL, DB_USER, DB_PASSWORD,
@@ -71,14 +70,11 @@ jobs:
             SECRET_PATTERN, CORS_ALLOWED_ORIGINS,
             S3_ACCESS_KEY, S3_SECRET_KEY, BUCKET_NAME, S3_BASE_URL
           script: |
-            # 1. 도커 로그인
             echo "$DOCKER_PASSWORD" | sudo docker login -u "$DOCKER_USERNAME" --password-stdin
             
-            # 2. 현재 포트 확인
             CURRENT_PORT=$(sed -n 's/.*:\([0-9]*\);/\1/p' /etc/nginx/conf.d/service-url.inc)
             echo "Current port: $CURRENT_PORT"
             
-            # 3. 타겟 포트 결정
             if [ "$CURRENT_PORT" = "8080" ]; then
               TARGET_PORT=8081
               TARGET_NAME="wind-fall-green"
@@ -91,10 +87,11 @@ jobs:
             
             echo "Target port: $TARGET_PORT"
             
-            # 4. 최신 이미지 풀
             sudo docker pull "$DOCKER_USERNAME"/wind-fall-server:latest
             
-            # 5. 새 컨테이너 실행
+            sudo docker rm -f "$TARGET_NAME" 2>/dev/null || true
+            
+            echo "Starting new container..."
             sudo docker run -d \
               --name "$TARGET_NAME" \
               -p "$TARGET_PORT":8080 \
@@ -118,29 +115,32 @@ jobs:
               -e S3_BASE_URL="$S3_BASE_URL" \
               "$DOCKER_USERNAME"/wind-fall-server:latest
             
-            # 6. Health Check
             echo "Starting Health Check..."
-            for i in {1..10}; do
-              RESPONSE=$(curl -s http://localhost:"$TARGET_PORT"/ || true)
-              if [ -n "$RESPONSE" ]; then
-                echo "Health Check Passed!"
+            # 부팅 시간 고려하여 횟수 약간 증가
+            for i in {1..12}; do
+              RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:"$TARGET_PORT"/ || true)
+            
+              if [ "$RESPONSE" = "200" ] || [ "$RESPONSE" = "404" ]; then
+                echo "Health Check Passed! (Status: $RESPONSE)"
                 break
               fi
-              if [ $i -eq 10 ]; then
-                echo "Health Check Failed."
+            
+              if [ $i -eq 12 ]; then
+                echo "Health Check Failed. (Status: $RESPONSE)"
+                echo "⬇️⬇️⬇️ ERROR LOGS ⬇️⬇️⬇️"
+                sudo docker logs --tail 50 "$TARGET_NAME"
+                echo "⬆️⬆️⬆️ ERROR LOGS ⬆️⬆️⬆️"
                 sudo docker stop "$TARGET_NAME"
                 sudo docker rm "$TARGET_NAME"
                 exit 1
               fi
-              echo "Waiting... ($i/10)"
+              echo "Waiting... ($i/12) - Current Status: $RESPONSE"
               sleep 10
             done
             
-            # 7. Nginx 스위칭
             echo "set \$service_url http://127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-url.inc
             sudo nginx -s reload
             
-            # 8. 기존 컨테이너 중지
             sudo docker stop "$STOP_NAME" 2>/dev/null || true
             sudo docker rm "$STOP_NAME" 2>/dev/null || true
             sudo docker image prune -f
