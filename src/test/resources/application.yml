@@ -56,6 +56,12 @@ custom:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
 
+app:
+  seed:
+    enabled: false   # 기본은 false
+    reset: false     # true면 전체 삭제 후 재삽입
+    marker-email: seed_admin@windfall.local
+
 aws:
   s3:
     accessKey: ${S3_ACCESS_KEY}

@@ -37,4 +37,10 @@ public class ChatRoom extends BaseEntity {
   @Enumerated(EnumType.STRING)
   @Column(name = "last_message_type")
   private ChatMessageType lastMessageType;
+
+  public void updateLastMessage(LocalDateTime at, String preview, ChatMessageType type) {
+    this.lastMessageAt = at;
+    this.lastMessagePreview = preview;
+    this.lastMessageType = type;
+  }
 }
