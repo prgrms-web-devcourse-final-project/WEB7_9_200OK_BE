@@ -32,6 +32,8 @@ public enum ErrorCode {
   TAG_INVALID_CHAR(HttpStatus.BAD_REQUEST, "태그는 한글, 영어, 숫자만 사용할 수 있습니다."),
   TAG_CONTAINS_SPACE(HttpStatus.BAD_REQUEST, "태그에 공백을 포함할 수 없습니다."),
 
+  // 경매 이미지
+  INVALID_S3_UPLOAD(HttpStatus.BAD_GATEWAY,"S3 이미지 업로드 실패했습니다."),
 
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")

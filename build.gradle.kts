@@ -36,6 +36,9 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
 
+    // Aws S3
+    implementation("software.amazon.awssdk:s3:2.40.13")
+
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
 
