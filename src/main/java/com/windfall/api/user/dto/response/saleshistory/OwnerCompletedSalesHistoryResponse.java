@@ -2,6 +2,7 @@ package com.windfall.api.user.dto.response.saleshistory;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.windfall.api.chat.dto.response.info.ChatInfo;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,9 +24,16 @@ import lombok.Getter;
 }) //json 출력 순서 맞추기
 public class OwnerCompletedSalesHistoryResponse extends BaseSalesHistoryResponse {
 
+  @Schema(description = "하락 퍼센트")
   private final int discountPercent;
+
+  @Schema(description = "종료 가격")
   private final int endPrice;
+
+  @Schema(description = "거래 상태")
   private final String tradeStatus;
+
+  @Schema(description = "채팅 정보")
   private final ChatInfo chatInfo;
 
   @Builder
