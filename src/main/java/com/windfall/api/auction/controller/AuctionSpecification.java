@@ -9,6 +9,7 @@ import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
+import static com.windfall.global.exception.ErrorCode.INVALID_IMAGE_STATUS;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.request.SellerEmojiRequest;
@@ -42,8 +43,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Auction", description = "경매 상세 및 상호작용 API")
 public interface AuctionSpecification {
 
-
-  @ApiErrorCodes({INVALID_TIME, INVALID_STOP_LOSS, INVALID_DROP_AMOUNT})
+  @ApiErrorCodes({INVALID_TIME, INVALID_STOP_LOSS, INVALID_DROP_AMOUNT,INVALID_IMAGE_STATUS})
   @Operation(summary = "경매 생성", description = "새로운 경매를 생성합니다.")
   ApiResponse<AuctionCreateResponse> createAuction(
       @Valid @RequestBody AuctionCreateRequest request

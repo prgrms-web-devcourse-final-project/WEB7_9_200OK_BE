@@ -42,4 +42,9 @@ public class AuctionImage extends BaseEntity {
         .status(status)
         .build();
   }
+
+  public void attachToAuction(Auction auction) {
+    this.auction = auction;
+    this.status = ImageStatus.ACTIVE;
+  }
 }

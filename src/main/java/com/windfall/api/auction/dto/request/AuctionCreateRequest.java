@@ -40,6 +40,10 @@ public record AuctionCreateRequest(
             """)
     List<TagInfo> tags,
 
+    @NotNull
+    @Schema(description = "경매 이미지", example = "[1,2,3,4]")
+    List<Long> imageIds,
+
     @NotNull(message = "경매 시작가는 필수입니다.")
     @Schema(description = "경매 시작가", example = "10000")
     Long startPrice,

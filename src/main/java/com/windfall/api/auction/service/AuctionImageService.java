@@ -1,7 +1,10 @@
 package com.windfall.api.auction.service;
 
 
+
+
 import com.windfall.api.auction.dto.response.ImageUploadResponse;
+import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.entity.AuctionImage;
 import com.windfall.domain.auction.enums.ImageStatus;
 import com.windfall.domain.auction.repository.AuctionImageRepository;
@@ -41,6 +44,28 @@ public class AuctionImageService {
     return files.stream()
         .map(this::uploadSingleFileAndSave)
         .collect(Collectors.toList());
+  }
+
+  public void attachImagesToAuction(List<Long> imageIds, Auction auction) {
+    List<AuctionImage> images = auctionImageRepository.findAllById(imageIds);
+
+    validateImageStatus(images,imageIds);
+
+    for (AuctionImage image : images) {
+      image.attachToAuction(auction);
+    }
+  }
+
+  private void validateImageStatus(List<AuctionImage> images,List<Long> request) {
+    if(request.size() != images.size()){
+      throw new ErrorException(ErrorCode.INVALID_IMAGE_STATUS);
+    }
+
+    for (AuctionImage image : images) {
+      if (image.getStatus() != ImageStatus.TEMP) {
+        throw new ErrorException(ErrorCode.INVALID_IMAGE_STATUS);
+      }
+    }
   }
 
   private ImageUploadResponse uploadSingleFileAndSave(MultipartFile file){
