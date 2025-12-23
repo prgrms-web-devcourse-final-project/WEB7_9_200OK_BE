@@ -30,12 +30,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest .
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@master
@@ -43,16 +42,25 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
+          # 환경 변수 주입
+          envs: >
+            DOCKER_USERNAME, DOCKER_PASSWORD,
+            DB_JDBC_URL, DB_USER, DB_PASSWORD,
+            REDIS_HOST, REST_API_KAKAO, REDIRECT_URI_KAKAO,
+            CLIENT_ID_NAVER, REDIRECT_URI_NAVER,
+            CLIENT_ID_GOOGLE, REDIRECT_URI_GOOGLE,
+            SECRET_PATTERN, CORS_ALLOWED_ORIGINS,
+            S3_ACCESS_KEY, S3_SECRET_KEY, BUCKET_NAME, S3_BASE_URL
           script: |
             # 1. 도커 로그인
-            echo ${{ secrets.DOCKER_PASSWORD }} | sudo docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            echo "$DOCKER_PASSWORD" | sudo docker login -u "$DOCKER_USERNAME" --password-stdin
             
             # 2. 현재 포트 확인
-            CURRENT_PORT=$(cat /etc/nginx/conf.d/service-url.inc | grep -o '[0-9]*')
+            CURRENT_PORT=$(sed -n 's/.*:\([0-9]*\);/\1/p' /etc/nginx/conf.d/service-url.inc)
             echo "Current port: $CURRENT_PORT"
             
-            # 3. 포트 및 이름 결정
-            if [ "$CURRENT_PORT" -eq 8080 ]; then
+            # 3. 타겟 포트 결정
+            if [ "$CURRENT_PORT" = "8080" ]; then
               TARGET_PORT=8081
               TARGET_NAME="wind-fall-green"
               STOP_NAME="wind-fall-blue"
@@ -63,49 +71,46 @@ jobs:
             fi
             
             echo "Target port: $TARGET_PORT"
-            echo "Target name: $TARGET_NAME"
             
-            # 4. 최신 이미지 다운로드
-            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+            # 4. 최신 이미지 풀
+            sudo docker pull "$DOCKER_USERNAME"/wind-fall-server:latest
             
             # 5. 새 컨테이너 실행
             sudo docker run -d \
-              --name $TARGET_NAME \
-              -p $TARGET_PORT:8080 \
+              --name "$TARGET_NAME" \
+              -p "$TARGET_PORT":8080 \
               --network windfall-net \
               -e TZ=Asia/Seoul \
-              -e DB_JDBC_URL=${{ secrets.DB_JDBC_URL }} \
-              -e DB_USER=${{ secrets.DB_USER }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e SPRING_DATA_REDIS_HOST=${{ secrets.REDIS_HOST }} \
-              -e REST_API_KAKAO=${{ secrets.REST_API_KAKAO }} \
-              -e REDIRECT_URI_KAKAO=${{ secrets.REDIRECT_URI_KAKAO }} \
-              -e CLIENT_ID_NAVER=${{ secrets.CLIENT_ID_NAVER }} \
-              -e REDIRECT_URI_NAVER=${{ secrets.REDIRECT_URI_NAVER }} \
-              -e CLIENT_ID_GOOGLE=${{ secrets.CLIENT_ID_GOOGLE }} \
-              -e REDIRECT_URI_GOOGLE=${{ secrets.REDIRECT_URI_GOOGLE }} \
-              -e SECRET_PATTERN=${{ secrets.SECRET_PATTERN }} \
-              -e CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }} \
-              -e S3_ACCESS_KEY=${{ secrets.S3_ACCESS_KEY }} \
-              -e S3_SECRET_KEY=${{ secrets.S3_SECRET_KEY }} \
-              -e BUCKET_NAME=${{ secrets.BUCKET_NAME }} \
-              -e S3_BASE_URL=${{ secrets.S3_BASE_URL }} \
-              ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+              -e DB_JDBC_URL="$DB_JDBC_URL" \
+              -e DB_USER="$DB_USER" \
+              -e DB_PASSWORD="$DB_PASSWORD" \
+              -e SPRING_DATA_REDIS_HOST="$REDIS_HOST" \
+              -e REST_API_KAKAO="$REST_API_KAKAO" \
+              -e REDIRECT_URI_KAKAO="$REDIRECT_URI_KAKAO" \
+              -e CLIENT_ID_NAVER="$CLIENT_ID_NAVER" \
+              -e REDIRECT_URI_NAVER="$REDIRECT_URI_NAVER" \
+              -e CLIENT_ID_GOOGLE="$CLIENT_ID_GOOGLE" \
+              -e REDIRECT_URI_GOOGLE="$REDIRECT_URI_GOOGLE" \
+              -e SECRET_PATTERN="$SECRET_PATTERN" \
+              -e CORS_ALLOWED_ORIGINS="$CORS_ALLOWED_ORIGINS" \
+              -e S3_ACCESS_KEY="$S3_ACCESS_KEY" \
+              -e S3_SECRET_KEY="$S3_SECRET_KEY" \
+              -e BUCKET_NAME="$BUCKET_NAME" \
+              -e S3_BASE_URL="$S3_BASE_URL" \
+              "$DOCKER_USERNAME"/wind-fall-server:latest
             
             # 6. Health Check
             echo "Starting Health Check..."
             for i in {1..10}; do
-              RESPONSE=$(curl -s http://localhost:$TARGET_PORT/ || true)
-            
+              RESPONSE=$(curl -s http://localhost:"$TARGET_PORT"/ || true)
               if [ -n "$RESPONSE" ]; then
                 echo "Health Check Passed!"
                 break
               fi
-            
               if [ $i -eq 10 ]; then
-                echo "Health Check Failed. Deployment stopped."
-                sudo docker stop $TARGET_NAME
-                sudo docker rm $TARGET_NAME
+                echo "Health Check Failed."
+                sudo docker stop "$TARGET_NAME"
+                sudo docker rm "$TARGET_NAME"
                 exit 1
               fi
               echo "Waiting... ($i/10)"
@@ -113,14 +118,10 @@ jobs:
             done
             
             # 7. Nginx 스위칭
-            echo "Switching Nginx traffic to $TARGET_PORT"
             echo "set \$service_url http://127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-url.inc
             sudo nginx -s reload
             
-            # 8. 구 버전 중단
-            echo "Stopping old container: $STOP_NAME"
-            sudo docker stop $STOP_NAME 2>/dev/null || true
-            sudo docker rm $STOP_NAME 2>/dev/null || true
-            
-            # 9. 정리
+            # 8. 기존 컨테이너 중지
+            sudo docker stop "$STOP_NAME" 2>/dev/null || true
+            sudo docker rm "$STOP_NAME" 2>/dev/null || true
             sudo docker image prune -f
