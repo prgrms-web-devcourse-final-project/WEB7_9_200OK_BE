@@ -40,12 +40,10 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
-@Profile({"local", "local-reset"})
 @RequiredArgsConstructor
 public class LocalSeedDataRunner implements ApplicationRunner {
 
@@ -98,8 +96,7 @@ public class LocalSeedDataRunner implements ApplicationRunner {
   }
 
   /**
-   * FK 순서를 고려해서 “자식부터” 삭제.
-   * ddl-auto=update 상태에서도 reset=true로 깔끔하게 재삽입 가능.
+   * FK 순서를 고려해서 “자식부터” 삭제. ddl-auto=update 상태에서도 reset=true로 깔끔하게 재삽입 가능.
    */
   private void resetAllData() {
     chatImageRepository.deleteAllInBatch();
@@ -148,7 +145,8 @@ public class LocalSeedDataRunner implements ApplicationRunner {
     ctx.users = users;
   }
 
-  private User makeUser(SeedContext ctx, ProviderType provider, String providerUserId, String email, String nickname) {
+  private User makeUser(SeedContext ctx, ProviderType provider, String providerUserId, String email,
+      String nickname) {
     return User.builder()
         .provider(provider)
         .providerUserId("seed-" + providerUserId)
@@ -186,18 +184,21 @@ public class LocalSeedDataRunner implements ApplicationRunner {
     // SCHEDULED 2개
     auctions.add(makeAuction(sellerA, "오프화이트 후드티 (S)", "실착 1회, 거의 새상품", AuctionCategory.CLOTHING,
         150_000L, 80_000L, 5_000L, AuctionStatus.SCHEDULED, now.plusHours(3), null));
-    auctions.add(makeAuction(sellerB, "닌텐도 스위치 OLED", "박스/구성품 풀세트, 스크래치 없음", AuctionCategory.DIGITAL,
-        320_000L, 200_000L, 10_000L, AuctionStatus.SCHEDULED, now.plusHours(5), null));
+    auctions.add(
+        makeAuction(sellerB, "닌텐도 스위치 OLED", "박스/구성품 풀세트, 스크래치 없음", AuctionCategory.DIGITAL,
+            320_000L, 200_000L, 10_000L, AuctionStatus.SCHEDULED, now.plusHours(5), null));
 
     // PROCESS 6개
     auctions.add(makeAuction(sellerA, "다이슨 에어랩", "구성품 일부 미사용, 상태 A급", AuctionCategory.APPLIANCE,
         450_000L, 450_000L, 250_000L, 10_000L, AuctionStatus.PROCESS, now.minusHours(2), null));
     auctions.add(makeAuction(sellerA, "에어팟 프로 2세대", "미개봉", AuctionCategory.DIGITAL,
         280_000L, 280_000L, 180_000L, 5_000L, AuctionStatus.PROCESS, now.minusHours(1), null));
-    auctions.add(makeAuction(sellerB, "캠핑 의자 2개 세트", "사용감 약간, 기능 정상", AuctionCategory.SPORTS_LEISURE,
-        90_000L, 90_000L, 40_000L, 2_000L, AuctionStatus.PROCESS, now.minusHours(3), null));
-    auctions.add(makeAuction(sellerB, "원목 책상", "직거래 선호, 생활기스 있음", AuctionCategory.FURNITURE_INTERIOR,
-        200_000L, 200_000L, 70_000L, 5_000L, AuctionStatus.PROCESS, now.minusHours(4), null));
+    auctions.add(
+        makeAuction(sellerB, "캠핑 의자 2개 세트", "사용감 약간, 기능 정상", AuctionCategory.SPORTS_LEISURE,
+            90_000L, 90_000L, 40_000L, 2_000L, AuctionStatus.PROCESS, now.minusHours(3), null));
+    auctions.add(
+        makeAuction(sellerB, "원목 책상", "직거래 선호, 생활기스 있음", AuctionCategory.FURNITURE_INTERIOR,
+            200_000L, 200_000L, 70_000L, 5_000L, AuctionStatus.PROCESS, now.minusHours(4), null));
     auctions.add(makeAuction(sellerA, "강아지 유모차", "산책용, 접이식", AuctionCategory.PET,
         160_000L, 160_000L, 60_000L, 3_000L, AuctionStatus.PROCESS, now.minusHours(5), null));
     auctions.add(makeAuction(sellerB, "한정판 피규어", "박스 O, 전시만", AuctionCategory.HOBBY,
@@ -205,13 +206,17 @@ public class LocalSeedDataRunner implements ApplicationRunner {
 
     // COMPLETED 4개
     auctions.add(makeAuction(sellerA, "맥북 에어 M2", "배터리 사이클 적음, 구성품 완비", AuctionCategory.DIGITAL,
-        1_200_000L, 800_000L, 20_000L, AuctionStatus.COMPLETED, now.minusDays(2), now.minusDays(1).minusHours(2)));
+        1_200_000L, 800_000L, 20_000L, AuctionStatus.COMPLETED, now.minusDays(2),
+        now.minusDays(1).minusHours(2)));
     auctions.add(makeAuction(sellerB, "오프화이트 스니커즈", "정품, 사이즈 270", AuctionCategory.GOODS,
-        400_000L, 250_000L, 10_000L, AuctionStatus.COMPLETED, now.minusDays(3), now.minusDays(2).minusHours(1)));
+        400_000L, 250_000L, 10_000L, AuctionStatus.COMPLETED, now.minusDays(3),
+        now.minusDays(2).minusHours(1)));
     auctions.add(makeAuction(sellerA, "전자레인지", "기능 정상, 외관 사용감", AuctionCategory.APPLIANCE,
-        70_000L, 30_000L, 2_000L, AuctionStatus.COMPLETED, now.minusDays(4), now.minusDays(3).minusHours(3)));
+        70_000L, 30_000L, 2_000L, AuctionStatus.COMPLETED, now.minusDays(4),
+        now.minusDays(3).minusHours(3)));
     auctions.add(makeAuction(sellerB, "도서/티켓 묶음", "도서 5권 + 전시 티켓", AuctionCategory.BOOK_TICKET,
-        50_000L, 20_000L, 1_000L, AuctionStatus.COMPLETED, now.minusDays(5), now.minusDays(4).minusHours(4)));
+        50_000L, 20_000L, 1_000L, AuctionStatus.COMPLETED, now.minusDays(5),
+        now.minusDays(4).minusHours(4)));
 
     auctionRepository.saveAll(auctions);
     ctx.auctions = auctions;
@@ -278,9 +283,15 @@ public class LocalSeedDataRunner implements ApplicationRunner {
 
     for (Auction auction : ctx.auctions) {
       String seedKey = "auction-" + auction.getTitle().hashCode();
-      images.add(AuctionImage.builder().auction(auction).image(ctx.img(seedKey + "-1", 800)).size(size).build());
-      images.add(AuctionImage.builder().auction(auction).image(ctx.img(seedKey + "-2", 800)).size(size).build());
-      images.add(AuctionImage.builder().auction(auction).image(ctx.img(seedKey + "-3", 800)).size(size).build());
+      images.add(
+          AuctionImage.builder().auction(auction).image(ctx.img(seedKey + "-1", 800)).size(size)
+              .build());
+      images.add(
+          AuctionImage.builder().auction(auction).image(ctx.img(seedKey + "-2", 800)).size(size)
+              .build());
+      images.add(
+          AuctionImage.builder().auction(auction).image(ctx.img(seedKey + "-3", 800)).size(size)
+              .build());
     }
 
     auctionImageRepository.saveAll(images);
@@ -310,7 +321,9 @@ public class LocalSeedDataRunner implements ApplicationRunner {
     List<AuctionPriceHistory> histories = new ArrayList<>();
 
     for (Auction auction : ctx.auctions) {
-      if (auction.getStatus() != AuctionStatus.PROCESS) continue;
+      if (auction.getStatus() != AuctionStatus.PROCESS) {
+        continue;
+      }
 
       long base = auction.getStartPrice();
       long viewer = 10 + ctx.rnd.nextInt(50);
@@ -346,7 +359,9 @@ public class LocalSeedDataRunner implements ApplicationRunner {
         User u = users.get(ctx.rnd.nextInt(users.size()));
         Long userId = u.getId();
 
-        if (userId == null || likedUserIds.contains(userId)) continue;
+        if (userId == null || likedUserIds.contains(userId)) {
+          continue;
+        }
         likedUserIds.add(userId);
 
         likes.add(AuctionLike.create(auction, userId));
@@ -383,7 +398,8 @@ public class LocalSeedDataRunner implements ApplicationRunner {
     ctx.trades = trades;
   }
 
-  private Trade makeTrade(Auction auction, Long buyerId, Long sellerId, TradeStatus status, Long finalPrice) {
+  private Trade makeTrade(Auction auction, Long buyerId, Long sellerId, TradeStatus status,
+      Long finalPrice) {
     return Trade.builder()
         .auction(auction)
         .buyerId(buyerId)
@@ -395,7 +411,8 @@ public class LocalSeedDataRunner implements ApplicationRunner {
 
   private void seedChatRoomsMessagesAndSync(SeedContext ctx) {
     List<Trade> chatEligible = ctx.trades.stream()
-        .filter(t -> t.getStatus() == TradeStatus.PAYMENT_COMPLETED || t.getStatus() == TradeStatus.PURCHASE_CONFIRMED)
+        .filter(t -> t.getStatus() == TradeStatus.PAYMENT_COMPLETED
+            || t.getStatus() == TradeStatus.PURCHASE_CONFIRMED)
         .toList();
 
     List<ChatRoom> rooms = new ArrayList<>();
@@ -421,7 +438,8 @@ public class LocalSeedDataRunner implements ApplicationRunner {
       // TEXT 11개 + IMAGE 2개 (총 14개)
       for (int i = 1; i <= 11; i++) {
         User sender = (i % 2 == 0) ? buyer : seller;
-        allMessages.add(makeMessage(room, sender, makeChatText(trade, i), ChatMessageType.TEXT, i < 6));
+        allMessages.add(
+            makeMessage(room, sender, makeChatText(trade, i), ChatMessageType.TEXT, i < 6));
       }
 
       ChatMessage img1 = makeMessage(room, buyer, "사진을 보냈습니다.", ChatMessageType.IMAGE, false);
@@ -435,7 +453,9 @@ public class LocalSeedDataRunner implements ApplicationRunner {
 
     // IMAGE 타입만 골라서 ChatImage 저장
     for (ChatMessage m : allMessages) {
-      if (m.getMessageType() != ChatMessageType.IMAGE) continue;
+      if (m.getMessageType() != ChatMessageType.IMAGE) {
+        continue;
+      }
       String seedKey = "chat-" + m.getId();
       allChatImages.add(ChatImage.builder()
           .chatMessage(m)
@@ -448,7 +468,8 @@ public class LocalSeedDataRunner implements ApplicationRunner {
     syncChatRoomLastMessage(rooms);
   }
 
-  private ChatMessage makeMessage(ChatRoom room, User sender, String content, ChatMessageType type, boolean isRead) {
+  private ChatMessage makeMessage(ChatRoom room, User sender, String content, ChatMessageType type,
+      boolean isRead) {
     return ChatMessage.builder()
         .chatRoom(room)
         .sender(sender)
@@ -461,7 +482,8 @@ public class LocalSeedDataRunner implements ApplicationRunner {
   private void syncChatRoomLastMessage(List<ChatRoom> rooms) {
     for (ChatRoom room : rooms) {
 
-      ChatMessage last = chatMessageRepository.findTopByChatRoomIdOrderByCreateDateDesc(room.getId());
+      ChatMessage last = chatMessageRepository.findTopByChatRoomIdOrderByCreateDateDesc(
+          room.getId());
 
       String preview = last.getContent();
       if (preview != null && preview.length() > 200) {
@@ -480,7 +502,9 @@ public class LocalSeedDataRunner implements ApplicationRunner {
         .findFirst()
         .orElse(null);
 
-    if (confirmed == null) return;
+    if (confirmed == null) {
+      return;
+    }
 
     Review review = Review.createReview(
         confirmed,
@@ -510,6 +534,7 @@ public class LocalSeedDataRunner implements ApplicationRunner {
   }
 
   private static class SeedContext {
+
     private final Random rnd;
 
     private List<User> users = List.of();
