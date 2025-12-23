@@ -97,9 +97,9 @@ jobs:
               -p "$TARGET_PORT":8080 \
               --network windfall-net \
               -e TZ=Asia/Seoul \
-              -e DB_JDBC_URL="$DB_JDBC_URL" \
-              -e DB_USER="$DB_USER" \
-              -e DB_PASSWORD="$DB_PASSWORD" \
+              -e SPRING_DATASOURCE_URL="$DB_JDBC_URL" \
+              -e SPRING_DATASOURCE_USERNAME="$DB_USER" \
+              -e SPRING_DATASOURCE_PASSWORD="$DB_PASSWORD" \
               -e SPRING_DATA_REDIS_HOST="$REDIS_HOST" \
               -e REST_API_KAKAO="$REST_API_KAKAO" \
               -e REDIRECT_URI_KAKAO="$REDIRECT_URI_KAKAO" \
@@ -116,7 +116,6 @@ jobs:
               "$DOCKER_USERNAME"/wind-fall-server:latest
             
             echo "Starting Health Check..."
-            # 부팅 시간 고려하여 횟수 약간 증가
             for i in {1..12}; do
               RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:"$TARGET_PORT"/ || true)
             
