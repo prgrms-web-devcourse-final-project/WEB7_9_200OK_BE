@@ -55,3 +55,10 @@ custom:
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+aws:
+  s3:
+    accessKey: ${S3_ACCESS_KEY}
+    secretKey: ${S3_SECRET_KEY}
+    bucketName: ${BUCKET_NAME}
+    baseUrl: ${S3_BASE_URL}
