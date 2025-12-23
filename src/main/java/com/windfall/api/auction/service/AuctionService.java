@@ -47,6 +47,7 @@ public class AuctionService {
   private final TagService tagService;
   private final AuctionTagRepository auctionTagRepository;
   private final AuctionLikeService auctionLikeService;
+  private final AuctionImageService auctionImageService;
 
   @Transactional
   public AuctionCreateResponse createAuction(AuctionCreateRequest request) {
@@ -57,6 +58,8 @@ public class AuctionService {
     Auction auction = Auction.create(request, seller);
 
     Auction savedAuction = auctionRepository.save(auction);
+
+    auctionImageService.attachImagesToAuction(request.imageIds(),savedAuction);
 
     List<String> tags = tagService.saveTagIfExist(savedAuction, request.tags());
 
