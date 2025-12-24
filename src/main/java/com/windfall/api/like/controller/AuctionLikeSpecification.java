@@ -22,7 +22,7 @@ public interface AuctionLikeSpecification {
       @Parameter(description = "경매 ID", required = true, example = "1")
       @PathVariable Long auctionId,
 
-      @Parameter(description = "사용자 ID", required = true, example = "1")
+      @Parameter(description = "사용자 ID")
       @AuthenticationPrincipal CustomUserDetails userId
   );
 }
