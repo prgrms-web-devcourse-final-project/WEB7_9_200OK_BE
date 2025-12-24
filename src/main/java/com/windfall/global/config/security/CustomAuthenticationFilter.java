@@ -2,6 +2,7 @@ package com.windfall.global.config.security;
 
 import com.windfall.api.user.service.JwtProvider;
 import com.windfall.api.user.service.UserService;
+import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -61,11 +61,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     String providerUserId = jwtProvider.getProviderUserId(token);
     User user = userService.getUserByProviderUserId(providerUserId);
 
-    UserDetails userDetails = org.springframework.security.core.userdetails.User
-        .withUsername(user.getProviderUserId())
-        .password("")
-        .authorities("ROLE_USER")
-        .build();
+    CustomUserDetails userDetails = new CustomUserDetails(user);
 
     UsernamePasswordAuthenticationToken authentication =
         new UsernamePasswordAuthenticationToken(
@@ -77,6 +73,7 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     authentication.setDetails(
         new WebAuthenticationDetailsSource().buildDetails(request)
     );
+
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
