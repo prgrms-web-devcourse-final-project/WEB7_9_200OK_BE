@@ -1,4 +1,4 @@
-package com.windfall.api.auction;
+package com.windfall.api.auction.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -10,17 +10,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.windfall.api.auction.controller.AuctionController;
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.domain.auction.entity.AuctionImage;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.domain.auction.enums.ImageStatus;
+import com.windfall.domain.auction.repository.AuctionImageRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -49,12 +53,16 @@ class AuctionControllerTest {
   private UserRepository userRepository;
 
   @Autowired
+  private AuctionImageRepository imageRepository;
+
+  @Autowired
   private ObjectMapper objectMapper;
 
   private Long sellerId;
 
   private Long auctionId;
 
+  private Long imageId;
 
   @BeforeEach
   void setUp() {
@@ -66,6 +74,10 @@ class AuctionControllerTest {
         .build();
     User saveUser = userRepository.save(seller);
     sellerId = saveUser.getId();
+
+    AuctionImage image = AuctionImage.create("https://example.test",123L, ImageStatus.TEMP);
+    AuctionImage saveImage = imageRepository.save(image);
+    imageId = saveImage.getId();
 
     Auction auction = Auction.builder()
         .title("테스트 제목")
@@ -92,13 +104,15 @@ class AuctionControllerTest {
       // given
       LocalDateTime resultTime = createTime();
       String formattedTime = formated(resultTime);
-
+      List<Long> images = new ArrayList<>();
+      images.add(imageId);
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
           null,
+          images,
           10000L,
           9000L,
           50L,
@@ -138,13 +152,15 @@ class AuctionControllerTest {
     void fail1() throws Exception{
       // given
       LocalDateTime resultTime = createTime();
-
+      List<Long> images = new ArrayList<>();
+      images.add(imageId);
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
           null,
           "테스트 설명",
           AuctionCategory.DIGITAL,
           null,
+          images,
           10000L,
           9000L,
           50L,
@@ -174,13 +190,15 @@ class AuctionControllerTest {
     void fail2() throws Exception{
       // given
       LocalDateTime resultTime = createTime();
-
+      List<Long> images = new ArrayList<>();
+      images.add(imageId);
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
           null,
+          images,
           10000L,
           9000L,
           49L,
@@ -210,13 +228,15 @@ class AuctionControllerTest {
     void fail3() throws Exception{
       // given
       LocalDateTime resultTime = createTime();
-
+      List<Long> images = new ArrayList<>();
+      images.add(imageId);
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
           null,
+          images,
           10000L,
           9001L,
           50L,
@@ -246,13 +266,15 @@ class AuctionControllerTest {
     void fail4() throws Exception{
       // given
       LocalDateTime resultTime = createTime().minusMinutes(10);
-
+      List<Long> images = new ArrayList<>();
+      images.add(imageId);
       AuctionCreateRequest request = new AuctionCreateRequest(
           sellerId,
           "테스트 제목",
           "테스트 설명",
           AuctionCategory.DIGITAL,
           null,
+          images,
           10000L,
           9000L,
           50L,

@@ -1,7 +1,6 @@
 package com.windfall.api.tag.service;
 
 import com.windfall.api.auction.dto.request.TagInfo;
-import com.windfall.api.tag.dto.request.SearchTagRequest;
 import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.tag.entity.AuctionTag;
@@ -47,11 +46,11 @@ public class TagService {
   }
 
   @Transactional(readOnly = true)
-  public SearchTagResponse searchTag(SearchTagRequest request) {
-    if (request.keyword() == null || request.keyword().isBlank()) {
+  public SearchTagResponse searchTag(String request) {
+    if (request == null || request.isBlank()) {
       return SearchTagResponse.empty();
     }
-    String trimmedKeyword = request.keyword().trim();
+    String trimmedKeyword = request.trim();
 
     List<String> tags = tagRepository
         .findByKeyword(trimmedKeyword, PageRequest.of(0, 5))

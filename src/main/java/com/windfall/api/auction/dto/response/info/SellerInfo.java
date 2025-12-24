@@ -10,25 +10,17 @@ public record SellerInfo(
     Long sellerId,
 
     @Schema(description = "판매자 닉네임")
-    String nickname,
+    String username,
 
     @Schema(description = "판매자 프로필 이미지 URL")
-    String profileImageUrl,
-
-    @Schema(description = "판매자 평점")
-    double rating,
-
-    @Schema(description = "판매자 리뷰 수")
-    Long reviewCount
+    String profileImageUrl
 
 ) {
   public static SellerInfo from(User user) {
     return new SellerInfo(
         user.getId(),
         "닉네임", // user.getNickname(),
-        "https://example.png", // user.getProfileImageUrl(),
-        0.0, // user.getRating(),
-        0L // user.getReviewCount()
+        "https://example.png" // user.getProfileImageUrl(),
     );
   }
 }

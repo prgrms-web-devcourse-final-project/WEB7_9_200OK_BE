@@ -6,8 +6,11 @@ spring:
     password: ${DB_PASSWORD}
     hikari:
       auto-commit: false
-
-#  elasticsearch:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  #  elasticsearch:
 #    uris: http://localhost:9200
 
   data:
@@ -66,3 +69,16 @@ custom:
 
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+
+app:
+  seed:
+    enabled: false   # 기본은 false
+    reset: false     # true면 전체 삭제 후 재삽입
+    marker-email: seed_admin@windfall.local
+
+aws:
+  s3:
+    accessKey: ${S3_ACCESS_KEY}
+    secretKey: ${S3_SECRET_KEY}
+    bucketName: ${BUCKET_NAME}
+    baseUrl: ${S3_BASE_URL}

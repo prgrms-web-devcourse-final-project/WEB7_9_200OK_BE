@@ -1,0 +1,121 @@
+name: CI/CD Zero Downtime Deploy
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew clean build -x test
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest .
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            # 1. 도커 로그인
+            echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            
+            # 2. 현재 포트 확인
+            CURRENT_PORT=$(cat /etc/nginx/conf.d/service-url.inc | grep -o '[0-9]*')
+            echo "Current port: $CURRENT_PORT"
+            
+            if [ "$CURRENT_PORT" -eq 8080 ]; then
+              TARGET_PORT=8081
+              TARGET_NAME="wind-fall-green"
+              STOP_NAME="wind-fall-blue"
+            else
+              TARGET_PORT=8080
+              TARGET_NAME="wind-fall-blue"
+              STOP_NAME="wind-fall-green"
+            fi
+            
+            echo "Target port: $TARGET_PORT"
+            
+            # 3. 최신 이미지 받기
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+            
+            # 4. 새 컨테이너 실행
+            sudo docker run -d \
+              --name "$TARGET_NAME" \
+              -p "$TARGET_PORT":8080 \
+              --network windfall-net \
+              -e TZ=Asia/Seoul \
+              -e DB_JDBC_URL="${{ secrets.DB_JDBC_URL }}" \
+              -e DB_USER="${{ secrets.DB_USER }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e REDIS_HOST="${{ secrets.REDIS_HOST }}" \
+              -e REST_API_KAKAO="${{ secrets.REST_API_KAKAO }}" \
+              -e REDIRECT_URI_KAKAO="${{ secrets.REDIRECT_URI_KAKAO }}" \
+              -e CLIENT_ID_NAVER="${{ secrets.CLIENT_ID_NAVER }}" \
+              -e REDIRECT_URI_NAVER="${{ secrets.REDIRECT_URI_NAVER }}" \
+              -e CLIENT_ID_GOOGLE="${{ secrets.CLIENT_ID_GOOGLE }}" \
+              -e REDIRECT_URI_GOOGLE="${{ secrets.REDIRECT_URI_GOOGLE }}" \
+              -e SECRET_PATTERN="${{ secrets.SECRET_PATTERN }}" \
+              -e CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}" \
+              -e S3_ACCESS_KEY="${{ secrets.S3_ACCESS_KEY }}" \
+              -e S3_SECRET_KEY="${{ secrets.S3_SECRET_KEY }}" \
+              -e BUCKET_NAME="${{ secrets.BUCKET_NAME }}" \
+              -e S3_BASE_URL="${{ secrets.S3_BASE_URL }}" \
+              ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+            
+            # 5. Health Check
+            echo "Starting Health Check..."
+            for i in {1..12}; do
+              RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:"$TARGET_PORT"/api/v1/auctions || true)
+            
+              if [ "$RESPONSE_CODE" = "200" ]; then
+                echo "Health Check Passed! (Status: $RESPONSE_CODE)"
+                break
+              fi
+            
+              if [ $i -eq 12 ]; then
+                echo "Health Check Failed. (Status: $RESPONSE_CODE)"
+                sudo docker logs --tail 50 "$TARGET_NAME"
+                sudo docker stop "$TARGET_NAME"
+                sudo docker rm "$TARGET_NAME"
+                exit 1
+              fi
+              echo "Waiting... ($i/12) - Current Status: $RESPONSE_CODE"
+              sleep 10
+            done
+            
+            # 6. Nginx 스위칭 & 정리
+            echo "Switching Nginx traffic to $TARGET_PORT"
+            echo "set \$service_url http://127.0.0.1:$TARGET_PORT;" | sudo tee /etc/nginx/conf.d/service-url.inc
+            sudo nginx -s reload
+            
+            echo "Stopping old container: $STOP_NAME"
+            sudo docker stop "$STOP_NAME" 2>/dev/null || true
+            sudo docker rm "$STOP_NAME" 2>/dev/null || true
+            sudo docker image prune -f

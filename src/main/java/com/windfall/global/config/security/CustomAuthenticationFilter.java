@@ -6,6 +6,7 @@ import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -26,77 +27,76 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
   private final JwtProvider jwtProvider;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+      FilterChain filterChain) throws ServletException, IOException {
 
+    // preflight 통과
     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    logger.debug("CustomAuthenticationFilter called");
+    String token = resolveToken(request);
 
-    try {
-      authenticate(request, response, filterChain);
-    } catch (Exception e) {
-      // JWT 검증 등 일반 예외 처리
-      response.setContentType("application/json");
-      response.setStatus(HttpStatus.UNAUTHORIZED.value());
-      response.getWriter().write("""
-        {
-            "resultCode": "%s",
-            "msg": "%s"
-        }
-        """.formatted(ErrorCode.INVALID_TOKEN, ErrorCode.INVALID_TOKEN.getMessage()));
-    }
-  }
-
-  private void authenticate(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    String path = request.getRequestURI();
-
-    // 1. 예외 URL 패스
-    if (path.startsWith("/api/v1") ||
-        path.startsWith("/swagger-ui") ||
-        path.startsWith("/v3/api-docs") ||
-        path.startsWith("/swagger-resources") ||
-        path.startsWith("/webjars")) {
+    if (token == null || token.isBlank()) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    // 2. Authorization 헤더 확인
-    final String authHeader = request.getHeader("Authorization");
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      return;
-    }
-
-    String token = authHeader.substring(7); // "Bearer " 제거
-    // 3. accessToken 검증
     if (!jwtProvider.validateToken(token)) {
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json;charset=UTF-8");
+      response.setStatus(HttpStatus.UNAUTHORIZED.value());
+      response.getWriter().write("""
+        {
+          "resultCode": "%s",
+          "msg": "%s"
+        }
+        """.formatted(
+          ErrorCode.INVALID_TOKEN.name(),
+          ErrorCode.INVALID_TOKEN.getMessage()
+      ));
       return;
     }
 
-    // 4. 사용자 정보 가져오기
     String providerUserId = jwtProvider.getProviderUserId(token);
     User user = userService.getUserByProviderUserId(providerUserId);
+
     UserDetails userDetails = org.springframework.security.core.userdetails.User
         .withUsername(user.getProviderUserId())
-        .password("") // OAuth라 빈 문자열 넣기.
-        .authorities("ROLE_USER")    // 권한 설정
+        .password("")
+        .authorities("ROLE_USER")
         .build();
 
-    // 5. SecurityContext 세팅
     UsernamePasswordAuthenticationToken authentication =
         new UsernamePasswordAuthenticationToken(
             userDetails,
             null,
             userDetails.getAuthorities()
         );
-    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+    authentication.setDetails(
+        new WebAuthenticationDetailsSource().buildDetails(request)
+    );
+
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-    // 6. 다음 필터로 진행
     filterChain.doFilter(request, response);
+  }
+
+  private String resolveToken(HttpServletRequest request) {
+    String authHeader = request.getHeader("Authorization");
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+      return authHeader.substring(7);
+    }
+
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) return null;
+
+    for (Cookie c : cookies) {
+      if ("accessToken".equals(c.getName())) {
+        return c.getValue();
+      }
+    }
+    return null;
   }
 }
