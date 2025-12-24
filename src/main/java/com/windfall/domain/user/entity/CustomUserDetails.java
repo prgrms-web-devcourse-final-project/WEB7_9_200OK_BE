@@ -18,10 +18,7 @@ public final class CustomUserDetails implements UserDetails {
   private final String profileImageUrl;
 
   public CustomUserDetails(User user) {
-    if (user.getId() == null) {
-      throw new ErrorException(ErrorCode.NOT_FOUND_USER);
-    }
-
+    exceptionUser(user);
     this.userId = user.getId();
     this.provider = user.getProvider();
     this.providerUserId = user.getProviderUserId();
@@ -67,5 +64,11 @@ public final class CustomUserDetails implements UserDetails {
   @Override
   public String getUsername() {
     return provider + "_" + providerUserId;
+  }
+
+  private void exceptionUser(User user) {
+    if (user.getId() == null) {
+      throw new ErrorException(ErrorCode.NOT_FOUND_USER);
+    }
   }
 }
