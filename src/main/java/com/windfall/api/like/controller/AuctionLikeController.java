@@ -2,8 +2,11 @@ package com.windfall.api.like.controller;
 
 import com.windfall.api.like.dto.response.AuctionLikeResponse;
 import com.windfall.api.like.service.AuctionLikeService;
+import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,9 +24,9 @@ public class AuctionLikeController implements AuctionLikeSpecification{
   @PostMapping("/{auctionId}/like")
   public ApiResponse<AuctionLikeResponse> toggleLike(
       @PathVariable Long auctionId,
-      @RequestParam Long userId // 제거 예정
+      @AuthenticationPrincipal CustomUserDetails user // 제거 예정
   ) {
-    AuctionLikeResponse response = auctionLikeService.toggleLike(auctionId, userId);
+    AuctionLikeResponse response = auctionLikeService.toggleLike(auctionId, user.getUserId());
     return ApiResponse.ok("찜 토글을 성공했습니다.", response);
   }
 }
