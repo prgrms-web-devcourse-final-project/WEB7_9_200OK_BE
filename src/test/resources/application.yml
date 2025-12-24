@@ -15,6 +15,7 @@ spring:
   kakao:
     client:
       id: ${REST_API_KAKAO}
+      secret: ${CLIENT_SECRET_KAKAO}
     redirect:
       uri: ${REDIRECT_URI_KAKAO}
 

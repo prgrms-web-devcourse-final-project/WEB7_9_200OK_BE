@@ -10,25 +10,16 @@
 
 package com.windfall.api.user.controller;
 
-import com.windfall.api.user.dto.response.LoginUserResponse;
-import com.windfall.api.user.dto.response.RegisterUserResponse;
-import com.windfall.api.user.service.OAuthGoogleService;
-import com.windfall.api.user.service.OAuthKakaoService;
-import com.windfall.api.user.service.OAuthNaverService;
-import com.windfall.global.response.ApiResponse;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
 @RequestMapping("/api/v1/auth/callback")
 @RequiredArgsConstructor
 public class OAuthCallbackController implements OAuthCallbackSpecification {
+  /*
+  private final JwtProvider jwtProvider;
 
   //   1. 각 provider에 맞는 서비스 객체 선언.
   private final OAuthKakaoService kakaoService;
@@ -36,7 +27,9 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
   private final OAuthGoogleService googleService;
 
 
-  //   2. 카카오로 회원가입/로그인하는 것을 담당하는 컨트롤러
+  //   2. 카카오로 회원가입/로그인하는 것을 담당하는 컨트롤러 -> 프론트에게 책임이 넘어갔습니다.
+  //   대신 OAuthExchangeController를 참고해주세요.
+
   @GetMapping("/kakao")
   public RedirectView kakaoCallback(
       @RequestParam String code, HttpServletResponse response
@@ -48,8 +41,8 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
         registerUserResponse.userNickname(),
         registerUserResponse.userProfileUrl());
 
-    response.addCookie(generateCookieWithAccessToken(registerUserResponse.accessToken()));
-    response.addCookie(generateCookieWithRefreshToken(registerUserResponse.refreshToken()));
+    response.addCookie(jwtProvider.generateCookieWithAccessToken(registerUserResponse.accessToken()));
+    response.addCookie(jwtProvider.generateCookieWithRefreshToken(registerUserResponse.refreshToken()));
     //return ApiResponse.ok("카카오 로그인 성공", loginUserResponse);
     RedirectView redirectView = new RedirectView();
     redirectView.setUrl("http://localhost:3000");
@@ -64,8 +57,8 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
   ) {
     // naverService에서 code로 access token 요청, 사용자 정보 가져오기
     LoginUserResponse loginUserResponse = naverService.loginOrSignup(code);
-    response.addCookie(generateCookieWithAccessToken(""));
-    response.addCookie(generateCookieWithRefreshToken(""));
+    response.addCookie(jwtProvider.generateCookieWithAccessToken(""));
+    response.addCookie(jwtProvider.generateCookieWithRefreshToken(""));
     return ApiResponse.ok("네이버 로그인 성공", loginUserResponse);
   }
 
@@ -76,27 +69,9 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
   ) {
     // googleService에서 code로 access token 요청, 사용자 정보 가져오기
     LoginUserResponse loginUserResponse = googleService.loginOrSignup(code);
-    response.addCookie(generateCookieWithAccessToken(""));
-    response.addCookie(generateCookieWithRefreshToken(""));
+    response.addCookie(jwtProvider.generateCookieWithAccessToken(""));
+    response.addCookie(jwtProvider.generateCookieWithRefreshToken(""));
     return ApiResponse.ok("구글 로그인 성공", loginUserResponse);
-  }
-
-  private Cookie generateCookieWithAccessToken(String token) {
-    Cookie accessTokenCookie = new Cookie("accessToken", token);
-    accessTokenCookie.setHttpOnly(true);
-    accessTokenCookie.setSecure(true);
-    accessTokenCookie.setPath("/");
-    accessTokenCookie.setMaxAge(1 * 1 * 60 * 60); // 1시간
-    return accessTokenCookie;
-  }
-
-  private Cookie generateCookieWithRefreshToken(String token) {
-    Cookie refreshTokenCookie = new Cookie("refreshToken", token);
-    refreshTokenCookie.setHttpOnly(true);
-    refreshTokenCookie.setSecure(true);
-    refreshTokenCookie.setPath("/");
-    refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (일주일)
-    return refreshTokenCookie;
-  }
+  }*/
 
 }

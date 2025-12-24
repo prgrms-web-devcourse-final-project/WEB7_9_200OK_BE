@@ -38,7 +38,8 @@ public class User extends BaseEntity {
   @Column(name = "profile_image_url")
   private String profileImageUrl;
 
-  // 일대일, 일대다 연관관계 매핑은 다음 pull request 때 진행하겠습니다.
+  @Column(nullable = true)
+  private String refreshToken;
 
   // 필드 추가 시 여기도 손봐주세요.
   @Builder
