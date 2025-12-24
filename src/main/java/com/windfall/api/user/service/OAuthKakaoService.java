@@ -6,10 +6,12 @@
 package com.windfall.api.user.service;
 
 import com.windfall.api.user.dto.response.OAuthUserInfo;
-import com.windfall.api.user.dto.response.RegisterUserResponse;
+import com.windfall.api.user.dto.response.OAuthTokenResponse;
 import com.windfall.domain.user.entity.User;
+import com.windfall.domain.user.entity.UserToken;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
+import com.windfall.domain.user.repository.UserTokenRepository;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,41 +31,46 @@ import org.springframework.web.client.RestTemplate;
 public class OAuthKakaoService {
 
   private final UserRepository userRepository;
+  private final UserTokenRepository userTokenRepository;
   private final JwtProvider jwtProvider; // JWT 발급용
   private final RestTemplate restTemplate;
 
   @Value("${spring.kakao.client.id}")
   private String kakaoClientId;
 
+  @Value("${spring.kakao.client.secret}")
+  private String kakaoClientSecret;
+
   @Value("${spring.kakao.redirect.uri}")
   private String kakaoRedirectUri;
 
-  public RegisterUserResponse loginOrSignup(String code) {
+  public OAuthTokenResponse loginOrSignup(OAuthUserInfo userInfo) {
 
-    String accessToken = requestAccessToken(code);
-    OAuthUserInfo userInfo = requestUserInfo(accessToken);
-
-    // 3. DB에서 회원 확인 후 없으면 생성
     User user = userRepository.findByProviderUserId(userInfo.providerUserId())
         .orElseGet(() -> userRepository.save(
             new User(ProviderType.KAKAO, userInfo.providerUserId(), userInfo.email(),
                 userInfo.nickname(), userInfo.profileImageUrl())
         ));
 
-// 서버용 JWT 생성
-    String jwtAccessToken = jwtProvider.generateAccessToken(user);
-    String jwtRefreshToken = jwtProvider.generateRefreshToken(user);
+    String jwtAccessToken = jwtProvider.generateAccessToken(user.getProviderUserId());
+    String jwtRefreshToken = jwtProvider.generateRefreshToken(user.getProviderUserId());
 
-    return new RegisterUserResponse(
-        user.getEmail(),
-        user.getNickname(),
-        user.getProfileImageUrl(),
+    //여기가 브라우저에서 기존 쿠키를 삭제하고 다시 로그인할 때 500 에러를 유발할 가능성이 가장 높습니다.
+    userTokenRepository.findByUser(user)
+        .ifPresentOrElse(
+            userToken -> userToken.saveRefreshToken(jwtRefreshToken),
+            () -> userTokenRepository.save(UserToken.create(user, jwtRefreshToken))
+        );
+
+    return new OAuthTokenResponse(
         jwtAccessToken,
         jwtRefreshToken
     );
   }
 
-  private String requestAccessToken(String code) {
+  public String requestAccessToken(String code) {
+    System.out.println("OAuthKakaoService 진입");
+    System.out.println("requestAccessToken 시작");
     String url = "https://kauth.kakao.com/oauth/token";
 
     HttpHeaders headers = new HttpHeaders();
@@ -74,11 +81,16 @@ public class OAuthKakaoService {
     params.add("client_id", kakaoClientId);
     params.add("redirect_uri", kakaoRedirectUri);
     // 최근 정책 추가로 secret도 넣기 (카카오만) -> 공식문서와 알림 팝업 읽기를 생활화하자...
-    params.add("client_secret", "Cw56KE9EtHsaoTAkaNhfstYWB1aWSNBc");
+    params.add("client_secret", kakaoClientSecret);
     params.add("code", code);
+
+    System.out.println("client_id : " + kakaoClientId);
+    System.out.println("redirect_uri : " + kakaoRedirectUri);
+    System.out.println("code : " + code);
 
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
+    System.out.println("요청 try");
     try {
       ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
       Map<String, Object> body = response.getBody();
@@ -97,7 +109,7 @@ public class OAuthKakaoService {
     }
   }
 
-  private OAuthUserInfo requestUserInfo(String accessToken) {
+  public OAuthUserInfo requestUserInfo(String accessToken) {
     // RestTemplate 사용, 카카오 API에 GET 요청
     // JSON 응답 → OAuthUserInfo로 변환
     String url = "https://kapi.kakao.com/v2/user/me";

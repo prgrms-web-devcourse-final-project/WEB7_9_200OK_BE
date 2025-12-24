@@ -1,13 +1,17 @@
 package com.windfall.api.user.service;
 
-import com.windfall.domain.user.entity.User;
+import com.windfall.global.exception.ErrorCode;
+import com.windfall.global.exception.ErrorException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Arrays;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,10 +33,10 @@ public class JwtProvider {
   }
 
   // Access Token 생성
-  public String generateAccessToken(User user) {
+  public String generateAccessToken(String providerUserId) {
     return Jwts.builder()
-        .setSubject(user.getProviderUserId())
-        .claim(user.getProviderUserId(), "")
+        .setSubject(providerUserId)
+        .claim(providerUserId, "")
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity * 1000))
         .signWith(key, SignatureAlgorithm.HS256)
@@ -40,10 +44,10 @@ public class JwtProvider {
   }
 
   // Refresh Token 생성
-  public String generateRefreshToken(User user) {
+  public String generateRefreshToken(String providerUserId) {
     return Jwts.builder()
-        .setSubject(user.getProviderUserId())
-        .claim(user.getProviderUserId(), "")
+        .setSubject(providerUserId)
+        .claim(providerUserId, "")
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity * 1000))
         .signWith(key, SignatureAlgorithm.HS256)
@@ -83,5 +87,35 @@ public class JwtProvider {
         .parseClaimsJws(token)
         .getBody()
         .getSubject();
+  }
+
+  public String extractRefreshTokenFromCookie(HttpServletRequest request) {
+    if (request.getCookies() == null) {
+      throw new ErrorException(ErrorCode.EMPTY_REFRESH_TOKEN);
+    }
+
+    return Arrays.stream(request.getCookies())
+        .filter(c -> "refreshToken".equals(c.getName()))
+        .findFirst()
+        .map(Cookie::getValue)
+        .orElseThrow(() -> new ErrorException(ErrorCode.EMPTY_REFRESH_TOKEN));
+  }
+
+  public Cookie generateCookieWithAccessToken(String token) {
+    Cookie accessTokenCookie = new Cookie("accessToken", token);
+    accessTokenCookie.setHttpOnly(true);
+    accessTokenCookie.setSecure(true);
+    accessTokenCookie.setPath("/");
+    accessTokenCookie.setMaxAge(1 * 1 * 60 * 60); // 1시간
+    return accessTokenCookie;
+  }
+
+  public Cookie generateCookieWithRefreshToken(String token) {
+    Cookie refreshTokenCookie = new Cookie("refreshToken", token);
+    refreshTokenCookie.setHttpOnly(true);
+    refreshTokenCookie.setSecure(true);
+    refreshTokenCookie.setPath("/");
+    refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (일주일)
+    return refreshTokenCookie;
   }
 }

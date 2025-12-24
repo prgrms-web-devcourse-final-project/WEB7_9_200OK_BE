@@ -23,6 +23,7 @@ jobs:
       S3_SECRET_KEY: ${{secrets.S3_SECRET_KEY}}
       BUCKET_NAME: ${{secrets.BUCKET_NAME}}
       S3_BASE_URL: ${{secrets.S3_BASE_URL}}
+      CLIENT_SECRET_KAKAO: ${{secrets.CLIENT_SECRET_KAKAO}}
 
     steps:
       - name: 리포지토리를 가져옵니다
