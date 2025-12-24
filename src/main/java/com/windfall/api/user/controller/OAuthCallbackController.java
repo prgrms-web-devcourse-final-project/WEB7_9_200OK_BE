@@ -10,22 +10,7 @@
 
 package com.windfall.api.user.controller;
 
-import com.windfall.api.user.dto.response.LoginUserResponse;
-import com.windfall.api.user.dto.response.RegisterUserResponse;
-import com.windfall.api.user.service.OAuthGoogleService;
-import com.windfall.api.user.service.OAuthKakaoService;
-import com.windfall.api.user.service.OAuthNaverService;
-import com.windfall.global.response.ApiResponse;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.view.RedirectView;
-
+/*
 @RestController
 @RequestMapping("/api/v1/auth/callback")
 @RequiredArgsConstructor
@@ -115,4 +100,4 @@ public class OAuthCallbackController implements OAuthCallbackSpecification {
     return refreshTokenCookie;
   }
 
-}
+}*/
