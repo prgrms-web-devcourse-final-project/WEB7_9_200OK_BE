@@ -1,6 +1,7 @@
 package com.windfall.api.auction.service;
 
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 
 import com.windfall.api.auction.dto.response.message.SellerEmojiMessage;
 import com.windfall.domain.auction.entity.Auction;
@@ -23,6 +24,8 @@ public class AuctionInteractionService {
 
   @Transactional(readOnly = true)
   public void broadcastSellerEmoji(Long auctionId, Long userId, EmojiType emojiType) {
+
+    validateUser(userId);
     Auction auction = findAuctionById(auctionId);
 
     if(!auction.isSeller(userId)) {
@@ -39,5 +42,11 @@ public class AuctionInteractionService {
   private Auction findAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(NOT_FOUND_AUCTION));
+  }
+
+  private void validateUser(Long userId) {
+    if (userId == null) {
+      throw new ErrorException(NOT_FOUND_USER);
+    }
   }
 }
