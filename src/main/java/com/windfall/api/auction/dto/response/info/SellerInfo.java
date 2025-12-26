@@ -19,8 +19,8 @@ public record SellerInfo(
   public static SellerInfo from(User user) {
     return new SellerInfo(
         user.getId(),
-        "닉네임", // user.getNickname(),
-        "https://example.png" // user.getProfileImageUrl(),
+        user.getNickname(),
+        user.getProfileImageUrl()
     );
   }
 }

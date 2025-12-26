@@ -163,8 +163,6 @@ public class AuctionService {
       exposedStopLoss = auction.getStopLoss();
     }
 
-    // TODO: 타 도메인 의존성 처리 (User)
-
     long viewerCount = viewerService.getViewerCount(auctionId);
 
     List<AuctionHistoryResponse> historyList = getRecentHistories(auctionId);
@@ -229,11 +227,9 @@ public class AuctionService {
   }
 
   private boolean isLiked(Long auctionId, Long userId) {
-    boolean isLiked = false;
-    Optional<AuctionLike> auctionLike = auctionLikeService.getAuctionLike(auctionId, userId);
-    if (auctionLike.isPresent()) {
-      isLiked = true;
+    if (userId == null) {
+      return false;
     }
-    return isLiked;
+    return auctionLikeService.getAuctionLike(auctionId, userId).isPresent();
   }
 }
