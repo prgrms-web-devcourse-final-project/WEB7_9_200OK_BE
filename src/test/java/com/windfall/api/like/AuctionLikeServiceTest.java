@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ import com.windfall.domain.like.entity.AuctionLike;
 import com.windfall.domain.like.repository.AuctionLikeRepository;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -102,5 +104,25 @@ class AuctionLikeServiceTest {
 
     verify(auctionLikeRepository, never()).save(any());
     verify(auctionLikeRepository, never()).delete(any());
+  }
+
+  @Test
+  @DisplayName("[경매찜 삭제1] 경매 찜을 삭제하는 경우(소프트 딜리트)")
+  void delete1() {
+    // given
+    AuctionLike like1 = mock(AuctionLike.class);
+    AuctionLike like2 = mock(AuctionLike.class);
+
+    when(auctionLikeRepository.findAllByAuction(auction)).thenReturn(List.of(like1, like2));
+
+    when(like1.getId()).thenReturn(1L);
+    when(like2.getId()).thenReturn(2L);
+
+    // when
+    auctionLikeService.deleteLike(auction);
+
+    // then
+    verify(auctionLikeRepository, times(1)).deactivate(1L);
+    verify(auctionLikeRepository, times(1)).deactivate(2L);
   }
 }
