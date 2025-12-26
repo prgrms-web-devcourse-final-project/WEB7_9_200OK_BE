@@ -18,7 +18,6 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
-import com.windfall.domain.like.entity.AuctionLike;
 import com.windfall.domain.tag.entity.AuctionTag;
 import com.windfall.domain.tag.entity.Tag;
 import com.windfall.domain.tag.repository.AuctionTagRepository;
@@ -28,7 +27,6 @@ import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.SliceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -132,6 +130,8 @@ public class AuctionService {
 
     tagService.deleteTag(auction);
 
+    // TODO: 찜 삭제
+
     auctionRepository.deleteById(auctionId);
   }
 
@@ -230,6 +230,6 @@ public class AuctionService {
     if (userId == null) {
       return false;
     }
-    return auctionLikeService.getAuctionLike(auctionId, userId).isPresent();
+    return auctionLikeService.getActiveLike(auctionId, userId).isPresent();
   }
 }
