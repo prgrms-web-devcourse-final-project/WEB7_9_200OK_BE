@@ -130,7 +130,7 @@ public class AuctionService {
 
     tagService.deleteTag(auction);
 
-    // TODO: 찜 삭제
+    auctionLikeService.deleteLike(auction);
 
     auctionRepository.deleteById(auctionId);
   }

@@ -65,4 +65,10 @@ public class AuctionLikeService {
   public long getLikeCount(Long auctionId) {
     return auctionLikeRepository.countByAuctionIdAndActivatedTrue(auctionId);
   }
+
+  @Transactional
+  public void deleteLike(Auction auction) {
+    auctionLikeRepository.findAllByAuction(auction)
+        .forEach(like -> auctionLikeRepository.deactivate(like.getId()));
+  }
 }

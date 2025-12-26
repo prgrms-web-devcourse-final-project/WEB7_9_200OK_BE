@@ -1,6 +1,8 @@
 package com.windfall.domain.like.repository;
 
+import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.like.entity.AuctionLike;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -40,4 +42,6 @@ public interface AuctionLikeRepository extends JpaRepository<AuctionLike, Long> 
           where al.id = :id
       """)
   void activate(@Param("id") Long id);
+
+  List<AuctionLike> findAllByAuction(Auction auction);
 }
