@@ -66,8 +66,6 @@ public class PurchaseHistoryService {
     Map<TradeStatus, List<Long>> tradeGroups = groups.tradeGroups();
     Map<TradeStatus, List<Long>> auctionGroups = groups.auctionGroups();
 
-    System.out.println(tradeGroups.get(TradeStatus.PAYMENT_COMPLETED));
-
     if(tradeGroups.containsKey(TradeStatus.PAYMENT_COMPLETED)){ //결제 완료
       purchaseHistoryQueryRepository.getPurchaseHistory(userid, tradeGroups.get(TradeStatus.PAYMENT_COMPLETED), auctionGroups.get(TradeStatus.PAYMENT_COMPLETED)).forEach(
       data -> resultData.put(data.get("auctionId", Long.class), PurchaseHistoryResponse.from(data)));
