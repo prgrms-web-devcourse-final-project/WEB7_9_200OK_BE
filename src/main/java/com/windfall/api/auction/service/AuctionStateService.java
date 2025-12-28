@@ -48,7 +48,7 @@ public class AuctionStateService {
     long minutesElapsed = java.time.Duration.between(auction.getStartedAt(), now).toMinutes();
     auction.declinePrice(minutesElapsed);
 
-    if(auction.getCurrentPrice() != oldPrice && auction.getStatus() == FAILED) return;
+    if(auction.getCurrentPrice() == oldPrice && auction.getStatus() != FAILED) return;
 
     savePriceHistoryWithViewers(auction);
     messageSender.broadcastPriceUpdate(auctionId, auction.getCurrentPrice(), auction.getStatus());
