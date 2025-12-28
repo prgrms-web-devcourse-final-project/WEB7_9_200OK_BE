@@ -15,6 +15,8 @@ import com.windfall.domain.chat.repository.ChatRoomRepository;
 import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.user.entity.User;
+import com.windfall.global.exception.ErrorCode;
+import com.windfall.global.exception.ErrorException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -90,6 +92,12 @@ public class ChatRoomService {
       int size) {
 
     User me = userService.getUserById(userId);
+
+    ChatRoom chatRoom = chatRoomRepository.findDetailById(chatRoomId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
+
+    Trade trade = chatRoom.getTrade();
+    Auction auction = trade.getAuction();
 
   }
 
