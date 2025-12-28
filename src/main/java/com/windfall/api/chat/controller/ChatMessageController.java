@@ -26,7 +26,7 @@ public class ChatMessageController implements ChatMessageControllerSpecification
   ) {
     Long userId = userDetails.getUserId();
     ChatReadMarkResponse response = chatMessageService.markAsRead(chatRoomId, userId);
-    return ApiResponse.ok(response);
+    return ApiResponse.ok("채팅방의 읽지 않은 메시지가 모두 읽음 처리되었습니다.", response);
   }
 }
 
