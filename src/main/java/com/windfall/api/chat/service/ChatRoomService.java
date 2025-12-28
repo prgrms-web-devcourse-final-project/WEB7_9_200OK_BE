@@ -109,6 +109,13 @@ public class ChatRoomService {
       throw new ErrorException(ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT);
     }
 
+    Long partnerId = isBuyer ? trade.getSellerId() : trade.getBuyerId();
+    User partnerUser = partnerId.equals(trade.getSellerId())
+        ? auction.getSeller() : userService.getUserById(partnerId);
+
+    PartnerInfo partnerInfo = PartnerInfo.from(partnerUser);
+
+
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {
