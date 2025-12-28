@@ -27,7 +27,7 @@ public class ChatMessageService {
 
     ChatRoom chatRoom = getChatRoomWithTrade(chatRoomId);
 
-    validateParticipant(chatRoom, userId);
+    validateParticipant(chatRoom.getTrade(), userId);
 
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
     return new ChatReadMarkResponse(updated);
@@ -38,13 +38,9 @@ public class ChatMessageService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
   }
 
-  private void validateParticipant(ChatRoom chatRoom, Long userId) {
-    Trade trade = chatRoom.getTrade();
-    boolean isParticipant = userId.equals(trade.getBuyerId()) || userId.equals(trade.getSellerId());
-
-    if (!isParticipant) {
+  private void validateParticipant(Trade trade, Long userId) {
+    if (!userId.equals(trade.getBuyerId()) && !userId.equals(trade.getSellerId())) {
       throw new ErrorException(ErrorCode.FORBIDDEN_CHAT_ROOM);
     }
   }
-
 }
