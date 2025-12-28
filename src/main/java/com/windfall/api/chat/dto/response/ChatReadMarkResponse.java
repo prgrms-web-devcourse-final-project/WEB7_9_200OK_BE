@@ -7,4 +7,8 @@ public record ChatReadMarkResponse(
 
     @Schema(description = "업데이트된 읽지 않은 메시지 수")
     int updateCount
-) {}
+) {
+    public static ChatReadMarkResponse of(int updatedCount) {
+        return new ChatReadMarkResponse(updatedCount);
+    }
+}

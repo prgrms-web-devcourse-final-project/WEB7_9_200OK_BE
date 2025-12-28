@@ -30,7 +30,7 @@ public class ChatMessageService {
     validateParticipant(chatRoom.getTrade(), userId);
 
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
-    return new ChatReadMarkResponse(updated);
+    return ChatReadMarkResponse.of(updated);
   }
 
   private ChatRoom getChatRoomWithTrade(Long chatRoomId) {
