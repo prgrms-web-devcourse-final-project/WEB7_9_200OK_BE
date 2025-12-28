@@ -1,6 +1,7 @@
 package com.windfall.api.chat.service;
 
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
+import com.windfall.api.chat.dto.response.ChatRoomDetailResponse;
 import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.api.chat.dto.response.info.AuctionInfo;
 import com.windfall.api.chat.dto.response.info.LastMessageInfo;
@@ -83,6 +84,13 @@ public class ChatRoomService {
     return visibleRooms.stream()
         .map(cr -> toResponse(me.getId(), cr, unreadMap, buyerUserMap, auctionThumbMap))
         .toList();
+  }
+
+  public ChatRoomDetailResponse getChatRoomDetail(Long userId, Long chatRoomId, Long cursor,
+      int size) {
+
+    User me = userService.getUserById(userId);
+
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {
