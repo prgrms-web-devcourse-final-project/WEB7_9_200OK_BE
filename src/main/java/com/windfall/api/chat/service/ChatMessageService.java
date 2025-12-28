@@ -5,6 +5,7 @@ import com.windfall.api.user.service.UserService;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatMessageRepository;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
+import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
@@ -28,6 +29,16 @@ public class ChatMessageService {
     ChatRoom chatRoom = chatRoomRepository.findByIdWithTrade(chatRoomId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
 
+    validateParticipant(chatRoom, userId);
+  }
+
+  private void validateParticipant(ChatRoom chatRoom, Long userId) {
+    Trade trade = chatRoom.getTrade();
+    boolean isParticipant = userId.equals(trade.getBuyerId()) || userId.equals(trade.getSellerId());
+
+    if (!isParticipant) {
+      throw new ErrorException(ErrorCode.FORBIDDEN_CHAT_ROOM);
+    }
   }
 
 }
