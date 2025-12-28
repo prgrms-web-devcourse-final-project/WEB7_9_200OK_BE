@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Schema(description = "채팅 메시지 정보 DTO")
-public record ChatMessageItem(
+public record ChatMessageInfo(
 
     @Schema(description = "메시지 ID")
     Long messageId,
