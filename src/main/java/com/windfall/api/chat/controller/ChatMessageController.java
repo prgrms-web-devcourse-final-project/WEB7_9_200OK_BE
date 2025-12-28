@@ -1,6 +1,7 @@
 package com.windfall.api.chat.controller;
 
 import com.windfall.api.chat.dto.response.ChatReadMarkResponse;
+import com.windfall.api.chat.service.ChatMessageService;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/chat-rooms")
 public class ChatMessageController implements ChatMessageControllerSpecification {
 
-  private final ChatMessageReadService chatMessageReadService;
+  private final ChatMessageService chatMessageService;
 
   @Override
   @PatchMapping("/{chatRoomId}/messages/read")
@@ -24,7 +25,7 @@ public class ChatMessageController implements ChatMessageControllerSpecification
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     Long userId = userDetails.getUserId();
-    ChatReadMarkResponse response = chatMessageReadService.markAsRead(chatRoomId, userId);
+    ChatReadMarkResponse response = chatMessageService.markAsRead(chatRoomId, userId);
     return ApiResponse.ok(response);
   }
 }
