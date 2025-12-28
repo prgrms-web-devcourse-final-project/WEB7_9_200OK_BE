@@ -107,8 +107,7 @@ public class ChatRoomService {
     User me = userService.getUserById(userId);
 
     // 1) 채팅방 + trade + auction + seller 로드
-    ChatRoom chatRoom = chatRoomRepository.findDetailById(chatRoomId)
-        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
+    ChatRoom chatRoom = getChatRoomOrThrow(chatRoomId);
 
     Trade trade = chatRoom.getTrade();
     Auction auction = trade.getAuction();
@@ -121,9 +120,7 @@ public class ChatRoomService {
     }
 
     // 3) 거래 상태 검증
-    if (!isVisibleTradeStatus(chatRoom)) {
-      throw new ErrorException(ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT);
-    }
+    validateTradeStatus(chatRoom);
 
     // 4) 상대방 정보 구성
     Long partnerId = isBuyer ? trade.getSellerId() : trade.getBuyerId();
@@ -189,6 +186,17 @@ public class ChatRoomService {
 
     return ChatRoomListResponse.of(chatRoom, partnerInfo, auctionInfo, lastMessageInfo,
         unreadCount);
+  }
+
+  private ChatRoom getChatRoomOrThrow(Long chatRoomId) {
+    return chatRoomRepository.findDetailById(chatRoomId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
+  }
+
+  private void validateTradeStatus(ChatRoom chatRoom) {
+    if (!isVisibleTradeStatus(chatRoom)) {
+      throw new ErrorException(ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT);
+    }
   }
 
   private CursorResponse<ChatMessageInfo> fetchMessageCursorPage(Long chatRoomId, Long userId, Long cursor, int size) {
