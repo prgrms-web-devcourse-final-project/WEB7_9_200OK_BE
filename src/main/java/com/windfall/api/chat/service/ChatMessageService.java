@@ -6,7 +6,6 @@ import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatMessageRepository;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
 import com.windfall.domain.trade.entity.Trade;
-import com.windfall.domain.user.entity.User;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +23,19 @@ public class ChatMessageService {
   @Transactional
   public ChatReadMarkResponse markAsRead(Long chatRoomId, Long userId) {
 
-    User me = userService.getUserById(userId);
+    userService.getUserById(userId);
 
-    ChatRoom chatRoom = chatRoomRepository.findByIdWithTrade(chatRoomId)
-        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
+    ChatRoom chatRoom = getChatRoomWithTrade(chatRoomId);
 
     validateParticipant(chatRoom, userId);
 
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
     return new ChatReadMarkResponse(updated);
+  }
+
+  private ChatRoom getChatRoomWithTrade(Long chatRoomId) {
+    return chatRoomRepository.findByIdWithTrade(chatRoomId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
   }
 
   private void validateParticipant(ChatRoom chatRoom, Long userId) {
