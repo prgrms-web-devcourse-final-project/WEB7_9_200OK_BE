@@ -5,6 +5,10 @@ import java.time.LocalDateTime;
 
 @Schema(description = "거래 정보 DTO")
 public record TradeInfo(
+
+    @Schema(description = "거래 ID")
+    Long tradeId,
+
     @Schema(description = "최종 구매가")
     Long finalPrice,
 
@@ -12,7 +16,7 @@ public record TradeInfo(
     LocalDateTime purchasedAt
 
 ) {
-  public static TradeInfo of(Long finalPrice, LocalDateTime purchasedAt) {
-    return new TradeInfo(finalPrice, purchasedAt);
+  public static TradeInfo of(Long tradeId, Long finalPrice, LocalDateTime purchasedAt) {
+    return new TradeInfo(tradeId, finalPrice, purchasedAt);
   }
 }
