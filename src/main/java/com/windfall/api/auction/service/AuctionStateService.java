@@ -48,16 +48,20 @@ public class AuctionStateService {
     long minutesElapsed = java.time.Duration.between(auction.getStartedAt(), now).toMinutes();
     auction.declinePrice(minutesElapsed);
 
-    if(auction.getCurrentPrice() != oldPrice || auction.getStatus() == FAILED) {
-      savePriceHistoryWithViewers(auction);
-      messageSender.broadcastPriceUpdate(auctionId, auction.getCurrentPrice(), auction.getStatus());
+    if(auction.getCurrentPrice() != oldPrice && auction.getStatus() == FAILED) return;
 
-      if(auction.getStatus() == FAILED) {
-        log.info("❌경매 유찰 ( 경매 ID: {}, StopLoss 도달)", auction.getId());
-      } else {
-        log.info("⬇️경매 가격 하락 ( 경매 ID: {}, 이전 가격: {}, 현재 가격: {} )",
-            auction.getId(), oldPrice, auction.getCurrentPrice());
-      }
+    savePriceHistoryWithViewers(auction);
+    messageSender.broadcastPriceUpdate(auctionId, auction.getCurrentPrice(), auction.getStatus());
+
+    logAuctionChange(auction, oldPrice);
+  }
+
+  private void logAuctionChange(Auction auction, long oldPrice) {
+    if(auction.getStatus() == FAILED) {
+      log.info("❌경매 유찰 ( 경매 ID: {}, StopLoss 도달)", auction.getId());
+    } else {
+      log.info("⬇️경매 가격 하락 ( 경매 ID: {}, 이전 가격: {}, 현재 가격: {} )",
+          auction.getId(), oldPrice, auction.getCurrentPrice());
     }
   }
 
