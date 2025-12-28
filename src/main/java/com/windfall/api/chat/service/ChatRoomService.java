@@ -8,6 +8,7 @@ import com.windfall.api.chat.dto.response.info.LastMessageInfo;
 import com.windfall.api.chat.dto.response.info.PartnerInfo;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.domain.auction.entity.AuctionImage;
 import com.windfall.domain.auction.repository.AuctionImageRepository;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatMessageRepository;
@@ -115,7 +116,11 @@ public class ChatRoomService {
 
     PartnerInfo partnerInfo = PartnerInfo.from(partnerUser);
 
+    String thumbUrl = auctionImageRepository.findTop1ByAuctionIdOrderByIdAsc(auction.getId())
+        .map(AuctionImage::getImage)
+        .orElse(null);
 
+    AuctionInfo auctionInfo = AuctionInfo.of(auction, thumbUrl);
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {
