@@ -10,7 +10,7 @@ public record AuctionMessage(
     AuctionStatus status
 ) {
 
-  public static AuctionMessage from(Long auctionId, long currentPrice, AuctionStatus status) {
+  public static AuctionMessage of(Long auctionId, long currentPrice, AuctionStatus status) {
     return new AuctionMessage(
         auctionId,
         currentPrice,
