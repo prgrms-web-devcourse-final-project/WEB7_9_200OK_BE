@@ -2,10 +2,10 @@ package com.windfall.global.websocket;
 
 import com.windfall.api.auction.dto.response.message.AuctionViewerMessage;
 import com.windfall.api.auction.service.AuctionViewerService;
+import com.windfall.api.auction.service.component.AuctionMessageSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -16,7 +16,7 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 @RequiredArgsConstructor
 public class WebSocketEventListener {
 
-  private final SimpMessagingTemplate messagingTemplate;
+  private final AuctionMessageSender messageSender;
   private final AuctionViewerService viewerService;
 
   @EventListener
@@ -38,7 +38,8 @@ public class WebSocketEventListener {
     }
 
     long currentCount = viewerService.addViewer(auctionId, sessionId);
-    broadcastViewerCount(auctionId, currentCount);
+    messageSender.broadcastViewerCount(auctionId, currentCount);
+    log.info("Broadcast auctionId : {}, viewer count: {}", auctionId, currentCount);
   }
 
   @EventListener
@@ -51,12 +52,7 @@ public class WebSocketEventListener {
     }
 
     long currentCount = viewerService.getViewerCount(auctionId);
-    broadcastViewerCount(auctionId, currentCount);
-  }
-
-  public void broadcastViewerCount(Long auctionId, long count) {
-    AuctionViewerMessage message = AuctionViewerMessage.of(auctionId, count);
-    messagingTemplate.convertAndSend("/topic/auction/" + auctionId, message);
-    log.info("Broadcast auctionId : {}, viewer count: {}", auctionId, count);
+    messageSender.broadcastViewerCount(auctionId, currentCount);
+    log.info("Broadcast auctionId : {}, viewer count: {}", auctionId, currentCount);
   }
 }
