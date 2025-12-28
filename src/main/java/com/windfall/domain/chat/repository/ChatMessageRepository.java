@@ -2,6 +2,7 @@ package com.windfall.domain.chat.repository;
 
 import com.windfall.domain.chat.entity.ChatMessage;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,6 +26,29 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
   List<UnreadCountProjection> countUnreadByChatRoomIds(
       @Param("userId") Long userId,
       @Param("chatRoomIds") List<Long> chatRoomIds
+  );
+
+  @Query("""
+      select cm
+      from ChatMessage cm
+      join fetch cm.sender s
+      where cm.chatRoom.id = :chatRoomId
+      order by cm.id desc
+      """)
+  List<ChatMessage> findLatest(@Param("chatRoomId") Long chatRoomId, Pageable pageable);
+
+  @Query("""
+      select cm
+      from ChatMessage cm
+      join fetch cm.sender s
+      where cm.chatRoom.id = :chatRoomId
+        and cm.id < :cursor
+      order by cm.id desc
+      """)
+  List<ChatMessage> findOlderThan(
+      @Param("chatRoomId") Long chatRoomId,
+      @Param("cursor") Long cursor,
+      Pageable pageable
   );
 
   ChatMessage findTopByChatRoomIdOrderByCreateDateDesc(Long chatRoomId);
