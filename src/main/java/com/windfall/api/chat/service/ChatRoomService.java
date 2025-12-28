@@ -106,32 +106,38 @@ public class ChatRoomService {
 
     User me = userService.getUserById(userId);
 
+    // 1) 채팅방 + trade + auction + seller 로드
     ChatRoom chatRoom = chatRoomRepository.findDetailById(chatRoomId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
 
     Trade trade = chatRoom.getTrade();
     Auction auction = trade.getAuction();
 
+    // 2) 참여자 검증
     boolean isBuyer = me.getId().equals(trade.getBuyerId());
     boolean isSeller = me.getId().equals(trade.getSellerId());
     if (!isBuyer && !isSeller) {
       throw new ErrorException(ErrorCode.FORBIDDEN_CHAT_ROOM);
     }
 
+    // 3) 거래 상태 검증
     if (!isVisibleTradeStatus(chatRoom)) {
       throw new ErrorException(ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT);
     }
 
+    // 4) 상대방 정보 구성
     Long partnerId = isBuyer ? trade.getSellerId() : trade.getBuyerId();
     User partnerUser = partnerId.equals(trade.getSellerId())
         ? auction.getSeller() : userService.getUserById(partnerId);
 
     PartnerInfo partnerInfo = PartnerInfo.from(partnerUser);
 
+    // 5) 경매 썸네일(대표 이미지 1장)
     String thumbUrl = auctionImageRepository.findTop1ByAuctionIdOrderByIdAsc(auction.getId())
         .map(AuctionImage::getImage)
         .orElse(null);
 
+    // 6) AuctionInfo, TradeInfo, ChatRoomMetaInfo 구성
     AuctionInfo auctionInfo = AuctionInfo.of(auction, thumbUrl);
 
     TradeInfo tradeInfo = TradeInfo.of(trade.getId(), trade.getFinalPrice(), trade.getModifyDate());
@@ -139,6 +145,7 @@ public class ChatRoomService {
     ChatRoomMetaInfo meta = ChatRoomMetaInfo.of(chatRoom.getId(), auctionInfo, partnerInfo,
         tradeInfo);
 
+    // 7) 메시지 목록 cursor 페이징 조회
     CursorResponse<ChatMessageInfo> messages = fetchMessageCursorPage(chatRoomId, userId, cursor, size);
 
     return ChatRoomDetailResponse.of(meta, messages);
