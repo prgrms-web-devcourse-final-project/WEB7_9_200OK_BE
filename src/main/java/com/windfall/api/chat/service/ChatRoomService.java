@@ -105,6 +105,9 @@ public class ChatRoomService {
       throw new ErrorException(ErrorCode.FORBIDDEN_CHAT_ROOM);
     }
 
+    if (!isVisibleTradeStatus(chatRoom)) {
+      throw new ErrorException(ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT);
+    }
 
   }
 
