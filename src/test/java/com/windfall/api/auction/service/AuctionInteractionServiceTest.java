@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.windfall.api.auction.dto.response.message.SellerEmojiMessage;
+import com.windfall.api.auction.service.component.AuctionMessageSender;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.EmojiType;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -32,7 +33,7 @@ class AuctionInteractionServiceTest {
   private AuctionRepository auctionRepository;
 
   @Mock
-  private SimpMessagingTemplate messagingTemplate;
+  private AuctionMessageSender messageSender;
 
   @Mock
   private Auction auction;
@@ -45,8 +46,6 @@ class AuctionInteractionServiceTest {
     Long sellerId = 1L;
     EmojiType emojiType = EmojiType.FIRE;
 
-    Auction mockAuction = Mockito.mock(Auction.class);
-
     given(auctionRepository.findById(auctionId)).willReturn(Optional.of(auction));
     given(auction.isSeller(sellerId)).willReturn(true);
 
@@ -54,10 +53,7 @@ class AuctionInteractionServiceTest {
     interactionService.broadcastSellerEmoji(auctionId, sellerId, emojiType);
 
     // then
-    verify(messagingTemplate).convertAndSend(
-        eq("/topic/auction/" + auctionId),
-        any(SellerEmojiMessage.class)
-    );
+    verify(messageSender).broadcastSellerEmoji(auctionId, emojiType);
   }
 
   @Test
@@ -75,7 +71,7 @@ class AuctionInteractionServiceTest {
     interactionService.broadcastSellerEmoji(auctionId, buyerId, emojiType);
 
     // then
-    verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+    verify(messageSender, never()).broadcastSellerEmoji(any(), any());
   }
 
   @Test
@@ -92,6 +88,6 @@ class AuctionInteractionServiceTest {
         interactionService.broadcastSellerEmoji(invalidAuctionId, userId, EmojiType.SAD)
     );
 
-    verify(messagingTemplate, never()).convertAndSend(any(String.class), any(Object.class));
+    verify(messageSender, never()).broadcastSellerEmoji(any(), any());
   }
 }
