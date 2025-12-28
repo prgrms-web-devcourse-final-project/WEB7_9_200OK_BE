@@ -1,12 +1,16 @@
 package com.windfall.api.chat.controller;
 
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
+import com.windfall.api.chat.dto.response.ChatRoomDetailResponse;
 import com.windfall.api.chat.dto.response.ChatRoomListResponse;
+import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Chat", description = "채팅방 API")
@@ -29,6 +33,28 @@ public interface ChatRoomSpecification {
 
       @Parameter(description = "사용자 ID(임시, 로그인 붙이면 제거 예정)", example = "1")
       @RequestParam(defaultValue = "1") Long userId
+  );
+
+  @Operation(
+      summary = "채팅방 상세 조회 (메타 정보 + 메시지 내용 커서 페이징)",
+      description = """
+          채팅방 상세 화면에 필요한 정보를 조회합니다.
+          - 상단 메타(상대방/경매/거래 정보) + 메시지 목록(cursor 기반)을 한 번에 반환합니다.
+          - cursor가 없으면 최신 메시지부터 size 만큼 반환합니다.
+          - nextCursor를 다음 요청에 전달하면 더 과거 메시지를 조회합니다.
+          """
+  )
+  ApiResponse<ChatRoomDetailResponse> getChatRoomDetail(
+      @Parameter(description = "채팅방 ID", example = "1")
+      @PathVariable Long chatRoomId,
+
+      @Parameter(description = "커서(이전 페이지의 nextCursor)", example = "120")
+      @RequestParam(required = false) Long cursor,
+
+      @Parameter(description = "조회 개수", example = "20")
+      @RequestParam(defaultValue = "20") int size,
+
+      @AuthenticationPrincipal CustomUserDetails userDetails
   );
 
 }
