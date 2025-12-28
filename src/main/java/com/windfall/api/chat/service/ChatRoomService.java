@@ -99,6 +99,13 @@ public class ChatRoomService {
     Trade trade = chatRoom.getTrade();
     Auction auction = trade.getAuction();
 
+    boolean isBuyer = me.getId().equals(trade.getBuyerId());
+    boolean isSeller = me.getId().equals(trade.getSellerId());
+    if (!isBuyer && !isSeller) {
+      throw new ErrorException(ErrorCode.FORBIDDEN_CHAT_ROOM);
+    }
+
+
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {

@@ -32,6 +32,7 @@ public enum ErrorCode {
 
   // 채팅
   NOT_FOUND_CHAT_ROOM(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
+  FORBIDDEN_CHAT_ROOM(HttpStatus.FORBIDDEN, "채팅방에 접근할 수 있는 권한이 없습니다."),
 
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
