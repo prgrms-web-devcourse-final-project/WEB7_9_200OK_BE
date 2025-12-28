@@ -2,6 +2,7 @@ package com.windfall.domain.auction.repository;
 
 import com.windfall.domain.auction.entity.AuctionImage;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,4 +21,6 @@ public interface AuctionImageRepository extends JpaRepository<AuctionImage, Long
       )
       """)
   List<AuctionImage> findFirstImagesByAuctionIds(@Param("auctionIds") List<Long> auctionIds);
+
+  Optional<AuctionImage> findTop1ByAuctionIdOrderByIdAsc(Long auctionId);
 }
