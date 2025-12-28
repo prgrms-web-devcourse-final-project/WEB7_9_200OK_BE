@@ -1,6 +1,9 @@
 package com.windfall.api.mypage.controller;
 
+import com.windfall.api.mypage.dto.notificationsetlist.BaseNotificationSetList;
 import com.windfall.api.mypage.dto.purchasehistory.BasePurchaseHistory;
+import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
@@ -17,6 +20,12 @@ public interface MyPageSpecification {
   @Operation(summary = "나의 구매내역 조회", description = "자신의 구매내역을 조회합니다.")
   ApiResponse<SliceResponse<BasePurchaseHistory>> getMyPurchaseHistory(@PageableDefault(page = 0, size = 10) Pageable pageable,
       @RequestParam(required = false) String filter,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  );
+
+  @Operation(summary = "나의 알림내역 조회", description = "자신이 알림설정한 경매 목록을 조회합니다.")
+  ApiResponse<SliceResponse<BaseNotificationSetList>> getMyNotifications(@PageableDefault(page = 0, size = 10) Pageable pageable,
+      @RequestParam(required = false) AuctionStatus filter,
       @AuthenticationPrincipal CustomUserDetails userDetails
   );
 }

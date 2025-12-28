@@ -1,7 +1,10 @@
 package com.windfall.api.mypage.controller;
 
+import com.windfall.api.mypage.dto.notificationsetlist.BaseNotificationSetList;
 import com.windfall.api.mypage.dto.purchasehistory.BasePurchaseHistory;
+import com.windfall.api.mypage.service.NotificationSetListService;
 import com.windfall.api.mypage.service.PurchaseHistoryService;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyPageController implements MyPageSpecification{
 
   private final PurchaseHistoryService purchaseHistoryService;
+  private final NotificationSetListService notificationSetListService;
 
   @GetMapping("/purchases")
   public ApiResponse<SliceResponse<BasePurchaseHistory>> getMyPurchaseHistory(
@@ -34,6 +38,15 @@ public class MyPageController implements MyPageSpecification{
 
   }
 
+  @Override
+  @GetMapping("/notifications")
+  public ApiResponse<SliceResponse<BaseNotificationSetList>> getMyNotifications(
+      Pageable pageable,
+      @RequestParam(required = false) AuctionStatus filter,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-
+    Long userId = userDetails.getUserId();
+    SliceResponse<BaseNotificationSetList> response = notificationSetListService.getMyNotifications(userId, filter, pageable);
+    return ApiResponse.ok("알림내역 조회에 성공하였습니다.", response);
+  }
 }
