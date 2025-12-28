@@ -8,7 +8,7 @@ public record TradeInfo(
     @Schema(description = "최종 구매가")
     Long finalPrice,
 
-    @Schema(description = "구매일(결제 완료/구매확정 시점)")
+    @Schema(description = "구매일(결제 완료 시점)")
     LocalDateTime purchasedAt
 
 ) {
