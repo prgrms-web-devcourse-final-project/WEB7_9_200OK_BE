@@ -4,8 +4,10 @@ import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
 import com.windfall.api.chat.dto.response.ChatRoomDetailResponse;
 import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.api.chat.dto.response.info.AuctionInfo;
+import com.windfall.api.chat.dto.response.info.ChatRoomMetaInfo;
 import com.windfall.api.chat.dto.response.info.LastMessageInfo;
 import com.windfall.api.chat.dto.response.info.PartnerInfo;
+import com.windfall.api.chat.dto.response.info.TradeInfo;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.entity.AuctionImage;
@@ -121,6 +123,11 @@ public class ChatRoomService {
         .orElse(null);
 
     AuctionInfo auctionInfo = AuctionInfo.of(auction, thumbUrl);
+
+    TradeInfo tradeInfo = TradeInfo.of(trade.getId(), trade.getFinalPrice(), trade.getModifyDate());
+
+    ChatRoomMetaInfo meta = ChatRoomMetaInfo.of(chatRoom.getId(), auctionInfo, partnerInfo,
+        tradeInfo);
   }
 
   private boolean isVisibleTradeStatus(ChatRoom cr) {
