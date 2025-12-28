@@ -30,6 +30,9 @@ public class ChatMessageService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
 
     validateParticipant(chatRoom, userId);
+
+    int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
+    return new ChatReadMarkResponse(updated);
   }
 
   private void validateParticipant(ChatRoom chatRoom, Long userId) {
