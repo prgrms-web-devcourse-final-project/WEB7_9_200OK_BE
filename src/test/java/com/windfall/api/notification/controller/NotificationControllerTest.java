@@ -1,6 +1,6 @@
 package com.windfall.api.notification.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.handler;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,7 +38,7 @@ class NotificationControllerTest extends JwtTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-
+  private Long notificationId;
 
 
   @BeforeEach
@@ -49,7 +49,7 @@ class NotificationControllerTest extends JwtTest {
         "테스트 제목",
         "테스트 메시지",
         false,
-        NotificationType.PRICE_DROP,
+        NotificationType.REVIEW_REGISTERED,
         1L);
 
     Notification notification2 = Notification.create(
@@ -59,21 +59,19 @@ class NotificationControllerTest extends JwtTest {
         false,
         NotificationType.PRICE_DROP,
         2L);
-    notificationRepository.save(notification1);
+    Notification savedNotification = notificationRepository.save(notification1);
+    notificationId = savedNotification.getId();
     notificationRepository.save(notification2);
   }
 
   @Nested
   @DisplayName("알림 조회 API")
-  class t1 {
-
+  class t1{
     @Test
     @DisplayName("정상 작동")
-    void success() throws Exception {
+    void success() throws Exception{
       // given
-
-
-      //when
+      // when
       ResultActions resultActions = mockMvc.perform(
           get("/api/v1/notifications/")
               .accept(MediaType.APPLICATION_JSON)
@@ -100,6 +98,66 @@ class NotificationControllerTest extends JwtTest {
           .andExpect(jsonPath("$.data.slice[0].targetId").value(2L))
           .andDo(print());
     }
+  }
 
+  @Nested
+  @DisplayName("알림 단건 읽음 처리 API")
+  class t2 {
+
+    @Test
+    @DisplayName("정상 작동")
+    void success() throws Exception {
+      // given
+
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          patch("/api/v1/notifications/%s".formatted(notificationId))
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(NotificationController.class))
+          .andExpect(handler().methodName("markAsRead"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("OK"))
+          .andExpect(jsonPath("$.message").value("알림이 읽음 처리되었습니다."))
+          .andExpect(jsonPath("$.data.notificationId").exists())
+          .andExpect(jsonPath("$.data.type").value("REVIEW_REGISTERED"))
+          .andExpect(jsonPath("$.data.target").value("review"))
+          .andExpect(jsonPath("$.data.targetId").value(1L))
+          .andExpect(jsonPath("$.data.readStatus").value(true))
+          .andDo(print());
+    }
+  }
+
+  @Nested
+  @DisplayName("알림 다건 읽음 처리 API")
+  class t3 {
+
+    @Test
+    @DisplayName("정상 작동")
+    void success() throws Exception {
+      // given
+
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          patch("/api/v1/notifications")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(NotificationController.class))
+          .andExpect(handler().methodName("markAsRead"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.status").value("OK"))
+          .andExpect(jsonPath("$.message").value("알림이 모두 읽음 처리되었습니다."))
+          .andDo(print());
+    }
   }
 }
