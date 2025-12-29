@@ -30,6 +30,8 @@ public enum ErrorCode {
   INVALID_S3_UPLOAD(HttpStatus.BAD_GATEWAY,"S3 이미지 업로드 실패했습니다."),
   INVALID_IMAGE_STATUS(HttpStatus.BAD_REQUEST, "경매에 연결할 수 없는 이미지 상태입니다."),
 
+  //알림
+  NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND,"존재하지 않는 알림입니다."),
 
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")

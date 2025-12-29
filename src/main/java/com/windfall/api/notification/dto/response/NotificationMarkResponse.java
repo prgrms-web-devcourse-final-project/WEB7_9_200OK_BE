@@ -2,28 +2,22 @@ package com.windfall.api.notification.dto.response;
 
 import com.windfall.domain.notification.entity.Notification;
 import com.windfall.domain.notification.enums.NotificationType;
-import java.time.LocalDateTime;
 
-public record NotificationReadResponse(
+public record NotificationMarkResponse(
     Long notificationId,
-    NotificationType type,
-    String title,
-    String message,
     Boolean readStatus,
+    NotificationType type,
     String target,
-    Long targetId,
-    LocalDateTime notificationAt
+    Long targetId
 ) {
-  public static NotificationReadResponse from(Notification notification){
-    return new NotificationReadResponse(
+
+  public static NotificationMarkResponse from(Notification notification) {
+    return new NotificationMarkResponse(
         notification.getId(),
-        notification.getType(),
-        notification.getTitle(),
-        notification.getMessage(),
         notification.getReadStatus(),
+        notification.getType(),
         setTarget(notification.getType()),
-        notification.getTargetId(),
-        notification.getCreateDate()
+        notification.getTargetId()
     );
   }
 
