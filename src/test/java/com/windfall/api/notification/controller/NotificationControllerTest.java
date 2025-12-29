@@ -6,18 +6,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.windfall.api.auction.controller.AuctionController;
-import com.windfall.api.auction.dto.request.AuctionCreateRequest;
-import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.notification.entity.Notification;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.notification.repository.NotificationRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.global.jwt.JwtTest;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
