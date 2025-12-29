@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.windfall.domain.notification.entity.Notification;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.notification.repository.NotificationRepository;
@@ -35,8 +34,6 @@ class NotificationControllerTest extends JwtTest {
   private NotificationRepository notificationRepository;
 
 
-  @Autowired
-  private ObjectMapper objectMapper;
 
   private Long notificationId;
 
@@ -145,7 +142,7 @@ class NotificationControllerTest extends JwtTest {
 
       //when
       ResultActions resultActions = mockMvc.perform(
-          patch("/api/v1/notifications")
+          patch("/api/v1/notifications/")
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
       );
@@ -153,10 +150,12 @@ class NotificationControllerTest extends JwtTest {
       // then
       resultActions
           .andExpect(handler().handlerType(NotificationController.class))
-          .andExpect(handler().methodName("markAsRead"))
+          .andExpect(handler().methodName("markAllAsRead"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.status").value("OK"))
           .andExpect(jsonPath("$.message").value("알림이 모두 읽음 처리되었습니다."))
+          .andExpect(jsonPath("$.data.userId").value(mockUser.getId()))
+          .andExpect(jsonPath("$.data.updatedCount").value(2))
           .andDo(print());
     }
   }
