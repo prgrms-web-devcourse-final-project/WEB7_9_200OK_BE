@@ -40,13 +40,18 @@ public class Notification extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private NotificationType type;
 
-  public static Notification create(User user, String title, String message, Boolean readStatus, NotificationType type){
+  // target의 id
+  @Column(nullable = false)
+  private Long targetId;
+
+  public static Notification create(User user, String title, String message, Boolean readStatus, NotificationType type,Long targetId){
     return Notification.builder()
         .user(user)
         .title(title)
         .message(message)
         .readStatus(readStatus)
         .type(type)
+        .targetId(targetId)
         .build();
   }
 }
