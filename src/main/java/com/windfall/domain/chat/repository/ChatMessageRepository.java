@@ -4,6 +4,7 @@ import com.windfall.domain.chat.entity.ChatMessage;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -52,4 +53,17 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
   );
 
   ChatMessage findTopByChatRoomIdOrderByCreateDateDesc(Long chatRoomId);
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("""
+      update ChatMessage m
+         set m.isRead = true
+       where m.chatRoom.id = :chatRoomId
+         and m.isRead = false
+         and m.sender.id <> :userId
+      """)
+  int markAllAsReadExcludingSender(
+      @Param("chatRoomId") Long chatRoomId,
+      @Param("userId") Long userId
+  );
 }

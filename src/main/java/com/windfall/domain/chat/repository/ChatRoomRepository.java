@@ -37,4 +37,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
       """)
   Optional<ChatRoom> findDetailById(@Param("chatRoomId") Long chatRoomId);
 
+  @Query("""
+      select cr
+      from ChatRoom cr
+      join fetch cr.trade t
+      where cr.id = :chatRoomId
+      """)
+  Optional<ChatRoom> findByIdWithTrade(@Param("chatRoomId") Long chatRoomId);
+
 }
