@@ -78,7 +78,7 @@ class NotificationControllerTest extends JwtTest {
       // given
       // when
       ResultActions resultActions = mockMvc.perform(
-          get("/api/v1/notifications/")
+          get("/api/v1/notifications")
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .param("page","0")
@@ -211,7 +211,7 @@ class NotificationControllerTest extends JwtTest {
 
       //when
       ResultActions resultActions = mockMvc.perform(
-          patch("/api/v1/notifications/")
+          patch("/api/v1/notifications")
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
       );

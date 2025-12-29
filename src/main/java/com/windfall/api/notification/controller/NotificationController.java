@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/notifications/")
+@RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
 public class NotificationController implements NotificationSpecification{
 
@@ -40,7 +40,7 @@ public class NotificationController implements NotificationSpecification{
   }
 
   @Override
-  @PatchMapping("{notificationId}")
+  @PatchMapping("/{notificationId}")
   public ApiResponse<NotificationMarkResponse> markAsRead(
       @PathVariable Long notificationId,
       @AuthenticationPrincipal CustomUserDetails user
