@@ -67,11 +67,15 @@ public class NotificationSettingService {
   ) {
     NotificationSetting setting = notificationSettingRepository
         .findByUserIdAndAuctionIdAndType(user.getId(), auction.getId(), type)
-        .orElseGet(() -> NotificationSetting.create(user, auction, type)
-        );
+        .orElse(null);
 
-    setting.updateActivated(activated);
-    notificationSettingRepository.save(setting);
+    if (setting == null) {
+      setting = NotificationSetting.create(user, auction, type);
+      setting.updateActivated(activated);
+      notificationSettingRepository.save(setting);
+    } else {
+      setting.updateActivated(activated);
+    }
   }
 
   // 알림 발송 판단용
