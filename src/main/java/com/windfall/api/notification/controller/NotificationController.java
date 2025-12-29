@@ -1,5 +1,6 @@
 package com.windfall.api.notification.controller;
 
+import com.windfall.api.notification.dto.response.NotificationMarkAllResponse;
 import com.windfall.api.notification.dto.response.NotificationMarkResponse;
 import com.windfall.api.notification.dto.response.NotificationReadResponse;
 import com.windfall.api.notification.service.NotificationService;
@@ -46,5 +47,14 @@ public class NotificationController implements NotificationSpecification{
   ) {
     NotificationMarkResponse response = notificationService.markAsRead(notificationId,user);
     return ApiResponse.ok("알림이 읽음 처리되었습니다.",response);
+  }
+
+  @Override
+  @PatchMapping
+  public ApiResponse<NotificationMarkAllResponse> markAllAsRead(
+      @AuthenticationPrincipal CustomUserDetails user
+  ) {
+    NotificationMarkAllResponse response = notificationService.markAllAsRead(user);
+    return ApiResponse.ok("알림이 모두 읽음 처리되었습니다.",response);
   }
 }

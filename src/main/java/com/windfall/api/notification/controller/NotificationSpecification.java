@@ -1,10 +1,8 @@
 package com.windfall.api.notification.controller;
 
-import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
-import static com.windfall.global.exception.ErrorCode.INVALID_IMAGE_STATUS;
-import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
-import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
+import static com.windfall.global.exception.ErrorCode.INVALID_NOTIFICATION;
 
+import com.windfall.api.notification.dto.response.NotificationMarkAllResponse;
 import com.windfall.api.notification.dto.response.NotificationMarkResponse;
 import com.windfall.api.notification.dto.response.NotificationReadResponse;
 import com.windfall.domain.user.entity.CustomUserDetails;
@@ -33,9 +31,15 @@ public interface NotificationSpecification {
       @RequestParam(defaultValue = "15") int size
   );
 
+  @ApiErrorCodes(INVALID_NOTIFICATION)
   @Operation(summary = "알림 단건 읽음 처리", description = "알림을 단건 읽음 처리합니다.")
   ApiResponse<NotificationMarkResponse> markAsRead(
       @PathVariable Long notificationId,
+      @AuthenticationPrincipal CustomUserDetails user
+  );
+
+  @Operation(summary = "알림 다건 읽음 처리", description = "알림을 다건 읽음 처리합니다.")
+  ApiResponse<NotificationMarkAllResponse> markAllAsRead(
       @AuthenticationPrincipal CustomUserDetails user
   );
 }

@@ -1,5 +1,6 @@
 package com.windfall.api.notification.service;
 
+import com.windfall.api.notification.dto.response.NotificationMarkAllResponse;
 import com.windfall.api.notification.dto.response.NotificationMarkResponse;
 import com.windfall.api.notification.dto.response.NotificationReadResponse;
 import com.windfall.domain.notification.entity.Notification;
@@ -32,14 +33,27 @@ public class NotificationService {
   public NotificationMarkResponse markAsRead(Long notificationId, CustomUserDetails user) {
     Notification notification = getNotification(notificationId);
 
+    validateUser(notification,user);
+
     notification.updateReadStatus(true);
 
-
     return NotificationMarkResponse.from(notification);
+  }
+
+  @Transactional
+  public NotificationMarkAllResponse markAllAsRead(CustomUserDetails user) {
+    long updatedCount = notificationRepository.markAllAsRead(user.getUserId());
+    return NotificationMarkAllResponse.of(user.getUserId(),updatedCount);
   }
 
   private Notification getNotification(Long notificationId){
     return notificationRepository.findById(notificationId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_NOTIFICATION));
+  }
+
+  private void validateUser(Notification notification, CustomUserDetails user) {
+    if (notification.getUser() == null || !notification.getUser().getId().equals(user.getUserId())) {
+      throw new ErrorException(ErrorCode.INVALID_NOTIFICATION);
+    }
   }
 }

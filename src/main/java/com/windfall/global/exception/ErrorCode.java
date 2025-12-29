@@ -32,7 +32,7 @@ public enum ErrorCode {
 
   //알림
   NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND,"존재하지 않는 알림입니다."),
-
+  INVALID_NOTIFICATION(HttpStatus.FORBIDDEN, "해당 유저의 알림이 아닙니다."),
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
