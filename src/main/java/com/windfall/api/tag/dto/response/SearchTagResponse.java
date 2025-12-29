@@ -7,11 +7,11 @@ import java.util.List;
 public record SearchTagResponse (
 
     @Schema(description = "태그 자동 완성")
-    List<String> tags
+    List<SearchTagInfo> tags
 ){
 
-  public static SearchTagResponse from(List<String> tags) {
-      return new SearchTagResponse(tags);
+  public static SearchTagResponse from(List<SearchTagInfo> tags) {
+    return new SearchTagResponse(tags);
   }
 
   public static SearchTagResponse empty() {
