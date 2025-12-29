@@ -16,22 +16,8 @@ public record NotificationMarkResponse(
         notification.getId(),
         notification.getReadStatus(),
         notification.getType(),
-        setTarget(notification.getType()),
+        notification.getType().getTarget(),
         notification.getTargetId()
     );
-  }
-
-  private static String setTarget(NotificationType type){
-    if(type == NotificationType.CHAT_MESSAGE){
-      return "chatRoom";
-    }
-    if (type == NotificationType.REVIEW_REGISTERED){
-      return "review";
-    }
-    if(type == NotificationType.PURCHASE_CONFIRMED_SELLER){
-      return "payment";
-    }
-
-    return "auction";
   }
 }

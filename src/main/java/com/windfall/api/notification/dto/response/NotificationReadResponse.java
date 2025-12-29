@@ -21,23 +21,9 @@ public record NotificationReadResponse(
         notification.getTitle(),
         notification.getMessage(),
         notification.getReadStatus(),
-        setTarget(notification.getType()),
+        notification.getType().getTarget(),
         notification.getTargetId(),
         notification.getCreateDate()
     );
-  }
-
-  private static String setTarget(NotificationType type){
-    if(type == NotificationType.CHAT_MESSAGE){
-      return "chatRoom";
-    }
-    if (type == NotificationType.REVIEW_REGISTERED){
-      return "review";
-    }
-    if(type == NotificationType.PURCHASE_CONFIRMED_SELLER){
-      return "payment";
-    }
-
-    return "auction";
   }
 }
