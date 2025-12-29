@@ -71,6 +71,7 @@ public class NotificationSettingService {
         );
 
     setting.updateActivated(activated);
+    notificationSettingRepository.save(setting);
   }
 
   // 알림 발송 판단용
@@ -79,6 +80,6 @@ public class NotificationSettingService {
     return notificationSettingRepository
         .findByUserIdAndAuctionIdAndType(userId, auctionId, type)
         .map(NotificationSetting::isActivated)
-        .orElse(false); // row 없으면 비활성화
+        .orElse(false); // row 없으면 비활성화 반환
   }
 }
