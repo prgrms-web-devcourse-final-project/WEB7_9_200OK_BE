@@ -174,6 +174,29 @@ class NotificationControllerTest extends JwtTest {
           .andExpect(jsonPath("$.message").value("해당 유저의 알림이 아닙니다."))
           .andDo(print());
     }
+
+    @Test
+    @DisplayName("존재하지 않는 알림일 때")
+    void fail2() throws Exception{
+      // given
+      notificationId = 9999L;
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          patch("/api/v1/notifications/%s".formatted(notificationId))
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(NotificationController.class))
+          .andExpect(handler().methodName("markAsRead"))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.status").value("NOT_FOUND"))
+          .andExpect(jsonPath("$.message").value("존재하지 않는 알림입니다."))
+          .andDo(print());
+    }
   }
 
   @Nested
