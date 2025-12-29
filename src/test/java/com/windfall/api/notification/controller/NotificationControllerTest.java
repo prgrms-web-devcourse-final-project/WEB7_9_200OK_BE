@@ -6,10 +6,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.windfall.api.auction.controller.AuctionController;
+import com.windfall.api.auction.dto.request.AuctionCreateRequest;
+import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.notification.entity.Notification;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.notification.repository.NotificationRepository;
+import com.windfall.domain.user.entity.User;
+import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.global.jwt.JwtTest;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -126,6 +134,44 @@ class NotificationControllerTest extends JwtTest {
           .andExpect(jsonPath("$.data.target").value("review"))
           .andExpect(jsonPath("$.data.targetId").value(1L))
           .andExpect(jsonPath("$.data.readStatus").value(true))
+          .andDo(print());
+    }
+
+    @Test
+    @DisplayName("본인 알림이 아닐 때")
+    void fail1() throws Exception{
+      // given
+      User seller = User.builder()
+          .email("test@naver.com")
+          .provider(ProviderType.NAVER)
+          .providerUserId("test1234")
+          .nickname("testNickname")
+          .build();
+      User saveUser = userRepository.save(seller);
+      Notification notification = Notification.create(
+          saveUser,
+          "테스트 제목",
+          "테스트 메시지",
+          false,
+          NotificationType.PRICE_DROP,
+          2L);
+      Notification savedNotification = notificationRepository.save(notification);
+      notificationId = savedNotification.getId();
+
+      //when
+      ResultActions resultActions = mockMvc.perform(
+          patch("/api/v1/notifications/%s".formatted(notificationId))
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+      );
+
+      // then
+      resultActions
+          .andExpect(handler().handlerType(NotificationController.class))
+          .andExpect(handler().methodName("markAsRead"))
+          .andExpect(status().isForbidden())
+          .andExpect(jsonPath("$.status").value("FORBIDDEN"))
+          .andExpect(jsonPath("$.message").value("해당 유저의 알림이 아닙니다."))
           .andDo(print());
     }
   }
