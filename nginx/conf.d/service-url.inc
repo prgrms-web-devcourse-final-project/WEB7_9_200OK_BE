@@ -1,1 +1,1 @@
-set $service_url https://wind-fall-blue:8080;
+set $service_url http://wind-fall-blue:8080;
