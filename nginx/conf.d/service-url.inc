@@ -1,0 +1,1 @@
+set $service_url http://wind-fall-blue:8080/;
