@@ -64,7 +64,7 @@ echo "Nginx 설정을 변경합니다..."
 
 # service-url.inc 파일 수정 (호스트 경로 ./nginx/conf.d/service-url.inc)
 # 주의: Nginx는 도커 내부망을 사용하므로 'localhost'가 아닌 '컨테이너 이름'으로 연결
-echo "set \$service_url http://$TARGET_CONTAINER:8080;" | sudo tee ./nginx/conf.d/service-url.inc
+echo "set \$service_url http://$TARGET_CONTAINER:8080;" | sudo tee ../nginx/conf.d/service-url.inc
 
 # Nginx 컨테이너에게 설정 리로드 명령 전송
 echo "Nginx Reloading..."
