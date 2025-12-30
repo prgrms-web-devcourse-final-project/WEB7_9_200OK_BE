@@ -71,7 +71,7 @@ jobs:
 
       # 8. S3에 압축 파일 업로드
       - name: Upload to S3
-        run: aws s3 cp ./deploy/windfall.zip s3://${{ secrets.S3_BUCKET_NAME }}/windfall.zip
+        run: aws s3 cp ./deploy/windfall.zip s3://${{ secrets.BUCKET_NAME }}/windfall.zip
 
       # 9. CodeDeploy에게 배포 명령 내리기
       - name: CodeDeploy
@@ -79,4 +79,4 @@ jobs:
           aws deploy create-deployment \
             --application-name windfall-server \
             --deployment-group-name windfall-group \
-            --s3-location bucket=${{ secrets.S3_BUCKET_NAME }},bundleType=zip,key=windfall.zip
+            --s3-location bucket=${{ secrets.BUCKET_NAME }},bundleType=zip,key=windfall.zip
