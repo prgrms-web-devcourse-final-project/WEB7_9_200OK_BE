@@ -1,18 +1,118 @@
-version: '3'
+version: "3.8"
+
 services:
-  wind-fall-api:
-    image: ${DOCKER_USERNAME}/wind-fall-server:latest
-    container_name: ${CONTAINER_NAME}
-    ports:
-      - "${APP_PORT}:8080"
-    environment:
-      - TZ=Asia/Seoul
-      - SPRING_PROFILES_ACTIVE=prod
+  # 1. Redis
+  redis:
+    image: redis:7-alpine
+    container_name: windfall-redis
+    command: ["redis-server", "--appendonly", "yes"]
     volumes:
-      - ./logs:/logs
+      - redis-data:/data
+    expose:
+      - "6379"
     networks:
       - windfall-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  # 2. MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: windfall-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    env_file:
+      - .env
+    expose:
+      - "3306"
+    networks:
+      - windfall-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  # 3. Blue App
+  wind-fall-blue:
+    image: ${DOCKER_USERNAME}/wind-fall-server:${APP_IMAGE_TAG:-latest}
+    container_name: wind-fall-blue
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: blue
+      SERVER_PORT: 8080
+    expose:
+      - "8080"
+    networks:
+      - windfall-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  # 4. Green App
+  wind-fall-green:
+    image: ${DOCKER_USERNAME}/wind-fall-server:${APP_IMAGE_TAG:-latest}
+    container_name: wind-fall-green
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      SPRING_PROFILES_ACTIVE: green
+      SERVER_PORT: 8080
+    expose:
+      - "8080"
+    networks:
+      - windfall-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 20
+
+  # 5. Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: windfall-nginx
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      # 인증서 파일을 직접 마운트할 경우(예: certbot/letsencrypt 사용 시)
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - wind-fall-blue
+      - wind-fall-green
+    networks:
+      - windfall-net
+    restart: unless-stopped
 
 networks:
   windfall-net:
-    external: true
+    driver: bridge
+
+volumes:
+  mysql-data:
+  redis-data:
