@@ -30,10 +30,16 @@ public enum ErrorCode {
   INVALID_S3_UPLOAD(HttpStatus.BAD_GATEWAY,"S3 이미지 업로드 실패했습니다."),
   INVALID_IMAGE_STATUS(HttpStatus.BAD_REQUEST, "경매에 연결할 수 없는 이미지 상태입니다."),
 
+
+  //알림
+  NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND,"존재하지 않는 알림입니다."),
+  INVALID_NOTIFICATION(HttpStatus.FORBIDDEN, "해당 유저의 알림이 아닙니다."),
+
   // 채팅
   NOT_FOUND_CHAT_ROOM(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
   FORBIDDEN_CHAT_ROOM(HttpStatus.FORBIDDEN, "채팅방에 접근할 수 있는 권한이 없습니다."),
   INVALID_TRADE_STATUS_FOR_CHAT(HttpStatus.BAD_REQUEST, "현재 거래 상태에서는 채팅을 조회할 수 없습니다."),
+
 
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")

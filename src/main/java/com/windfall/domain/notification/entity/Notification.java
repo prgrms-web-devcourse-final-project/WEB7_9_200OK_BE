@@ -1,5 +1,6 @@
 package com.windfall.domain.notification.entity;
 
+import com.windfall.api.notification.dto.response.NotificationMarkResponse;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.entity.BaseEntity;
@@ -40,13 +41,23 @@ public class Notification extends BaseEntity {
   @Enumerated(EnumType.STRING)
   private NotificationType type;
 
-  public static Notification create(User user, String title, String message, Boolean readStatus, NotificationType type){
+  // target의 id
+  @Column(nullable = false)
+  private Long targetId;
+
+  public static Notification create(User user, String title, String message, Boolean readStatus, NotificationType type,Long targetId){
     return Notification.builder()
         .user(user)
         .title(title)
         .message(message)
         .readStatus(readStatus)
         .type(type)
+        .targetId(targetId)
         .build();
+  }
+
+
+  public void updateReadStatus(Boolean readStatus) {
+    this.readStatus = readStatus;
   }
 }
