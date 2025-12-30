@@ -21,6 +21,7 @@ import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.config.swagger.ApiErrorCodes;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
@@ -35,6 +36,7 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -89,7 +91,9 @@ public interface AuctionSpecification {
   @Operation(summary = "경매 상세 조회", description = "특정 경매의 상세 정보(상품 정보, 가격 정보, 상태 정보)를 조회합니다.")
   ApiResponse<AuctionDetailResponse> getAuctionDetail(
       @Parameter(description = "경매 ID", required = true, example = "1")
-      @PathVariable Long auctionId
+      @PathVariable Long auctionId,
+      @Parameter(description = "사용자 ID", required = false, example = "1")
+      @AuthenticationPrincipal CustomUserDetails userDetails
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION})
@@ -127,7 +131,7 @@ public interface AuctionSpecification {
       @Payload SellerEmojiRequest request,
 
       @Parameter(description = "임시 사용자 ID", required = true, example = "1")
-      @Header(value = "userId", defaultValue = "1") Long userId
+      @AuthenticationPrincipal CustomUserDetails userDetails
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE, INVALID_AUCTION_SELLER,

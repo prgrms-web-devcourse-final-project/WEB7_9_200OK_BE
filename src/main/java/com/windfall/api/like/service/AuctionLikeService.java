@@ -23,13 +23,20 @@ public class AuctionLikeService {
   public AuctionLikeResponse toggleLike(Long auctionId, Long userId) {
     Auction auction = getAuction(auctionId);
 
-    Optional<AuctionLike> existingLike = getAuctionLike(auctionId, userId);
+    Optional<AuctionLike> existingLike = getLike(auctionId, userId);
 
     boolean isLiked;
 
     if (existingLike.isPresent()) {
-      auctionLikeRepository.delete(existingLike.get());
-      isLiked = false;
+      AuctionLike like = existingLike.get();
+
+      if (like.isActivated()) {
+        auctionLikeRepository.deactivate(like.getId());
+        isLiked = false;
+      } else {
+        auctionLikeRepository.activate(like.getId());
+        isLiked = true;
+      }
     } else {
       auctionLikeRepository.save(AuctionLike.create(auction, userId));
       isLiked = true;
@@ -45,13 +52,23 @@ public class AuctionLikeService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
   }
 
-  @Transactional(readOnly = true)
-  public Optional<AuctionLike> getAuctionLike(Long auctionId, Long userId) {
+  private Optional<AuctionLike> getLike(Long auctionId, Long userId) {
     return auctionLikeRepository.findByAuctionIdAndUserId(auctionId, userId);
   }
 
   @Transactional(readOnly = true)
+  public Optional<AuctionLike> getActiveLike(Long auctionId, Long userId) {
+    return auctionLikeRepository.findActiveLike(auctionId, userId);
+  }
+
+  @Transactional(readOnly = true)
   public long getLikeCount(Long auctionId) {
-    return auctionLikeRepository.countByAuctionId(auctionId);
+    return auctionLikeRepository.countByAuctionIdAndActivatedTrue(auctionId);
+  }
+
+  @Transactional
+  public void deleteLike(Auction auction) {
+    auctionLikeRepository.findAllByAuction(auction)
+        .forEach(like -> auctionLikeRepository.deactivate(like.getId()));
   }
 }

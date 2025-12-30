@@ -32,4 +32,7 @@ public abstract class BaseEntity {
 
     private boolean activated = true; //기본값 설정
 
+    protected void setActivated(boolean activated) {
+        this.activated = activated;
+    }
 }

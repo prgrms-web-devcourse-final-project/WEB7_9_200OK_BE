@@ -3,6 +3,7 @@ package com.windfall.api.tag;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.windfall.api.auction.dto.request.TagInfo;
+import com.windfall.api.tag.dto.response.SearchTagInfo;
 import com.windfall.api.tag.dto.response.SearchTagResponse;
 import com.windfall.api.tag.service.TagService;
 import com.windfall.domain.auction.entity.Auction;
@@ -133,12 +134,19 @@ class TagServiceTest {
   @DisplayName("[태그 검색1] DB에 저장된 태그가 5개 이상일 때, 태그 자동완성을 응답하는 경우")
   void searchTag1() {
     // given: DB에 태그 데이터 저장
-    tagRepository.save(Tag.create("나무"));
-    tagRepository.save(Tag.create("나비"));
-    tagRepository.save(Tag.create("나이키"));
-    tagRepository.save(Tag.create("나이키에어"));
-    tagRepository.save(Tag.create("나이키운동화"));
-    tagRepository.save(Tag.create("나침반")); // 6번째
+    Tag tag1 = tagRepository.save(Tag.create("나무"));
+    Tag tag2 = tagRepository.save(Tag.create("나비"));
+    Tag tag3 = tagRepository.save(Tag.create("나이키"));
+    Tag tag4 = tagRepository.save(Tag.create("나이키에어"));
+    Tag tag5 = tagRepository.save(Tag.create("나이키운동화"));
+    Tag tag6 = tagRepository.save(Tag.create("나침반"));
+
+    auctionTagRepository.save(AuctionTag.create(auction1, tag1));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag2));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag3));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag4));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag5));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag6));
 
     String request = "나";
 
@@ -147,18 +155,30 @@ class TagServiceTest {
 
     // then: 최대 5개만 반환 확인
     assertEquals(5, response.tags().size());
-    assertEquals(List.of("나무", "나비", "나이키", "나이키에어", "나이키운동화"),
-        response.tags());
+
+    List<String> tagNames = response.tags().stream()
+        .map(SearchTagInfo::tagName)
+        .toList();
+
+    assertEquals(
+        List.of("나무", "나비", "나이키", "나이키에어", "나이키운동화"),
+        tagNames
+    );
   }
 
   @Test
   @DisplayName("[태그 검색2] 태그 검색어로 앞, 뒤 공백을 넣는 경우")
   void searchTag2() {
     // given: DB에 태그 데이터 저장
-    tagRepository.save(Tag.create("나무"));
-    tagRepository.save(Tag.create("나비"));
-    tagRepository.save(Tag.create("나이키"));
-    tagRepository.save(Tag.create("나이키에어"));
+    Tag tag1 = tagRepository.save(Tag.create("나무"));
+    Tag tag2 = tagRepository.save(Tag.create("나비"));
+    Tag tag3 = tagRepository.save(Tag.create("나이키"));
+    Tag tag4 = tagRepository.save(Tag.create("나이키에어"));
+
+    auctionTagRepository.save(AuctionTag.create(auction1, tag1));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag2));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag3));
+    auctionTagRepository.save(AuctionTag.create(auction1, tag4));
 
     String request = " 나 ";
 
@@ -167,7 +187,13 @@ class TagServiceTest {
 
     // then
     assertEquals(4, response.tags().size());
-    assertEquals(List.of("나무", "나비", "나이키", "나이키에어"), response.tags());
+
+    List<String> tagNames = response.tags()
+        .stream()
+        .map(SearchTagInfo::tagName)
+        .toList();
+
+    assertEquals(List.of("나무", "나비", "나이키", "나이키에어"), tagNames);
   }
 
   @Test

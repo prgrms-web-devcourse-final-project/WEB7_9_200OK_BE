@@ -5,10 +5,19 @@ import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.entity.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
@@ -71,7 +80,6 @@ public class Auction extends BaseEntity {
         .build();
   }
 
-
   public void updateStatus(AuctionStatus status) {
     this.status = status;
   }
@@ -102,5 +110,29 @@ public class Auction extends BaseEntity {
     }
 
     return this.seller.getId().equals(userId);
+  }
+
+  public void start() {
+    if (this.status == AuctionStatus.SCHEDULED) {
+      this.status = AuctionStatus.PROCESS;
+    }
+  }
+
+  public void declinePrice(long minutesElapsed) {
+    if (this.status != AuctionStatus.PROCESS) return;
+
+    long dropCount = minutesElapsed / 5;
+    if (dropCount <= 0) return;
+
+    long totalDiscount = dropCount * this.dropAmount;
+    long targetPrice = this.startPrice - totalDiscount;
+
+    if (targetPrice < this.stopLoss) {
+      this.currentPrice = this.stopLoss;
+      this.status = AuctionStatus.FAILED;
+    }
+    else if (targetPrice < this.currentPrice) {
+      this.currentPrice = targetPrice;
+    }
   }
 }

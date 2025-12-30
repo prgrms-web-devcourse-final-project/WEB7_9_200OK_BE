@@ -14,6 +14,9 @@ import com.windfall.api.auction.service.AuctionInteractionService;
 import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.domain.user.entity.CustomUserDetails;
+import com.windfall.global.exception.ErrorCode;
+import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import jakarta.validation.Valid;
@@ -28,6 +31,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -87,9 +91,13 @@ public class AuctionController implements AuctionSpecification {
   @Override
   @GetMapping("/{auctionId}")
   public ApiResponse<AuctionDetailResponse> getAuctionDetail(
-      @PathVariable Long auctionId) {
+      @PathVariable Long auctionId,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-    Long userId = null; // 비회원 테스트
+    Long userId = null;
+    if (userDetails != null) {
+      userId = userDetails.getUserId();
+    }
 
     AuctionDetailResponse response = auctionService.getAuctionDetail(auctionId, userId);
 
@@ -112,8 +120,9 @@ public class AuctionController implements AuctionSpecification {
   public void sendEmoji(
       @DestinationVariable Long auctionId,
       @Payload SellerEmojiRequest request,
-      @Header(value = "userId", defaultValue = "1") Long userId) {
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
 
+    Long userId = userDetails.getUserId();
     interactionService.broadcastSellerEmoji(auctionId, userId, request.emojiType());
   }
 
