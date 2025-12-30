@@ -62,15 +62,27 @@ done
 # 8. Nginx 포트 스위칭 (도커 내부 Nginx 제어)
 echo "Nginx 설정을 변경합니다..."
 
-# service-url.inc 파일 수정 (호스트 경로 ./nginx/conf.d/service-url.inc)
-# 주의: Nginx는 도커 내부망을 사용하므로 'localhost'가 아닌 '컨테이너 이름'으로 연결
-echo "set \$service_url http://$TARGET_CONTAINER:8080;" | sudo tee ../nginx/conf.d/service-url.inc
+# (1) service-url.inc 파일 덮어쓰기 (내용 강제 변경)
+echo "set \$service_url http://$TARGET_CONTAINER:8080;" | sudo tee ./nginx/conf.d/service-url.inc > /dev/null
 
-# Nginx 컨테이너에게 설정 리로드 명령 전송
+# (2) 파일이 제대로 바뀌었는지 로그로 확인
+echo "Checking service-url.inc content:"
+cat ./nginx/conf.d/service-url.inc
+
+# (3) Nginx 설정 문법 검사 (설정 파일 오류 시 리로드 방지)
+echo "Nginx 설정 문법 검사 중..."
+if ! docker-compose exec -T nginx nginx -t; then
+    echo "Nginx 설정 문법 오류! 배포를 중단합니다."
+    docker-compose stop $TARGET_SERVICE
+    exit 1
+fi
+
+# (4) Nginx 리로드 (설정 적용)
 echo "Nginx Reloading..."
 docker-compose exec -T nginx nginx -s reload
+echo "스위칭 완료!"
 
-# 9. 구버전 서비스 중단 및 정리
+# 9. 구버전 서비스 중단
 echo "이전 버전($STOP_SERVICE)을 중단합니다..."
 docker-compose stop $STOP_SERVICE
 
