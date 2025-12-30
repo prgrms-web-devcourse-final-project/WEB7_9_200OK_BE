@@ -38,8 +38,8 @@ jobs:
       # (docker-compose에서 쓰는 이미지 이름과 똑같아야 합니다!)
       - name: Build & Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/wind-fall-server:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/windfall:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/windfall:latest
 
       # 6. 배포 파일 준비 (압축 & .env 생성)
       - name: Make Zip & Generate .env
