@@ -50,10 +50,9 @@ jobs:
           # 필요한 파일들 복사
           cp docker-compose.yml appspec.yml deploy/
           cp -r scripts deploy/
-          cp -r nginx deploy/   # ⭐️ Nginx 설정 폴더도 꼭 복사해야 함!
-
-          # ⭐️ .env 파일 생성 (Secrets에 있는 통짜 텍스트를 파일로 만듦)
-          # 'ENV_FILE' 시크릿 안에 DB_URL, PASSWORD 등 모든 내용이 들어있어야 함
+          cp -r nginx deploy/   
+         
+          # .env 파일 생성
           echo "${{ secrets.ENV }}" > deploy/.env
 
           # 압축하기

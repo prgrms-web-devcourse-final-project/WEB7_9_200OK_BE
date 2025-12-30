@@ -96,9 +96,9 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
-    depends_on:
-      - wind-fall-blue
-      - wind-fall-green
+#    depends_on:
+#      - wind-fall-blue
+#      - wind-fall-green
     networks:
       - windfall-net
     restart: unless-stopped
