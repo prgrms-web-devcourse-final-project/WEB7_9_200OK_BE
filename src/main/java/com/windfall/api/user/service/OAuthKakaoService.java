@@ -52,8 +52,8 @@ public class OAuthKakaoService {
                 userInfo.nickname(), userInfo.profileImageUrl())
         ));
 
-    String jwtAccessToken = jwtProvider.generateAccessToken(user.getProviderUserId());
-    String jwtRefreshToken = jwtProvider.generateRefreshToken(user.getProviderUserId());
+    String jwtAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getProviderUserId());
+    String jwtRefreshToken = jwtProvider.generateRefreshToken(user.getId(), user.getProviderUserId());
 
     //여기가 브라우저에서 기존 쿠키를 삭제하고 다시 로그인할 때 500 에러를 유발할 가능성이 가장 높습니다.
     userTokenRepository.findByUser(user)
@@ -63,14 +63,13 @@ public class OAuthKakaoService {
         );
 
     return new OAuthTokenResponse(
+        user.getId(),
         jwtAccessToken,
         jwtRefreshToken
     );
   }
 
   public String requestAccessToken(String code) {
-    System.out.println("OAuthKakaoService 진입");
-    System.out.println("requestAccessToken 시작");
     String url = "https://kauth.kakao.com/oauth/token";
 
     HttpHeaders headers = new HttpHeaders();
@@ -90,7 +89,6 @@ public class OAuthKakaoService {
 
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-    System.out.println("요청 try");
     try {
       ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
       Map<String, Object> body = response.getBody();

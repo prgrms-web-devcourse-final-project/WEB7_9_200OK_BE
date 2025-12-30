@@ -40,6 +40,9 @@ public enum ErrorCode {
   FORBIDDEN_CHAT_ROOM(HttpStatus.FORBIDDEN, "채팅방에 접근할 수 있는 권한이 없습니다."),
   INVALID_TRADE_STATUS_FOR_CHAT(HttpStatus.BAD_REQUEST, "현재 거래 상태에서는 채팅을 조회할 수 없습니다."),
 
+  // 결제
+  INVALID_PAYMENT_PROVIDER(HttpStatus.BAD_REQUEST, "결제 제공사를 선택하지 않았습니다."),
+  INVALID_PAYMENT_METHOD(HttpStatus.BAD_REQUEST, "결제 수단을 선택하지 않았습니다."),
 
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
