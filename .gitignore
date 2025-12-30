@@ -205,3 +205,7 @@ gradle-app.setting
 
 # QueryDSL generated files
 src/main/generated/
+
+# env
+.env
+.env.*

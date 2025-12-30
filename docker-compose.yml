@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-  # 1. Redis
   redis:
     image: redis:7-alpine
     container_name: windfall-redis
@@ -19,7 +18,6 @@ services:
       timeout: 3s
       retries: 10
 
-  # 2. MySQL
   mysql:
     image: mysql:8.0
     container_name: windfall-mysql
@@ -41,7 +39,6 @@ services:
       timeout: 5s
       retries: 15
 
-  # 3. Blue App
   wind-fall-blue:
     image: ${DOCKER_USERNAME}/wind-fall-server:${APP_IMAGE_TAG:-latest}
     container_name: wind-fall-blue
@@ -66,7 +63,6 @@ services:
       timeout: 3s
       retries: 20
 
-  # 4. Green App
   wind-fall-green:
     image: ${DOCKER_USERNAME}/wind-fall-server:${APP_IMAGE_TAG:-latest}
     container_name: wind-fall-green
@@ -91,7 +87,6 @@ services:
       timeout: 3s
       retries: 20
 
-  # 5. Nginx
   nginx:
     image: nginx:alpine
     container_name: windfall-nginx
@@ -100,7 +95,6 @@ services:
       - "${NGINX_HTTPS_PORT:-443}:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      # 인증서 파일을 직접 마운트할 경우(예: certbot/letsencrypt 사용 시)
       - ./certs:/etc/nginx/certs:ro
     depends_on:
       - wind-fall-blue
