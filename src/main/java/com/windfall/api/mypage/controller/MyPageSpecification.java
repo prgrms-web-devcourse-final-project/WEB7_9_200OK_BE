@@ -1,5 +1,6 @@
 package com.windfall.api.mypage.controller;
 
+import com.windfall.api.mypage.dto.auctionlikelist.BaseAuctionLikeList;
 import com.windfall.api.mypage.dto.notificationsetlist.BaseNotificationSetList;
 import com.windfall.api.mypage.dto.purchasehistory.BasePurchaseHistory;
 import com.windfall.domain.auction.enums.AuctionStatus;
@@ -27,5 +28,12 @@ public interface MyPageSpecification {
   ApiResponse<SliceResponse<BaseNotificationSetList>> getMyNotifications(@PageableDefault(page = 0, size = 10) Pageable pageable,
       @RequestParam(required = false) AuctionStatus filter,
       @AuthenticationPrincipal CustomUserDetails userDetails
+  );
+
+  @Operation(summary = "나의 찜 목록 조회", description = "자신이 찜한 경매 목록을 조회합니다.")
+  ApiResponse<SliceResponse<BaseAuctionLikeList>> getMyAuctionLikes(@PageableDefault(page = 0, size = 10) Pageable pageable,
+      @RequestParam(required = false) AuctionStatus filter,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+      /*@AuthenticationPrincipal CustomUserDetails userDetails*/
   );
 }
