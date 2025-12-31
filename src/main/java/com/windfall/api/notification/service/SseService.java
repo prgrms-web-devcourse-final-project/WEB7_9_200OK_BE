@@ -1,5 +1,6 @@
 package com.windfall.api.notification.service;
 
+import com.windfall.api.notification.dto.response.NotificationReadResponse;
 import com.windfall.domain.notification.entity.Notification;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.notification.repository.NotificationRepository;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -63,7 +65,8 @@ public class SseService {
       sseEmitterMap.remove(id);
     }
   }
-  @Transactional
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void priceNotificationSend(Long userId,Long targetId,String content) {
     User user = userRepository.findById(userId).orElse(null);
     Notification notification = Notification.create(user,
@@ -72,9 +75,10 @@ public class SseService {
         false,
         NotificationType.PRICE_DROP,targetId);
     Notification saveNotification = notificationRepository.save(notification);
+    NotificationReadResponse response = NotificationReadResponse.from(saveNotification);
     String id = String.valueOf(userId);
 
 
-    sendToClient(id, "priceAlert", saveNotification);
+    sendToClient(id, "priceAlert", response);
   }
 }
