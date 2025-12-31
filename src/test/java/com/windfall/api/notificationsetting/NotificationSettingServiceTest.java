@@ -79,6 +79,9 @@ class NotificationSettingServiceTest {
     when(user.getId()).thenReturn(userId);
     when(auction.getId()).thenReturn(auctionId);
 
+    when(notificationSettingRepository.save(any(NotificationSetting.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
     when(notificationSettingRepository.findByUserIdAndAuctionIdAndType(userId, auctionId,
         NotificationSettingType.AUCTION_START))
         .thenReturn(Optional.empty());
