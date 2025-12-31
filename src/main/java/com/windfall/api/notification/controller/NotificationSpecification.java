@@ -47,7 +47,7 @@ public interface NotificationSpecification {
 
   @Operation(summary = "실시간 알림 처리", description = "SSE를 이용해서 실시간 알림 처리를 합니다..")
   SseEmitter subscribe(
-      @AuthenticationPrincipal Long id,
+      @AuthenticationPrincipal CustomUserDetails user,
       @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId
   );
 

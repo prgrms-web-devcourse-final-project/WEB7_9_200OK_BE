@@ -66,9 +66,10 @@ public class NotificationController implements NotificationSpecification{
   @Override
   @GetMapping(value = "/subscribe", produces = "text/event-stream")
   public SseEmitter subscribe(
-      @AuthenticationPrincipal Long id,
+      @AuthenticationPrincipal CustomUserDetails user,
       @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId
   ){
+    Long id = user.getUserId();
     return sseService.subscribe(id,lastEventId);
   }
 
