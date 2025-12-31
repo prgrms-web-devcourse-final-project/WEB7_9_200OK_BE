@@ -34,6 +34,5 @@ public interface MyPageSpecification {
   ApiResponse<SliceResponse<BaseAuctionLikeList>> getMyAuctionLikes(@PageableDefault(page = 0, size = 10) Pageable pageable,
       @RequestParam(required = false) AuctionStatus filter,
       @AuthenticationPrincipal CustomUserDetails userDetails
-      /*@AuthenticationPrincipal CustomUserDetails userDetails*/
   );
 }
