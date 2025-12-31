@@ -34,4 +34,19 @@ public class Payment extends BaseEntity {
   @Column(nullable = false)
   private Long price;
 
+  /** 결제 승인 완료 */
+  public static com.windfall.domain.payment.entity.Payment confirm(
+      Long tradeId,
+      String paymentKey,
+      Long price,
+      PaymentSelection selection
+  ) {
+    return com.windfall.domain.payment.entity.Payment.builder()
+        .tradeId(tradeId)
+        .paymentKey(paymentKey)
+        .price(price)
+        .status(PaymentStatus.DONE)
+        .paymentSelection(selection)
+        .build();
+  }
 }

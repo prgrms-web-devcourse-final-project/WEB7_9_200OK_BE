@@ -43,7 +43,10 @@ public enum ErrorCode {
   // 결제
   INVALID_PAYMENT_PROVIDER(HttpStatus.BAD_REQUEST, "결제 제공사를 선택하지 않았습니다."),
   INVALID_PAYMENT_METHOD(HttpStatus.BAD_REQUEST, "결제 수단을 선택하지 않았습니다."),
-
+  INVALID_PAYMENT_TOSS_URL(HttpStatus.INTERNAL_SERVER_ERROR, "서버 속 토스 결제 승인 URL 설정에 오류가 있습니다."),
+  PAYMENT_CONFIRM_FAILED(HttpStatus.BAD_GATEWAY, "네트워크 오류로 인해 토스로부터 응답을 받지 못헀습니다."),
+  PAYMENT_ORDER_MISMATCH(HttpStatus.BAD_REQUEST, "주문번호가 일치하지 않는 보안성 에러입니다."),
+  PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "주문 가격이 일치하지 않는 보안성 에러입니다."),
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
