@@ -27,7 +27,6 @@ public enum NotificationType {
 
   // 결제 성공, 실패
   PAYMENT_SUCCESS_BUYER("결제 성공 (구매자)","auction"),
-  PAYMENT_FAILED_BUYER("결제 실패 (구매자)","auction"),
 
   // 구매 확정
   PURCHASE_CONFIRMED_SELLER("구매 확정 (판매자)","payment"),
