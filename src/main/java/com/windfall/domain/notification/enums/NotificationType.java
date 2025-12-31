@@ -25,7 +25,7 @@ public enum NotificationType {
   STOP_LOSS_TRIGGERED("스탑 로스 발생","auction"),
   PRICE_DROP("가격 하락","auction"),
 
-  // 결제 성공, 실패
+  // 결제 성공
   PAYMENT_SUCCESS_BUYER("결제 성공 (구매자)","auction"),
 
   // 구매 확정
