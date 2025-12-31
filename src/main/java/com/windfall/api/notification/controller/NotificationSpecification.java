@@ -15,7 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "Notification", description = "알림 API")
 public interface NotificationSpecification {
@@ -42,4 +44,11 @@ public interface NotificationSpecification {
   ApiResponse<NotificationMarkAllResponse> markAllAsRead(
       @AuthenticationPrincipal CustomUserDetails user
   );
+
+  @Operation(summary = "실시간 알림 처리", description = "SSE를 이용해서 실시간 알림 처리를 합니다..")
+  SseEmitter subscribe(
+      @PathVariable Long id,
+      @RequestHeader(value = "Last-Event-ID", required = false, defaultValue = "") String lastEventId
+  );
+
 }
