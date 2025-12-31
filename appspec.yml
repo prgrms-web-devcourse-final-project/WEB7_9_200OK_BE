@@ -1,0 +1,26 @@
+version: 0.0
+os: linux
+
+# 1. 파일 복사 설정
+# S3에서 받은 Zip 파일의 모든 내용(source: /)을
+# EC2의 지정된 경로(destination)로 복사합니다.
+files:
+  - source: /
+    destination: /home/ubuntu/windfall-app
+    overwrite: yes
+
+# 2. 권한 설정
+# deploy.sh 스크립트를 실행할 수 있도록 권한(755)을 부여
+permissions:
+  - object: /home/ubuntu/windfall-app/scripts/deploy.sh
+    owner: ubuntu
+    group: ubuntu
+    mode: 755
+
+# 3. 배포 단계별 실행 스크립트 지정
+# 파일을 다 복사한 후(ApplicationStart 단계)에 deploy.sh를 실행합니다.
+hooks:
+  ApplicationStart:
+    - location: scripts/deploy.sh
+      timeout: 300  # 스크립트 실행 제한 시간 (초 단위, 5분)
+      runas: ubuntu

@@ -40,7 +40,7 @@ services:
       retries: 15
 
   wind-fall-blue:
-    image: ${DOCKER_USERNAME}/wind-fall-server:${APP_IMAGE_TAG:-latest}
+    image: ${DOCKER_USERNAME}/windfall:${APP_IMAGE_TAG:-latest}
     container_name: wind-fall-blue
     depends_on:
       mysql:
@@ -64,7 +64,7 @@ services:
       retries: 20
 
   wind-fall-green:
-    image: ${DOCKER_USERNAME}/wind-fall-server:${APP_IMAGE_TAG:-latest}
+    image: ${DOCKER_USERNAME}/windfall:${APP_IMAGE_TAG:-latest}
     container_name: wind-fall-green
     depends_on:
       mysql:
@@ -96,6 +96,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./certs:/etc/nginx/certs:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - wind-fall-blue
       - wind-fall-green
