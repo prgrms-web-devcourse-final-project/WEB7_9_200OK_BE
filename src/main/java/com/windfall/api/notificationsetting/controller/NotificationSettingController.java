@@ -22,6 +22,7 @@ public class NotificationSettingController implements NotificationSettingSpecifi
 
   private final NotificationSettingService notificationSettingService;
 
+  @Override
   @GetMapping
   public ApiResponse<ReadNotySettingResponse> read(
       @PathVariable Long auctionId,
@@ -32,6 +33,7 @@ public class NotificationSettingController implements NotificationSettingSpecifi
     return ApiResponse.ok("알림 세팅 조회를 성공했습니다.", response);
   }
 
+  @Override
   @PutMapping
   public ApiResponse<UpdateNotySettingResponse> update(
       @PathVariable Long auctionId,
