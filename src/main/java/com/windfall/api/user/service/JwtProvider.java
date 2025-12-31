@@ -33,10 +33,11 @@ public class JwtProvider {
   }
 
   // Access Token 생성
-  public String generateAccessToken(String providerUserId) {
+  public String generateAccessToken(Long id, String providerUserId) {
     return Jwts.builder()
         .setSubject(providerUserId)
         .claim(providerUserId, "")
+        .claim("userId", id)
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + accessTokenValidity * 1000))
         .signWith(key, SignatureAlgorithm.HS256)
@@ -44,10 +45,11 @@ public class JwtProvider {
   }
 
   // Refresh Token 생성
-  public String generateRefreshToken(String providerUserId) {
+  public String generateRefreshToken(Long id, String providerUserId) {
     return Jwts.builder()
         .setSubject(providerUserId)
         .claim(providerUserId, "")
+        .claim("userId", id)
         .setIssuedAt(new Date())
         .setExpiration(new Date(System.currentTimeMillis() + refreshTokenValidity * 1000))
         .signWith(key, SignatureAlgorithm.HS256)

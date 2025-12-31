@@ -30,11 +30,10 @@ public class OAuthExchangeController implements OAuthExchangeSpecification {
   @PostMapping("/kakao")
   public ApiResponse<OAuthTokenResponse> kakaoExchange(@RequestBody OAuthTokenRequest request) {
     String code = request.code();
-    System.out.println("kakaoExchange Controller 시작");
     String accessToken = kakaoService.requestAccessToken(code);
     OAuthUserInfo userInfo = kakaoService.requestUserInfo(accessToken);
     OAuthTokenResponse OAuthTokenResponse = kakaoService.loginOrSignup(userInfo);
 
-    return ApiResponse.ok("액세스토큰과 리프레시토큰 반환.", OAuthTokenResponse);
+    return ApiResponse.ok("userId, 액세스토큰과 리프레시토큰 반환.", OAuthTokenResponse);
   }
 }

@@ -135,7 +135,7 @@ public class UserController implements UserSpecification {
     User user = new User(ProviderType.KAKAO, "1", "", "", "");
 
     // 3. 액세스 토큰 발급
-    String newAccessToken = jwtProvider.generateAccessToken(user.getProviderUserId());
+    String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getProviderUserId());
 
     // 4. 쿠키로 반환
     Cookie accessTokenCookie = generateCookieWithAccessToken(newAccessToken);
