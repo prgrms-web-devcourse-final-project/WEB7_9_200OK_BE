@@ -13,5 +13,27 @@ public record ChatMessageEvent(
     List<String> imageUrls,
     boolean isRead,
     LocalDateTime createdAt
-) {}
+) {
+  public static ChatMessageEvent of(
+      Long chatRoomId,
+      Long messageId,
+      Long senderId,
+      ChatMessageType messageType,
+      String content,
+      List<String> imageUrls,
+      boolean isRead,
+      LocalDateTime createdAt
+  ) {
+    return new ChatMessageEvent(
+        chatRoomId,
+        messageId,
+        senderId,
+        messageType,
+        content,
+        imageUrls,
+        isRead,
+        createdAt
+    );
+  }
+}
 
