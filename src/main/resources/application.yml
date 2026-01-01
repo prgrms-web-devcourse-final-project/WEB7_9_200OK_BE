@@ -11,7 +11,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   #  elasticsearch:
-#    uris: http://localhost:9200
+  #    uris: http://localhost:9200
 
   data:
     redis:
@@ -82,3 +82,8 @@ aws:
     secretKey: ${S3_SECRET_KEY}
     bucketName: ${BUCKET_NAME}
     baseUrl: ${S3_BASE_URL}
+
+management:
+  endpoint:
+    health:
+      show-details: always # 상세 내역 확인
