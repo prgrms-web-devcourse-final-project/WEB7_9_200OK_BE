@@ -1,5 +1,6 @@
 package com.windfall.api.chat.controller.websocket;
 
+import com.windfall.api.chat.dto.websocket.ChatReadRequest;
 import com.windfall.api.chat.dto.websocket.ChatSendRequest;
 import com.windfall.api.chat.service.websocket.ChatWsService;
 import java.security.Principal;
@@ -17,6 +18,12 @@ public class ChatWsController {
   public void send(ChatSendRequest request, Principal principal) {
     Long userId = Long.valueOf(principal.getName());
     chatWsService.sendMessage(userId, request);
+  }
+
+  @MessageMapping("/chat.read")
+  public void read(ChatReadRequest request, Principal principal) {
+    Long userId = Long.valueOf(principal.getName());
+    chatWsService.markAsRead(userId, request.chatRoomId());
   }
 
 }
