@@ -81,14 +81,15 @@ public class ChatWsService {
   public void markAsRead(Long userId, Long chatRoomId) {
     userService.getUserById(userId);
 
-    ChatRoom room = chatRoomService.getChatRoomWithTrade(chatRoomId);
+    ChatRoom chatRoom = chatRoomService.getChatRoomWithTrade(chatRoomId);
 
-    validateParticipant(room.getTrade(), userId);
+    validateParticipant(chatRoom.getTrade(), userId);
+    validateTradeStatus(chatRoom);
 
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
 
     // 본인 목록: unread 0으로 리셋 이벤트
-    sendRoomUpdateToUser(userId, room, 0, true);
+    sendRoomUpdateToUser(userId, chatRoom, 0, true);
 
     // (선택) 상대에게 “상대가 읽음 처리했다” 이벤트 보내기
     // updated > 0일 때만 보내도 됨
