@@ -52,6 +52,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: blue
       SERVER_PORT: 8080
+      REDIS_HOST: redis
     expose:
       - "8080"
     networks:
@@ -62,6 +63,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 20
+      start_period: 60s
 
   wind-fall-green:
     image: ${DOCKER_USERNAME}/windfall:${APP_IMAGE_TAG:-latest}
@@ -76,6 +78,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: green
       SERVER_PORT: 8080
+      REDIS_HOST: redis
     expose:
       - "8080"
     networks:
@@ -86,6 +89,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 20
+      start_period: 60s
 
   nginx:
     image: nginx:alpine
@@ -94,12 +98,9 @@ services:
       - "${NGINX_HTTP_PORT:-80}:80"
       - "${NGINX_HTTPS_PORT:-443}:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - ./certs:/etc/nginx/certs:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - wind-fall-blue
-      - wind-fall-green
     networks:
       - windfall-net
     restart: unless-stopped

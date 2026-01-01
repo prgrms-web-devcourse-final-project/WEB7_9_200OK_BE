@@ -52,6 +52,9 @@ dependencies {
     // 외부 연동
     implementation("org.springframework.boot:spring-boot-starter-webflux")
 
+    // actuator
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+
 // JSON 파싱
 
     // websocket
