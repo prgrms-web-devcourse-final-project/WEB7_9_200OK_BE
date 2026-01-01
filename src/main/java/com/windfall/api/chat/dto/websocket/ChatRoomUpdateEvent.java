@@ -8,24 +8,21 @@ public record ChatRoomUpdateEvent(
     String lastMessagePreview,
     ChatMessageType lastMessageType,
     LocalDateTime lastMessageAt,
-    long unreadCountDelta,
-    Boolean resetUnread
+    long unreadCount
 ) {
   public static ChatRoomUpdateEvent of(
       Long chatRoomId,
       String lastMessagePreview,
       ChatMessageType lastMessageType,
       LocalDateTime lastMessageAt,
-      long unreadCountDelta,
-      Boolean resetUnread
+      long unreadCount
   ) {
     return new ChatRoomUpdateEvent(
         chatRoomId,
         lastMessagePreview,
         lastMessageType,
         lastMessageAt,
-        unreadCountDelta,
-        resetUnread
+        unreadCount
     );
   }
 }
