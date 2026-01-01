@@ -7,17 +7,11 @@ public class PaymentConfirmResponse {
 
   private String orderId;
   private String paymentKey;
-  private Long price;
-  private String method;
-  private String status;
+  private Long amount;
 
-  public PaymentConfirmResponse(
-      long paymentId, String orderId, String paymentKey,
-      long price, String method, String status) {
+  public PaymentConfirmResponse(String orderId, String paymentKey, long amount) {
     this.orderId = orderId;
     this.paymentKey = paymentKey;
-    this.price = price;
-    this.method = method;
-    this.status = status;
+    this.amount = amount;
   }
 }
