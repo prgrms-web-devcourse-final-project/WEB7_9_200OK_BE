@@ -91,7 +91,7 @@ public class ChatWsService {
     // 본인 목록: unread 0으로 리셋 이벤트
     sendRoomUpdateToUser(userId, chatRoom, 0, true);
 
-    // (선택) 상대에게 “상대가 읽음 처리했다” 이벤트 보내기
+    // 상대에게 “상대가 읽음 처리했다” 이벤트 보내기 -> 추후 리팩토링 및 추가 예정
     // updated > 0일 때만 보내도 됨
     // messagingTemplate.convertAndSend(topicRoomRead(chatRoomId),
     //     new ChatReadEvent(chatRoomId, userId, LocalDateTime.now()));
