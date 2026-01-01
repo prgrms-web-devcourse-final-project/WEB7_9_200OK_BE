@@ -188,7 +188,7 @@ public class ChatRoomService {
         unreadCount);
   }
 
-  private ChatRoom getChatRoomOrThrow(Long chatRoomId) {
+  public ChatRoom getChatRoomOrThrow(Long chatRoomId) {
     return chatRoomRepository.findDetailById(chatRoomId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
   }
