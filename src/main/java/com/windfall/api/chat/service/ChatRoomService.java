@@ -193,6 +193,11 @@ public class ChatRoomService {
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
   }
 
+  public ChatRoom getChatRoomWithTrade(Long chatRoomId) {
+    return chatRoomRepository.findByIdWithTrade(chatRoomId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_CHAT_ROOM));
+  }
+
   private void validateTradeStatus(ChatRoom chatRoom) {
     if (!isVisibleTradeStatus(chatRoom)) {
       throw new ErrorException(ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT);
