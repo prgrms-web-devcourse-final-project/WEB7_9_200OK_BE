@@ -78,6 +78,24 @@ public class ChatWsService {
     sendRoomUpdateToUser(receiverId, chatRoom, +1, false);
   }
 
+  public void markAsRead(Long userId, Long chatRoomId) {
+    userService.getUserById(userId);
+
+    ChatRoom room = chatRoomService.getChatRoomWithTrade(chatRoomId);
+
+    validateParticipant(room.getTrade(), userId);
+
+    int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
+
+    // 본인 목록: unread 0으로 리셋 이벤트
+    sendRoomUpdateToUser(userId, room, 0, true);
+
+    // (선택) 상대에게 “상대가 읽음 처리했다” 이벤트 보내기
+    // updated > 0일 때만 보내도 됨
+    // messagingTemplate.convertAndSend(topicRoomRead(chatRoomId),
+    //     new ChatReadEvent(chatRoomId, userId, LocalDateTime.now()));
+  }
+
   private void sendRoomUpdateToUser(Long targetUserId, ChatRoom room, long unreadDelta, boolean resetUnread) {
     ChatRoomUpdateEvent update = ChatRoomUpdateEvent.of(room.getId(), room.getLastMessagePreview(),
         room.getLastMessageType(), room.getLastMessageAt(), unreadDelta, resetUnread);
