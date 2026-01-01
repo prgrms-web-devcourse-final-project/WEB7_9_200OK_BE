@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Windfall Chat WS Test</title>
+
+  <!-- SockJS + StompJS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+    input, button { padding: 8px; margin: 4px; }
+    .row { margin: 8px 0; }
+    pre { background: #111; color: #0f0; padding: 12px; height: 260px; overflow: auto; }
+  </style>
+</head>
+<body>
+<h2>STOMP Chat Test</h2>
+
+<div class="row">
+  <label>chatRoomId: </label>
+  <input id="roomId" value="1" />
+  <label>JWT (선택): </label>
+  <input id="token" style="width: 420px" placeholder="Bearer 없이 토큰만 넣어도 됨" />
+  <button onclick="connect()">Connect</button>
+  <button onclick="disconnect()">Disconnect</button>
+</div>
+
+<div class="row">
+  <label>TEXT: </label>
+  <input id="text" style="width: 520px" placeholder="메시지 입력" />
+  <button onclick="sendText()">Send Text</button>
+  <button onclick="markRead()">Mark As Read</button>
+</div>
+
+<div class="row">
+  <label>IMAGE URL들(콤마): </label>
+  <input id="imageUrls" style="width: 520px" placeholder="https://... , https://..." />
+  <button onclick="sendImage()">Send Image Msg</button>
+</div>
+
+<h3>Logs</h3>
+<pre id="log"></pre>
+
+<script>
+  let stompClient = null;
+  let connectedRoomId = null;
+
+  function log(msg) {
+    const el = document.getElementById("log");
+    el.textContent += msg + "\n";
+    el.scrollTop = el.scrollHeight;
+    console.log(msg);
+  }
+
+  function connect() {
+    const roomId = document.getElementById("roomId").value.trim();
+    const token = document.getElementById("token").value.trim();
+
+    if (!roomId) {
+      alert("chatRoomId를 입력하세요");
+      return;
+    }
+
+    const socket = new SockJS("/ws-stomp");
+    stompClient = Stomp.over(socket);
+
+    // 너무 시끄러우면 주석 처리
+    stompClient.debug = (str) => log("[stomp] " + str);
+
+    const headers = {};
+    // 인터셉터에서 "Authorization" 헤더를 읽으니 여기 넣기
+    // 토큰이 없으면 DEV_USER_ID(하드코딩)로 principal 잡히는 상태라면 빈 값으로도 연결됨
+    if (token) headers["Authorization"] = token.startsWith("Bearer ") ? token : ("Bearer " + token);
+
+    stompClient.connect(headers, (frame) => {
+      connectedRoomId = roomId;
+      log("✅ CONNECTED: " + frame);
+
+      // 1) 채팅방 토픽 구독 (해당 방에 메시지 오면 수신)
+      stompClient.subscribe(`/topic/chat.rooms.${roomId}`, (message) => {
+        log("📩 [ROOM TOPIC] " + message.body);
+      });
+
+      // 2) 내 목록 업데이트 큐 구독 (convertAndSendToUser로 오는 이벤트)
+      stompClient.subscribe(`/user/queue/chat.rooms`, (message) => {
+        log("🧾 [MY ROOMS QUEUE] " + message.body);
+      });
+
+      log("✅ SUBSCRIBED to room + my queue");
+    }, (err) => {
+      log("❌ CONNECT ERROR: " + JSON.stringify(err));
+    });
+  }
+
+  function disconnect() {
+    if (stompClient) stompClient.disconnect(() => log("👋 DISCONNECTED"));
+    stompClient = null;
+    connectedRoomId = null;
+  }
+
+  function sendText() {
+    if (!stompClient || !connectedRoomId) return alert("먼저 Connect 하세요");
+    const text = document.getElementById("text").value;
+
+    const payload = {
+      chatRoomId: Number(connectedRoomId),
+      messageType: "TEXT",
+      content: text,
+      imageUrls: []
+    };
+
+    stompClient.send("/app/chat.send", {}, JSON.stringify(payload));
+    log("➡️ SEND TEXT: " + JSON.stringify(payload));
+  }
+
+  function sendImage() {
+    if (!stompClient || !connectedRoomId) return alert("먼저 Connect 하세요");
+    const raw = document.getElementById("imageUrls").value.trim();
+    const urls = raw ? raw.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+    const payload = {
+      chatRoomId: Number(connectedRoomId),
+      messageType: "IMAGE",
+      content: null,
+      imageUrls: urls
+    };
+
+    stompClient.send("/app/chat.send", {}, JSON.stringify(payload));
+    log("➡️ SEND IMAGE MSG: " + JSON.stringify(payload));
+  }
+
+  function markRead() {
+    if (!stompClient || !connectedRoomId) return alert("먼저 Connect 하세요");
+
+    const payload = { chatRoomId: Number(connectedRoomId) };
+    stompClient.send("/app/chat.read", {}, JSON.stringify(payload));
+    log("👀 MARK READ: " + JSON.stringify(payload));
+  }
+</script>
+</body>
+</html>
