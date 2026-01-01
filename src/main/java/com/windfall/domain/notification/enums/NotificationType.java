@@ -15,17 +15,17 @@ public enum NotificationType {
 
   // 경매 유찰
   AUCTION_FAILED_SELLER("거래 유찰 (판매자)","auction"),
-  AUCTION_FAILED_BUYER("거래 유찰 (구매자)","auction"),
+  AUCTION_FAILED_SUBSCRIBER("거래 유찰 (알림 설정 유저)","auction"),
 
-  // 경매 종료 (내 물건 아님)
-  AUCTION_ENDED_OTHER("남의 물건 경매 종료","auction"),
+  // 경매 낙찰
+  SALE_SUCCESS_SELLER("경매 낙찰 (판매자)","auction"),
+  SALE_SUCCESS_SUBSCRIBER("경매 낙찰 (알림 설정 유저)","auction"),
 
   // 가격 변동
   STOP_LOSS_TRIGGERED("스탑 로스 발생","auction"),
   PRICE_DROP("가격 하락","auction"),
 
-  // 거래 성공
-  SALE_SUCCESS_SELLER("판매 성공 (판매자)","auction"),
+  // 결제 성공
   PAYMENT_SUCCESS_BUYER("결제 성공 (구매자)","auction"),
 
   // 구매 확정
