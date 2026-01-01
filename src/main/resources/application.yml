@@ -15,7 +15,7 @@ spring:
 
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST:localhost}
       port: 6379
 
   jpa:
@@ -82,8 +82,3 @@ aws:
     secretKey: ${S3_SECRET_KEY}
     bucketName: ${BUCKET_NAME}
     baseUrl: ${S3_BASE_URL}
-
-management:
-  endpoint:
-    health:
-      show-details: always # 상세 내역 확인

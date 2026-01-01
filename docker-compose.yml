@@ -52,6 +52,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: blue
       SERVER_PORT: 8080
+      REDIS_HOST: redis
     expose:
       - "8080"
     networks:
@@ -76,6 +77,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: green
       SERVER_PORT: 8080
+      REDIS_HOST: redis
     expose:
       - "8080"
     networks:
