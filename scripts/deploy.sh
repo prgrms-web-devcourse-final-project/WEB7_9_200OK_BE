@@ -61,7 +61,7 @@ done
 echo "Nginx 설정을 변경합니다..."
 
 # (1) service-url.inc 파일 덮어쓰기 (내용 강제 변경)
-echo "set \$service_url http://$TARGET_SERVICE:8080;" | docker-compose exec -T nginx sh -c 'cat > /etc/nginx/conf.d/service-url.inc'
+echo "set \$service_url http://$TARGET_SERVICE:8080;" | sudo tee ./nginx/conf.d/service-url.inc > /dev/null
 
 # (2) 파일이 제대로 바뀌었는지 로그로 확인
 echo "Checking service-url.inc content:"
@@ -75,9 +75,13 @@ if ! docker-compose exec -T nginx nginx -t; then
     exit 1
 fi
 
-# (4) Nginx 리로드 (설정 적용)
+# (4) Nginx 리로드 (재시도 로직 추가)
 echo "Nginx Reloading..."
-docker-compose exec -T nginx nginx -s reload
+if ! docker-compose exec -T nginx nginx -s reload; then
+    echo "Nginx 리로드 실패! 강제로 재시작합니다..."
+    docker-compose restart nginx
+    sleep 3
+fi
 echo "스위칭 완료!"
 
 # 9. 구버전 서비스 중단
