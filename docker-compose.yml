@@ -63,6 +63,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 20
+      start_period: 60s
 
   wind-fall-green:
     image: ${DOCKER_USERNAME}/windfall:${APP_IMAGE_TAG:-latest}
@@ -88,6 +89,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 20
+      start_period: 60s
 
   nginx:
     image: nginx:alpine
