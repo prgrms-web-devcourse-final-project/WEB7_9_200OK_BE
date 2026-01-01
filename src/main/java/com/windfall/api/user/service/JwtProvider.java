@@ -120,4 +120,18 @@ public class JwtProvider {
     refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일 (일주일)
     return refreshTokenCookie;
   }
+
+  public Long getUserId(String token) {
+    Claims claims = Jwts.parserBuilder()
+        .setSigningKey(key)
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+
+    Object v = claims.get("userId");
+    if (v == null) return null;
+    if (v instanceof Integer i) return i.longValue();
+    if (v instanceof Long l) return l;
+    return Long.valueOf(String.valueOf(v));
+  }
 }
