@@ -11,6 +11,7 @@ import com.windfall.global.exception.ErrorException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -25,6 +26,9 @@ public class PaymentService {
   private final WebClient webClient;
   private final PaymentRepository paymentRepository;
   private final AuctionRepository auctionRepository;
+
+  @Value("${spring.toss.secretkey}")
+  private String widgetSecretKey;
 
   public PaymentConfirmResponse confirmPayment(
       PaymentConfirmRequest paymentConfirmRequest) {
@@ -50,7 +54,7 @@ public class PaymentService {
 
     TossPaymentConfirmRequest tossRequest = new TossPaymentConfirmRequest(paymentKey, orderId, amount);
 
-    String widgetSecretKey = "test_sk_eqRGgYO1r5M99yPAxBgnrQnN2Eya";
+
     Base64.Encoder encoder = Base64.getEncoder();
     byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
     String authorization = "Basic " + new String(encodedBytes);

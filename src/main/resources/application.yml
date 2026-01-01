@@ -47,6 +47,9 @@ spring:
     redirect:
       uri: ${REDIRECT_URI_GOOGLE}
 
+  toss:
+    secretkey: ${SECRETKEY_TOSS}
+
 logging:
   level:
     org.hibernate.orm.jdbc.bind: TRACE
