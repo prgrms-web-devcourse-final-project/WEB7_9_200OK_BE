@@ -20,7 +20,6 @@ import com.windfall.global.response.ApiResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -117,8 +116,7 @@ public class UserController implements UserSpecification {
   }
 
   @PostMapping("/auth/regenerate-access-token")
-  public ApiResponse<OAuthTokenResponse> regenerateAccessToken(
-      HttpServletRequest request, HttpServletResponse response) {
+  public ApiResponse<OAuthTokenResponse> regenerateAccessToken(HttpServletRequest request) {
 
     OAuthTokenResponse oAuthTokenResponse = userService.regenerateAccessToken(request);
     return ApiResponse.ok("액세스 토큰 재발급 완료", oAuthTokenResponse);

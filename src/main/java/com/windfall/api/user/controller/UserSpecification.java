@@ -9,7 +9,6 @@ import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -26,5 +25,5 @@ public interface UserSpecification {
   public ApiResponse<Boolean> validateTokens(@CookieValue("accessToken") String accessToken, @CookieValue("refreshToken") String refreshToken);
 
   @Operation(summary = "액세스토큰 재발급", description = "로그인 반환양식과 동일하게 userId, accessToken, refreshToken으로 반환합니다.")
-  public ApiResponse<OAuthTokenResponse> regenerateAccessToken(HttpServletRequest request, HttpServletResponse response);
+  public ApiResponse<OAuthTokenResponse> regenerateAccessToken(HttpServletRequest request);
 }
