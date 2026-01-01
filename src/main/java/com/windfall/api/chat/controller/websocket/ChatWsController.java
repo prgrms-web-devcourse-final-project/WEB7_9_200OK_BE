@@ -16,13 +16,15 @@ public class ChatWsController {
 
   @MessageMapping("/chat.send")
   public void send(ChatSendRequest request, Principal principal) {
-    Long userId = Long.valueOf(principal.getName());
+//    Long userId = Long.valueOf(principal.getName());
+    Long userId = (principal == null) ? 2L : Long.valueOf(principal.getName());
     chatWsService.sendMessage(userId, request);
   }
 
   @MessageMapping("/chat.read")
   public void read(ChatReadRequest request, Principal principal) {
-    Long userId = Long.valueOf(principal.getName());
+//    Long userId = Long.valueOf(principal.getName());
+    Long userId = (principal == null) ? 2L : Long.valueOf(principal.getName());
     chatWsService.markAsRead(userId, request.chatRoomId());
   }
 
