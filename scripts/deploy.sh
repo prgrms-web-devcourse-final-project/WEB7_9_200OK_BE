@@ -16,12 +16,10 @@ IS_GREEN=$(docker-compose ps | grep wind-fall-green | grep Up)
 if [ -z "$IS_GREEN" ]; then
   echo "### BLUE => GREEN 배포 시작 ###"
   TARGET_SERVICE="wind-fall-green"
-  TARGET_CONTAINER="wind-fall-green"
   STOP_SERVICE="wind-fall-blue"
 else
   echo "### GREEN => BLUE 배포 시작 ###"
   TARGET_SERVICE="wind-fall-blue"
-  TARGET_CONTAINER="wind-fall-blue"
   STOP_SERVICE="wind-fall-green"
 fi
 
@@ -41,7 +39,7 @@ echo "Health Check 시작..."
 for i in {1..20}; do
   # docker inspect로 컨테이너의 상태(healthy, starting, unhealthy) 확인
   # docker-compose.yml에 healthcheck 설정이 되어 있어야 함
-  HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $TARGET_CONTAINER)
+  HEALTH_STATUS=$(docker inspect --format='{{.State.Health.Status}}' $TARGET_SERVICE)
 
   echo "   Checking... ($i/20) - Status: $HEALTH_STATUS"
 
@@ -63,7 +61,7 @@ done
 echo "Nginx 설정을 변경합니다..."
 
 # (1) service-url.inc 파일 덮어쓰기 (내용 강제 변경)
-echo "set \$service_url http://$TARGET_CONTAINER:8080;" | docker-compose exec -T nginx sh -c 'cat > /etc/nginx/conf.d/service-url.inc'
+echo "set \$service_url http://$TARGET_SERVICE:8080;" | docker-compose exec -T nginx sh -c 'cat > /etc/nginx/conf.d/service-url.inc'
 
 # (2) 파일이 제대로 바뀌었는지 로그로 확인
 echo "Checking service-url.inc content:"
