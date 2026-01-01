@@ -82,3 +82,15 @@ aws:
     secretKey: ${S3_SECRET_KEY}
     bucketName: ${BUCKET_NAME}
     baseUrl: ${S3_BASE_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: false # 헬스체크 최소화
