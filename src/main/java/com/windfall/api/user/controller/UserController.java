@@ -12,18 +12,15 @@
 package com.windfall.api.user.controller;
 
 import com.windfall.api.user.dto.response.LoginUserResponse;
+import com.windfall.api.user.dto.response.OAuthTokenResponse;
 import com.windfall.api.user.service.JwtProvider;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.user.entity.User;
-import com.windfall.domain.user.enums.ProviderType;
-import com.windfall.global.exception.ErrorCode;
-import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.ApiResponse;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -120,28 +117,11 @@ public class UserController implements UserSpecification {
   }
 
   @PostMapping("/auth/regenerate-access-token")
-  public ApiResponse<Void> regenerateAccessToken(
+  public ApiResponse<OAuthTokenResponse> regenerateAccessToken(
       HttpServletRequest request, HttpServletResponse response) {
-    // 1. 쿠키에서 리프레시 토큰 추출
-    String refreshToken = Arrays.stream(request.getCookies())
-        .filter(c -> "refreshToken".equals(c.getName()))
-        .findFirst()
-        .map(Cookie::getValue)
-        .orElseThrow(() -> new ErrorException(ErrorCode.EMPTY_REFRESH_TOKEN));
 
-    // 2. DB에서 유저 확인
-    //User user = userRepository.findByRefreshToken(refreshToken)
-    //    .orElseThrow(() -> new ErrorException(ErrorCode.INVALID_REFRESH_TOKEN));
-    User user = new User(ProviderType.KAKAO, "1", "", "", "");
-
-    // 3. 액세스 토큰 발급
-    String newAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getProviderUserId());
-
-    // 4. 쿠키로 반환
-    Cookie accessTokenCookie = generateCookieWithAccessToken(newAccessToken);
-    response.addCookie(accessTokenCookie);
-
-    return ApiResponse.ok("액세스 토큰 재발급 완료", null);
+    OAuthTokenResponse oAuthTokenResponse = userService.regenerateAccessToken(request);
+    return ApiResponse.ok("액세스 토큰 재발급 완료", oAuthTokenResponse);
   }
 
 

@@ -14,6 +14,8 @@ public enum ErrorCode {
   NOT_FOUND_PROVIDER(HttpStatus.NOT_FOUND, "해당 provider를 찾을 수 없습니다."),
   INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "올바른 토큰 값이 아닙니다."),
   EMPTY_REFRESH_TOKEN(HttpStatus.NOT_FOUND, "쿠키에 리프레시 토큰이 없습니다."),
+  EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 리프레시 토큰입니다."),
+  INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "올바르지 못한 리프레시 토큰입니다."),
 
   // 경매
   INVALID_TIME(HttpStatus.BAD_REQUEST, "경매 시간을 다시 설정해주세요."),
