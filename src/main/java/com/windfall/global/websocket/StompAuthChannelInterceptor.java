@@ -16,27 +16,33 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
-  private static final Long DEV_USER_ID = 1L;
-
   private final JwtProvider jwtProvider;
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
     StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+    StompCommand cmd = accessor.getCommand();
 
-    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+    if (cmd == null) return message;
 
+    if (StompCommand.CONNECT.equals(cmd)) {
+
+      // 1) STOMP Native Header에서 Authorization 가져오기
       String auth = accessor.getFirstNativeHeader("Authorization");
       String token = extractBearer(auth);
 
-      // 토큰이 없으면:하드코딩 Principal
-      if (token == null) {
-        accessor.setUser(new StompPrincipal(DEV_USER_ID));
-        return message;
+      // 2) 없으면 HandshakeInterceptor가 넣어둔 쿠키 토큰 fallback
+      if (token == null && accessor.getSessionAttributes() != null) {
+        Object v = accessor.getSessionAttributes().get(WsHandshakeInterceptor.ATTR_ACCESS_TOKEN);
+        if (v != null) token = String.valueOf(v);
       }
 
-      // 토큰이 있으면: 검증 후 userId 기반 Principal 세팅(추후 인증 전환 대비)
+      // 토큰 없으면 CONNECT 자체 실패
+      if (token == null || token.isBlank()) {
+        throw new ErrorException(ErrorCode.INVALID_TOKEN);
+      }
+
       if (!jwtProvider.validateToken(token)) {
         throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
@@ -47,12 +53,14 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
       }
 
       accessor.setUser(new StompPrincipal(userId));
+      return message;
     }
 
-    if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+    // CONNECT 이후 들어오는 프레임은 "반드시" Principal이 존재
+    if (StompCommand.SEND.equals(cmd) || StompCommand.SUBSCRIBE.equals(cmd) || StompCommand.UNSUBSCRIBE.equals(cmd)) {
       Principal user = accessor.getUser();
-      if (user != null) {
-        // log.info("WS DISCONNECT userId={}", user.getName());
+      if (user == null) {
+        throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
     }
 
