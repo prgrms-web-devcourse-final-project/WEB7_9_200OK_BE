@@ -88,6 +88,10 @@
         log("🧾 [MY ROOMS QUEUE] " + message.body);
       });
 
+      stompClient.subscribe(`/user/queue/errors`, (message) => {
+        log("🚨 [WS ERROR] " + message.body);
+      });
+
       log("✅ SUBSCRIBED to room + my queue");
     }, (err) => {
       log("❌ CONNECT ERROR: " + JSON.stringify(err));
