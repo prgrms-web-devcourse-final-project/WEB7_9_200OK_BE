@@ -6,7 +6,7 @@ import java.util.List;
 public record ChatSendRequest(
 
     Long chatRoomId,
-    ChatMessageType chatMessageType,
+    ChatMessageType messageType,
     String content,
     List<String> imageUrls
 ) {}

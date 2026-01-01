@@ -45,12 +45,12 @@ public class ChatWsService {
 
     // 메시지 저장
     ChatMessage msg = ChatMessage.create(chatRoom, sender, buildContent(request),
-        request.chatMessageType());
+        request.messageType());
     chatMessageRepository.save(msg);
 
     // IMAGE면 ChatImage 저장
     List<String> imageUrls = List.of();
-    if (request.chatMessageType() == ChatMessageType.IMAGE) {
+    if (request.messageType() == ChatMessageType.IMAGE) {
       imageUrls = (request.imageUrls() == null) ? List.of() : request.imageUrls();
       for (String url : imageUrls) {
         chatImageRepository.save(ChatImage.builder().chatMessage(msg).imageUrl(url).build());
@@ -59,11 +59,11 @@ public class ChatWsService {
 
     // ChatRoom lastMessage 갱신
     String preview = makePreview(request);
-    chatRoom.updateLastMessage(msg.getCreateDate(), preview, request.chatMessageType());
+    chatRoom.updateLastMessage(msg.getCreateDate(), preview, request.messageType());
 
     // 채팅방 브로드캐스트 이벤트
     ChatMessageEvent event = ChatMessageEvent.of(chatRoom.getId(), msg.getId(), sender.getId(),
-        request.chatMessageType(), msg.getContent(), imageUrls, false, msg.getCreateDate());
+        request.messageType(), msg.getContent(), imageUrls, false, msg.getCreateDate());
     messagingTemplate.convertAndSend(topicRoom(chatRoom.getId()), event);
 
     // 목록 업데이트 이벤트 (개인 큐)
@@ -117,14 +117,14 @@ public class ChatWsService {
   }
 
   private String buildContent(ChatSendRequest request) {
-    if (request.chatMessageType() == ChatMessageType.TEXT) {
+    if (request.messageType() == ChatMessageType.TEXT) {
       return request.content();
     }
     return "사진을 보냈습니다.";
   }
 
   private String makePreview(ChatSendRequest request) {
-    if (request.chatMessageType() == ChatMessageType.TEXT) {
+    if (request.messageType() == ChatMessageType.TEXT) {
       String c = request.content() == null ? "" : request.content();
       return c.length() > 200 ? c.substring(0, 200) : c;
     }
