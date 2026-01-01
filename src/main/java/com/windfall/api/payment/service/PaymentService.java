@@ -36,7 +36,7 @@ public class PaymentService {
     // 6. 결제 성공/실패 로직
 
     String paymentKey = paymentConfirmRequest.paymentKey();
-    String orderId = paymentConfirmRequest.orderId().toString();
+    String orderId = paymentConfirmRequest.orderId();
     Long amount = paymentConfirmRequest.amount();
     Long auctionId = paymentConfirmRequest.auctionId();
 
@@ -70,7 +70,7 @@ public class PaymentService {
       throw new ErrorException(ErrorCode.PAYMENT_CONFIRM_FAILED);
     }
 
-    if (!tossResponse.getOrderId().equals(paymentConfirmRequest.orderId().toString())) {
+    if (!tossResponse.getOrderId().equals(paymentConfirmRequest.orderId())) {
       throw new ErrorException(ErrorCode.PAYMENT_ORDER_MISMATCH);
     }
 
