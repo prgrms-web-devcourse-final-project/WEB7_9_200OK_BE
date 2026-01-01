@@ -75,13 +75,10 @@ if ! docker-compose exec -T nginx nginx -t; then
     exit 1
 fi
 
-# (4) Nginx 리로드 (재시도 로직 추가)
-echo "Nginx Reloading..."
-if ! docker-compose exec -T nginx nginx -s reload; then
-    echo "Nginx 리로드 실패! 강제로 재시작합니다..."
-    docker-compose restart nginx
-    sleep 3
-fi
+# (4) Nginx 재시작
+echo "Nginx Restarting..."
+docker-compose restart nginx
+sleep 3
 echo "스위칭 완료!"
 
 # 9. 구버전 서비스 중단
