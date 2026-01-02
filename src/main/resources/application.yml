@@ -11,11 +11,11 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   #  elasticsearch:
-#    uris: http://localhost:9200
+  #    uris: http://localhost:9200
 
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST:localhost}
       port: 6379
 
   jpa:
@@ -46,6 +46,9 @@ spring:
       id: ${CLIENT_ID_GOOGLE}
     redirect:
       uri: ${REDIRECT_URI_GOOGLE}
+
+  toss:
+    secretkey: ${SECRETKEY_TOSS}
 
 logging:
   level:
@@ -82,3 +85,15 @@ aws:
     secretKey: ${S3_SECRET_KEY}
     bucketName: ${BUCKET_NAME}
     baseUrl: ${S3_BASE_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: false # 헬스체크 최소화

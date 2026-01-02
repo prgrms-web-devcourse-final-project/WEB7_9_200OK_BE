@@ -3,6 +3,7 @@ package com.windfall.api.mypage.controller;
 import com.windfall.api.mypage.dto.auctionlikelist.BaseAuctionLikeList;
 import com.windfall.api.mypage.dto.notificationsetlist.BaseNotificationSetList;
 import com.windfall.api.mypage.dto.purchasehistory.BasePurchaseHistory;
+import com.windfall.api.mypage.dto.recentviewlist.BaseRecentViewList;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.user.entity.CustomUserDetails;
@@ -32,6 +33,12 @@ public interface MyPageSpecification {
 
   @Operation(summary = "나의 찜 목록 조회", description = "자신이 찜한 경매 목록을 조회합니다.")
   ApiResponse<SliceResponse<BaseAuctionLikeList>> getMyAuctionLikes(@PageableDefault(page = 0, size = 10) Pageable pageable,
+      @RequestParam(required = false) AuctionStatus filter,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  );
+
+  @Operation(summary = "나의 최근 본 내역 조회", description = "자신이 최근에 본 경매 목록을 조회합니다.")
+  ApiResponse<SliceResponse<BaseRecentViewList>> getMyRecentViews(@PageableDefault(page = 0, size = 10) Pageable pageable,
       @RequestParam(required = false) AuctionStatus filter,
       @AuthenticationPrincipal CustomUserDetails userDetails
   );

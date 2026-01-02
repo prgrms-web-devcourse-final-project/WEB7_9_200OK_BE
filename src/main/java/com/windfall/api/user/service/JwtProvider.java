@@ -141,4 +141,18 @@ public class JwtProvider {
       throw new ErrorException(ErrorCode.INVALID_REFRESH_TOKEN);
     }
   }
+  
+  public Long getUserId(String token) {
+    Claims claims = Jwts.parserBuilder()
+        .setSigningKey(key)
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+
+    Object v = claims.get("userId");
+    if (v == null) return null;
+    if (v instanceof Integer i) return i.longValue();
+    if (v instanceof Long l) return l;
+    return Long.valueOf(String.valueOf(v));
+  }
 }

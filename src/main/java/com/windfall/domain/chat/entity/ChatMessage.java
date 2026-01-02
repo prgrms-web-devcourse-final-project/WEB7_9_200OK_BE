@@ -41,4 +41,19 @@ public class ChatMessage extends BaseEntity {
   @Column(name = "is_read", nullable = false)
   private boolean isRead;
 
+  public static ChatMessage create(
+      ChatRoom chatRoom,
+      User sender,
+      String content,
+      ChatMessageType messageType
+  ) {
+    return ChatMessage.builder()
+        .chatRoom(chatRoom)
+        .sender(sender)
+        .content(content)
+        .messageType(messageType)
+        .isRead(false)
+        .build();
+  }
+
 }

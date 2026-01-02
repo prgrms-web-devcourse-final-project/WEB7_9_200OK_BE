@@ -4,9 +4,11 @@ import com.windfall.api.mypage.dto.auctionlikelist.AuctionLikeListResponse;
 import com.windfall.api.mypage.dto.auctionlikelist.BaseAuctionLikeList;
 import com.windfall.api.mypage.dto.notificationsetlist.BaseNotificationSetList;
 import com.windfall.api.mypage.dto.purchasehistory.BasePurchaseHistory;
+import com.windfall.api.mypage.dto.recentviewlist.BaseRecentViewList;
 import com.windfall.api.mypage.service.AuctionLikeListService;
 import com.windfall.api.mypage.service.NotificationSetListService;
 import com.windfall.api.mypage.service.PurchaseHistoryService;
+import com.windfall.api.mypage.service.RecentViewListService;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
@@ -29,6 +31,7 @@ public class MyPageController implements MyPageSpecification{
   private final PurchaseHistoryService purchaseHistoryService;
   private final NotificationSetListService notificationSetListService;
   private final AuctionLikeListService auctionLikeListService;
+  private final RecentViewListService recentViewListService;
 
   @GetMapping("/purchases")
   public ApiResponse<SliceResponse<BasePurchaseHistory>> getMyPurchaseHistory(
@@ -66,5 +69,18 @@ public class MyPageController implements MyPageSpecification{
     SliceResponse<BaseAuctionLikeList> response = auctionLikeListService.getMyAuctionLikes(userId, filter, pageable);
 
     return ApiResponse.ok("찜 목록 조회에 성공하였습니다.", response);
+  }
+
+  @Override
+  @GetMapping("/recentviews")
+  public ApiResponse<SliceResponse<BaseRecentViewList>> getMyRecentViews(
+      @PageableDefault(page = 0, size = 10) Pageable pageable,
+      @RequestParam(required = false) AuctionStatus filter,
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+    Long userId = userDetails.getUserId();
+    SliceResponse<BaseRecentViewList> response = recentViewListService.getMyRecentViewLists(userId, filter, pageable);
+
+    return ApiResponse.ok("최근 본 경매 내역 조회에 성공하였습니다.", response);
   }
 }
