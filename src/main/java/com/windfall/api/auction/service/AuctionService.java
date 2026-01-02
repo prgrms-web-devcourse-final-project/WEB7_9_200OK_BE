@@ -10,6 +10,7 @@ import com.windfall.api.auction.dto.response.AuctionSearchResponse;
 import com.windfall.api.auction.dto.response.info.PopularInfo;
 import com.windfall.api.auction.dto.response.info.ProcessInfo;
 import com.windfall.api.auction.dto.response.info.ScheduledInfo;
+import com.windfall.api.like.dto.response.AuctionLikeSupport;
 import com.windfall.api.like.service.AuctionLikeService;
 import com.windfall.api.tag.service.TagService;
 import com.windfall.api.user.service.UserService;
@@ -27,6 +28,8 @@ import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.SliceResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -74,15 +77,35 @@ public class AuctionService {
     return SliceResponse.from(auctionSlice);
   }
 
-  public AuctionListReadResponse readAuctionList() {
+  public AuctionListReadResponse readAuctionList(Long userId) {
     List<ScheduledInfo> scheduleList = auctionRepository.getScheduledInfo(AuctionStatus.SCHEDULED, 15);
     List<ProcessInfo> processList = auctionRepository.getProcessInfo(AuctionStatus.PROCESS, 15);
     List<PopularInfo> popularList = auctionRepository.getPopularInfo(AuctionStatus.PROCESS, 15);
 
     LocalDateTime now = LocalDateTime.now();
-    return AuctionListReadResponse.of(now, popularList,processList, scheduleList);
+
+    if (userId != null) {
+      List<? extends AuctionLikeSupport<?>> mergedList = mergeAuctionLikeTargets(
+          popularList, processList, scheduleList);
+
+      Set<Long> likedSet = auctionLikeService.getLikedAuctionIds(userId, mergedList);
+
+      popularList = auctionLikeService.applyLikeStatus(popularList, likedSet);
+      processList = auctionLikeService.applyLikeStatus(processList, likedSet);
+      scheduleList = auctionLikeService.applyLikeStatus(scheduleList, likedSet);
+    }
+
+    return AuctionListReadResponse.of(now, popularList, processList, scheduleList);
   }
 
+  private List<? extends AuctionLikeSupport<?>> mergeAuctionLikeTargets(
+      List<PopularInfo> popularList, List<ProcessInfo> processList,
+      List<ScheduledInfo> scheduleList
+  ) {
+    return Stream.of(popularList, processList, scheduleList)
+        .flatMap(List::stream)
+        .toList();
+  }
 
   private void validateAuctionRequest(AuctionCreateRequest request) {
     if (request.startPrice() * 0.9 < request.stopLoss()) {
