@@ -46,9 +46,6 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
         accessor.getSessionAttributes().put(ATTR_WS_USER_ID, userId);
       }
 
-      // ⚠️ 여기서 accessor.setUser(new StompPrincipal(userId))를 해도,
-      // Spring Security 메시징 인터셉터가 덮어써서 user-name이 KAKAO_...로 남을 수 있어.
-      // (그래서 우리는 principal name을 숫자로 만들려고 애쓰지 않고, userId는 세션에서 꺼내 쓰는 전략을 씀)
     }
 
     return message;
