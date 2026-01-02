@@ -12,7 +12,16 @@
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
     input, button { padding: 8px; margin: 4px; }
     .row { margin: 8px 0; }
-    pre { background: #111; color: #0f0; padding: 12px; height: 260px; overflow: auto; }
+    pre {
+      background: #111;
+      color: #0f0;
+      padding: 16px;
+      height: 520px;
+      overflow: auto;
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -66,12 +75,9 @@
     const socket = new SockJS("/ws-stomp");
     stompClient = Stomp.over(socket);
 
-    // 너무 시끄러우면 주석 처리
     stompClient.debug = (str) => log("[stomp] " + str);
 
     const headers = {};
-    // 인터셉터에서 "Authorization" 헤더를 읽으니 여기 넣기
-    // 토큰이 없으면 DEV_USER_ID(하드코딩)로 principal 잡히는 상태라면 빈 값으로도 연결됨
     if (token) headers["Authorization"] = token.startsWith("Bearer ") ? token : ("Bearer " + token);
 
     stompClient.connect(headers, (frame) => {
@@ -86,6 +92,10 @@
       // 2) 내 목록 업데이트 큐 구독 (convertAndSendToUser로 오는 이벤트)
       stompClient.subscribe(`/user/queue/chat.rooms`, (message) => {
         log("🧾 [MY ROOMS QUEUE] " + message.body);
+      });
+
+      stompClient.subscribe(`/user/queue/errors`, (message) => {
+        log("🚨 [WS ERROR] " + message.body);
       });
 
       log("✅ SUBSCRIBED to room + my queue");

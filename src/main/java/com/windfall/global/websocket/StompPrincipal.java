@@ -8,7 +8,8 @@ public class StompPrincipal implements Principal {
   public StompPrincipal(Long userId) {
     this.name = String.valueOf(userId);
   }
-  @Override public String getName() {
+  @Override
+  public String getName() {
     return name;
   }
 }
