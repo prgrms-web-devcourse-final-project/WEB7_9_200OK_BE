@@ -1,18 +1,23 @@
 package com.windfall.api.mypage.controller;
 
 import com.windfall.api.mypage.dto.auctionlikelist.BaseAuctionLikeList;
+import com.windfall.api.mypage.dto.dashboard.BaseDashBoardDetails;
+import com.windfall.api.mypage.dto.dashboard.DashBoardCalenderDTO;
 import com.windfall.api.mypage.dto.notificationsetlist.BaseNotificationSetList;
 import com.windfall.api.mypage.dto.purchasehistory.BasePurchaseHistory;
 import com.windfall.api.mypage.dto.recentviewlist.BaseRecentViewList;
 import com.windfall.domain.auction.enums.AuctionStatus;
-import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -41,5 +46,16 @@ public interface MyPageSpecification {
   ApiResponse<SliceResponse<BaseRecentViewList>> getMyRecentViews(@PageableDefault(page = 0, size = 10) Pageable pageable,
       @RequestParam(required = false) AuctionStatus filter,
       @AuthenticationPrincipal CustomUserDetails userDetails
+  );
+
+  @Operation(summary = "대시보드", description = "마이페이지 대시보드를 조회합니다.")
+  ApiResponse<List<DashBoardCalenderDTO>> getDashBoardCalender(
+      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM") YearMonth date
+  );
+
+  @Operation(summary = "대시보드 상세 조회", description = "마이페이지 대시보드 상세 정보를 조회합니다.")
+  ApiResponse<SliceResponse<BaseDashBoardDetails>> getDashBoardDetails(@PageableDefault(page = 0, size = 10) Pageable pageable,
+      @RequestParam(required = false) AuctionStatus filter,
+      @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date
   );
 }
