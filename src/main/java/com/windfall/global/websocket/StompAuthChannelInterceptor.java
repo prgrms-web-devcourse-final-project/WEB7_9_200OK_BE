@@ -3,7 +3,6 @@ package com.windfall.global.websocket;
 import com.windfall.api.user.service.JwtProvider;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -16,30 +15,21 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
+  public static final String ATTR_WS_USER_ID = "WS_USER_ID";
+
   private final JwtProvider jwtProvider;
 
   @Override
   public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
     StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-    StompCommand cmd = accessor.getCommand();
 
-    if (cmd == null) return message;
+    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 
-    if (StompCommand.CONNECT.equals(cmd)) {
-
-      // 1) STOMP Native Header에서 Authorization 가져오기
       String auth = accessor.getFirstNativeHeader("Authorization");
       String token = extractBearer(auth);
 
-      // 2) 없으면 HandshakeInterceptor가 넣어둔 쿠키 토큰 fallback
-      if (token == null && accessor.getSessionAttributes() != null) {
-        Object v = accessor.getSessionAttributes().get(WsHandshakeInterceptor.ATTR_ACCESS_TOKEN);
-        if (v != null) token = String.valueOf(v);
-      }
-
-      // 토큰 없으면 CONNECT 자체 실패
-      if (token == null || token.isBlank()) {
+      if (token == null) {
         throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
 
@@ -52,16 +42,13 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
         throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
 
-      accessor.setUser(new StompPrincipal(userId));
-      return message;
-    }
-
-    // CONNECT 이후 들어오는 프레임은 "반드시" Principal이 존재
-    if (StompCommand.SEND.equals(cmd) || StompCommand.SUBSCRIBE.equals(cmd) || StompCommand.UNSUBSCRIBE.equals(cmd)) {
-      Principal user = accessor.getUser();
-      if (user == null) {
-        throw new ErrorException(ErrorCode.INVALID_TOKEN);
+      if (accessor.getSessionAttributes() != null) {
+        accessor.getSessionAttributes().put(ATTR_WS_USER_ID, userId);
       }
+
+      // ⚠️ 여기서 accessor.setUser(new StompPrincipal(userId))를 해도,
+      // Spring Security 메시징 인터셉터가 덮어써서 user-name이 KAKAO_...로 남을 수 있어.
+      // (그래서 우리는 principal name을 숫자로 만들려고 애쓰지 않고, userId는 세션에서 꺼내 쓰는 전략을 씀)
     }
 
     return message;
@@ -69,8 +56,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
   private String extractBearer(String authHeader) {
     if (authHeader == null) return null;
-    if (authHeader.startsWith("Bearer ")) return authHeader.substring(7);
+    String v = authHeader.trim();
+
+    if (v.startsWith("Bearer ")) return v.substring(7).trim();
+
     return null;
   }
 }
-
