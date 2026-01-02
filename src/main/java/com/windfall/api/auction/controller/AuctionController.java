@@ -15,8 +15,6 @@ import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
-import com.windfall.global.exception.ErrorCode;
-import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import jakarta.validation.Valid;
@@ -28,7 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -83,8 +80,15 @@ public class AuctionController implements AuctionSpecification {
   @Override
   @GetMapping
   public ApiResponse<AuctionListReadResponse> readAuctionList(
+      @AuthenticationPrincipal CustomUserDetails user
   ) {
-    AuctionListReadResponse response = auctionService.readAuctionList();
+
+    Long userId = null;
+    if (user != null) {
+      userId = user.getUserId();
+    }
+
+    AuctionListReadResponse response = auctionService.readAuctionList(userId);
     return ApiResponse.ok("경매 목록 조회에 성공했습니다.", response);
   }
 
