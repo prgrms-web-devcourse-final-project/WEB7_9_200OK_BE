@@ -22,12 +22,6 @@ public class PaymentController {
       @RequestBody PaymentConfirmRequest paymentConfirmRequest) {
 
     PaymentConfirmResponse response = paymentService.confirmPayment(paymentConfirmRequest);
-
-    /*
-    PaymentConfirmResponse responseTemp = new PaymentConfirmResponse(
-        1L, "orderId", "paymentKey", 999L, "MOBILE_PAYMENT", "DONE");
-    */
-
     return ApiResponse.ok("결제 승인 성공했습니다.", response);
 
   }
