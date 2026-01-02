@@ -85,7 +85,10 @@ public interface AuctionSpecification {
       @RequestParam(defaultValue = "createDate") String sortBy,
 
       @Parameter(description = "정렬 차림", example = "ASC")
-      @RequestParam(defaultValue = "ASC") Direction sortDirection
+      @RequestParam(defaultValue = "ASC") Direction sortDirection,
+
+      @Parameter(description = "사용자 ID", required = false, example = "1")
+      @AuthenticationPrincipal CustomUserDetails user
   );
 
   @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})

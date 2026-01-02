@@ -67,13 +67,18 @@ public class AuctionController implements AuctionSpecification {
       @RequestParam @Min(value = 1, message = "page는 1부터 시작합니다.") int page,
       @RequestParam(defaultValue = "15") int size,
       @RequestParam(defaultValue = "createDate") String sortBy,
-      @RequestParam(defaultValue = "ASC") Direction sortDirection
+      @RequestParam(defaultValue = "ASC") Direction sortDirection,
+      @AuthenticationPrincipal CustomUserDetails user
       // TODO 태그 관련 + 필터링(최신순, 인기순, 오래된 순 등등)
   ) {
+    Long userId = null;
+    if (user != null) {
+      userId = user.getUserId();
+    }
 
     PageRequest pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
     SliceResponse<AuctionSearchResponse> response = auctionService.searchAuction(pageable, query,
-        category, status, minPrice, maxPrice);
+        category, status, minPrice, maxPrice, userId);
     return ApiResponse.ok("경매 검색에 성공했습니다.", response);
   }
 
@@ -82,7 +87,6 @@ public class AuctionController implements AuctionSpecification {
   public ApiResponse<AuctionListReadResponse> readAuctionList(
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-
     Long userId = null;
     if (user != null) {
       userId = user.getUserId();
