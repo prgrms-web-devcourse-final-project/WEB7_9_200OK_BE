@@ -32,6 +32,9 @@ public record AuctionDetailResponse(
     @Schema(description = "시작가")
     long startPrice,
 
+    @Schema(description = "하락 금액")
+    long dropAmount,
+
     @Schema(description = "현재가 (예정 : 시작가)")
     long currentPrice,
 
@@ -85,6 +88,7 @@ public record AuctionDetailResponse(
         List.of("https://example.jpg"), // auction.getImageUrls(),
         SellerInfo.from(auction.getSeller()),
         auction.getStartPrice(),
+        auction.getDropAmount(),
         currentPrice,
         stopLoss,
         discountRate,

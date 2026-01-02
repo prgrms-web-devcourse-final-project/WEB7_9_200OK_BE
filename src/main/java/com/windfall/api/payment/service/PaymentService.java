@@ -4,13 +4,14 @@ import com.windfall.api.payment.dto.request.PaymentConfirmRequest;
 import com.windfall.api.payment.dto.request.TossPaymentConfirmRequest;
 import com.windfall.api.payment.dto.response.PaymentConfirmResponse;
 import com.windfall.api.payment.dto.response.TossPaymentConfirmResponse;
-import com.windfall.domain.payment.enums.PaymentProvider;
+import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.payment.repository.PaymentRepository;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -24,32 +25,36 @@ public class PaymentService {
 
   private final WebClient webClient;
   private final PaymentRepository paymentRepository;
+  private final AuctionRepository auctionRepository;
+
+  @Value("${spring.toss.secretkey}")
+  private String widgetSecretKey;
 
   public PaymentConfirmResponse confirmPayment(
       PaymentConfirmRequest paymentConfirmRequest) {
-    // 0. trade 객체 생성
-    // 1. paymentRequest 속 변수 (ㅇㅋ)
-    // 2. 토스 api 연동용 DTO에 값 넣기 (ㅇㅋ)
-    // 3. 개발자 센터에 내 시크릿 키 사용 (ㅇㅋ)
-    // 4. 결제 승인 api 호출 (ㅇㅋ)
-    // 5. null 방어 (타임아웃, 네트워크 오류)와 서버단에서 검증 (ㅇㅋ)
-    // 5. 결제 성공/실패 로직
+    // 1. paymentRequest 속 변수
+    // 2. 토스 api 연동용 DTO에 값 넣기
+    // 3. 개발자 센터에 내 시크릿 키 사용
+    // 4. 결제 승인 api 호출
+    // 5. null 방어 (타임아웃, 네트워크 오류)와 서버단에서 검증
+    // 6. 결제 성공/실패 로직
 
     String paymentKey = paymentConfirmRequest.paymentKey();
     String orderId = paymentConfirmRequest.orderId();
-    Long price = paymentConfirmRequest.price();
-    PaymentProvider paymentProvider = PaymentProvider.valueOf(
-        paymentConfirmRequest.paymentProvider().toUpperCase());
+    Long amount = paymentConfirmRequest.amount();
+    Long auctionId = paymentConfirmRequest.auctionId();
 
-    // 현재는 토스 결제 api가 아니면 에러 반환
-    if (paymentProvider != PaymentProvider.TOSS) {
-      throw new ErrorException(ErrorCode.INVALID_PAYMENT_PROVIDER);
-    }
+    // 사전 예외처리용
+    // auctionRepository.findById(auctionId).orElseThrow(() -> new ErrorException(HttpStatus.NOT_FOUND_AUCTION));
 
-    TossPaymentConfirmRequest tossRequest = new TossPaymentConfirmRequest(paymentKey, orderId,
-        price);
+    // 사전 처리용
+    // 해당 auctionId 가진 trade 객체 있는가? -> 있다면 누군가 먼저 결제 진행 중임 -> 예외처리
+    // trade 객체가 있다면 상태가 토스 결제를 진행할 수 있는 상태인가? -> 진행할 수 없는 상태라면 예외처리
+    // trade 객체가 없다면 trade 객체만 바로 생성하고 저장.
 
-    String widgetSecretKey = "test_sk_eqRGgYO1r5M99yPAxBgnrQnN2Eya";
+    TossPaymentConfirmRequest tossRequest = new TossPaymentConfirmRequest(paymentKey, orderId, amount);
+
+
     Base64.Encoder encoder = Base64.getEncoder();
     byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
     String authorization = "Basic " + new String(encodedBytes);
@@ -73,20 +78,16 @@ public class PaymentService {
       throw new ErrorException(ErrorCode.PAYMENT_ORDER_MISMATCH);
     }
 
-    if (!tossResponse.getTotalAmount().equals(paymentConfirmRequest.price())) {
+    if (!tossResponse.getTotalAmount().equals(paymentConfirmRequest.amount())) {
       throw new ErrorException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
     }
 
-    PaymentConfirmResponse paymentConfirmResponse = new PaymentConfirmResponse(
-        1L, tossResponse.getOrderId(), tossResponse.getPaymentKey(),
-        tossResponse.getTotalAmount(), tossResponse.getMethod(), "DONE");
+    // 사후 처리용
+    // trade 객체, payment 객체 값과 status 변경, 저장.
+    // payment 객체 생성, 값 넣고 저장.
+    // 채팅방 객체도 생성, 저장.
 
-    return paymentConfirmResponse;
-
-    /*
     return new PaymentConfirmResponse(
-        1L, "orderId", "paymentKey", 999L, "MOBILE_PAYMENT", "DONE");
-    */
+        tossResponse.getOrderId(), tossResponse.getPaymentKey(), tossResponse.getTotalAmount());
   }
-
 }
