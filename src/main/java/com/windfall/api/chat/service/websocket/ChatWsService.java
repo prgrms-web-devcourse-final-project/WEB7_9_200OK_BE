@@ -71,15 +71,16 @@ public class ChatWsService {
     Long sellerId = trade.getSellerId();
 
     // 발신자: unread 변화 없음, 마지막 메시지 갱신
-    sendRoomUpdateToUser(sender.getId(), chatRoom, 0, false);
+    sendRoomUpdateToUser(wsUserKey(sender), chatRoom, 0, false);
 
     // 수신자: unread +1, 마지막 메시지 갱신
     Long receiverId = sender.getId().equals(buyerId) ? sellerId : buyerId;
-    sendRoomUpdateToUser(receiverId, chatRoom, +1, false);
+    User receiver = userService.getUserById(receiverId);
+    sendRoomUpdateToUser(wsUserKey(receiver), chatRoom, +1, false);
   }
 
   public void markAsRead(Long userId, Long chatRoomId) {
-    userService.getUserById(userId);
+    User me = userService.getUserById(userId);
 
     ChatRoom chatRoom = chatRoomService.getChatRoomWithTrade(chatRoomId);
 
@@ -89,7 +90,7 @@ public class ChatWsService {
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
 
     // 본인 목록: unread 0으로 리셋 이벤트
-    sendRoomUpdateToUser(userId, chatRoom, 0, true);
+    sendRoomUpdateToUser(wsUserKey(me), chatRoom, 0, true);
 
     // 상대에게 “상대가 읽음 처리했다” 이벤트 보내기 -> 추후 리팩토링 및 추가 예정
     // updated > 0일 때만 보내도 됨
@@ -97,11 +98,15 @@ public class ChatWsService {
     //     new ChatReadEvent(chatRoomId, userId, LocalDateTime.now()));
   }
 
-  private void sendRoomUpdateToUser(Long targetUserId, ChatRoom room, long unreadDelta, boolean resetUnread) {
+  private void sendRoomUpdateToUser(String wsUserKey, ChatRoom room, long unreadDelta, boolean resetUnread) {
     ChatRoomUpdateEvent update = ChatRoomUpdateEvent.of(room.getId(), room.getLastMessagePreview(),
         room.getLastMessageType(), room.getLastMessageAt(), unreadDelta, resetUnread);
 
-    messagingTemplate.convertAndSendToUser(targetUserId.toString(), "/queue/chat.rooms", update);
+    messagingTemplate.convertAndSendToUser(wsUserKey, "/queue/chat.rooms", update);
+  }
+
+  private String wsUserKey(User user) {
+    return user.getProvider().name() + "_" + user.getProviderUserId();
   }
 
   private void validateParticipant(Trade trade, Long userId) {

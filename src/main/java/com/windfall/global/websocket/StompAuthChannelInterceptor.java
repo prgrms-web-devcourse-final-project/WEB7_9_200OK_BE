@@ -3,7 +3,6 @@ package com.windfall.global.websocket;
 import com.windfall.api.user.service.JwtProvider;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
-import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
-  private static final Long DEV_USER_ID = 1L;
+  public static final String ATTR_WS_USER_ID = "WS_USER_ID";
 
   private final JwtProvider jwtProvider;
 
@@ -30,13 +29,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
       String auth = accessor.getFirstNativeHeader("Authorization");
       String token = extractBearer(auth);
 
-      // 토큰이 없으면:하드코딩 Principal
       if (token == null) {
-        accessor.setUser(new StompPrincipal(DEV_USER_ID));
-        return message;
+        throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
 
-      // 토큰이 있으면: 검증 후 userId 기반 Principal 세팅(추후 인증 전환 대비)
       if (!jwtProvider.validateToken(token)) {
         throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
@@ -46,14 +42,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
         throw new ErrorException(ErrorCode.INVALID_TOKEN);
       }
 
-      accessor.setUser(new StompPrincipal(userId));
-    }
-
-    if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-      Principal user = accessor.getUser();
-      if (user != null) {
-        // log.info("WS DISCONNECT userId={}", user.getName());
+      if (accessor.getSessionAttributes() != null) {
+        accessor.getSessionAttributes().put(ATTR_WS_USER_ID, userId);
       }
+
     }
 
     return message;
@@ -61,8 +53,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
   private String extractBearer(String authHeader) {
     if (authHeader == null) return null;
-    if (authHeader.startsWith("Bearer ")) return authHeader.substring(7);
+    String v = authHeader.trim();
+
+    if (v.startsWith("Bearer ")) return v.substring(7).trim();
+
     return null;
   }
 }
-
