@@ -1,5 +1,6 @@
 package com.windfall.api.auction.dto.response;
 
+import com.windfall.api.like.dto.response.AuctionLikeSupport;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
@@ -33,5 +34,20 @@ public record AuctionSearchResponse(
 
     @Schema(description = "경매 상태 (경매 예정, 경매 진행 중, 경매 종료)")
     AuctionStatus status
-) {
+) implements AuctionLikeSupport<AuctionSearchResponse> {
+
+  @Override
+  public AuctionSearchResponse withIsLiked(boolean liked) {
+    return new AuctionSearchResponse(
+        this.auctionId,
+        this.imageUrl,
+        this.title,
+        this.startPrice,
+        this.currentPrice,
+        this.discountRate,
+        liked,
+        this.startedAt,
+        this.status
+    );
+  }
 }

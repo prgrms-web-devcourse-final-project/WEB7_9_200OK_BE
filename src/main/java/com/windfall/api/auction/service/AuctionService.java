@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,13 +69,22 @@ public class AuctionService {
   }
 
   public SliceResponse<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category,
-      AuctionStatus status, Long minPrice, Long maxPrice) {
+      AuctionStatus status, Long minPrice, Long maxPrice, Long userId) {
 
     validatePrice(minPrice,maxPrice);
 
     Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
         query, category, status, minPrice, maxPrice);
-    return SliceResponse.from(auctionSlice);
+
+    List<AuctionSearchResponse> auctions = auctionSlice.getContent();
+
+    if (userId != null) {
+      Set<Long> likedAuctionIds = auctionLikeService.getLikedAuctionIds(userId, auctions);
+
+      auctions = auctionLikeService.applyLikeStatus(auctions, likedAuctionIds);
+    }
+
+    return SliceResponse.from(new SliceImpl<>(auctions, pageable, auctionSlice.hasNext()));
   }
 
   public AuctionListReadResponse readAuctionList(Long userId) {
