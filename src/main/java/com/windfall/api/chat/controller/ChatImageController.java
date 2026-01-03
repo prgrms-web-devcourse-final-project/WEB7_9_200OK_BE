@@ -1,6 +1,7 @@
 package com.windfall.api.chat.controller;
 
 import com.windfall.api.chat.dto.response.ChatImageUploadResponse;
+import com.windfall.api.chat.service.ChatImageService;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ChatImageController implements ChatImageSpecification{
       @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
     Long userId = userDetails.getUserId();
-    List<ChatImageUploadResponse> response = chatImageService.uploadChatImages(userId, files);
+    List<ChatImageUploadResponse> response = chatImageService.upload(files, userId);
     return ApiResponse.ok("채팅 이미지가 업로드 되었습니다.", response);
   }
 }
