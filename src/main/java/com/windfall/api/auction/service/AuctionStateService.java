@@ -1,5 +1,6 @@
 package com.windfall.api.auction.service;
 
+import static com.windfall.domain.auction.enums.AuctionStatus.COMPLETED;
 import static com.windfall.domain.auction.enums.AuctionStatus.FAILED;
 import static com.windfall.domain.auction.enums.AuctionStatus.PROCESS;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
@@ -59,6 +60,15 @@ public class AuctionStateService {
     messageSender.broadcastPriceUpdate(auctionId, auction.getCurrentPrice(), auction.getStatus());
 
     logAuctionChange(auction, oldPrice);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void completeAuction(Long auctionId) {
+    Auction auction = findAuctionById(auctionId);
+
+    if(auction.getStatus() == COMPLETED) return;
+
+    auction.updateStatus(COMPLETED);
   }
 
   private void logAuctionChange(Auction auction, long oldPrice) {
