@@ -131,8 +131,9 @@ public class AuctionController implements AuctionSpecification {
   public ApiResponse<AuctionCancelResponse> cancelAuction(
       @PathVariable Long auctionId,
 
-      @RequestParam Long userId
+      @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
+    Long userId = userDetails.getUserId();
     AuctionCancelResponse response = auctionService.cancelAuction(auctionId, userId);
     return ApiResponse.ok("경매가 취소되었습니다.", response);
   }
@@ -142,9 +143,9 @@ public class AuctionController implements AuctionSpecification {
   public ApiResponse<Void> deleteAuction(
       @PathVariable Long auctionId,
 
-      // TODO 임시 유저 id -> 로그인 개발 시 제거해야 함
-      @RequestParam Long userId
+      @AuthenticationPrincipal CustomUserDetails userDetails
   ) {
+    Long userId = userDetails.getUserId();
     auctionService.deleteAuction(auctionId, userId);
     return ApiResponse.noContent();
   }
