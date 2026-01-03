@@ -55,27 +55,19 @@ public class S3Uploader {
   }
 
   private String createKey(String dirName, String originalFilename) {
-    String dir = normalizeDir(dirName);
+    validateDirName(dirName);
     String uuid = UUID.randomUUID().toString();
 
     String name =
         (originalFilename == null || originalFilename.isBlank()) ? "file" : originalFilename;
 
-    return dir + "/" + uuid + "-" + name;
+    return dirName + "/" + uuid + "-" + name;
   }
 
-  private String normalizeDir(String dirName) {
+  private void validateDirName(String dirName) {
     if (dirName == null || dirName.isBlank()) {
       throw new ErrorException(ErrorCode.INVALID_DIRECTORY_NAME);
     }
-    String dir = dirName;
-    while (dir.startsWith("/")) {
-      dir = dir.substring(1);
-    }
-    while (dir.endsWith("/")) {
-      dir = dir.substring(0, dir.length() - 1);
-    }
-    return dir;
   }
 
   private String buildUrl(String key) {
