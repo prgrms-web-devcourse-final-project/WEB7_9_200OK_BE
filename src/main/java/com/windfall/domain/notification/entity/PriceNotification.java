@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,10 +20,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PriceNotification extends BaseEntity {
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(nullable = false)
   private NotificationSetting setting;
 
-  @Column(nullable = false)
-  private Long priceAlert;
+  private Long auctionId;  // join 회피 용
+
+  private Long userId;  // join 회피 용
+
+  private Long targetPrice;
+
+  private Boolean notified;
 }

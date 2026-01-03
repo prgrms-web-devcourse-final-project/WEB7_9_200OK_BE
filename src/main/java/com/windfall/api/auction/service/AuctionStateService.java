@@ -5,6 +5,7 @@ import static com.windfall.domain.auction.enums.AuctionStatus.PROCESS;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 
 import com.windfall.api.auction.service.component.AuctionMessageSender;
+import com.windfall.api.notification.event.vo.AuctionPriceDroppedEvent;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.entity.AuctionPriceHistory;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
@@ -13,6 +14,7 @@ import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,7 @@ public class AuctionStateService {
   private final AuctionPriceHistoryRepository historyRepository;
   private final AuctionViewerService viewerService;
   private final AuctionMessageSender messageSender;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void startAuction(Long auctionId) {
@@ -51,6 +54,8 @@ public class AuctionStateService {
     if(auction.getCurrentPrice() == oldPrice && auction.getStatus() != FAILED) return;
 
     savePriceHistoryWithViewers(auction);
+
+    publishPriceDroppedEvent(auction, oldPrice, now);
     messageSender.broadcastPriceUpdate(auctionId, auction.getCurrentPrice(), auction.getStatus());
 
     logAuctionChange(auction, oldPrice);
@@ -75,5 +80,20 @@ public class AuctionStateService {
   private Auction findAuctionById(Long auctionId) {
     return auctionRepository.findById(auctionId)
         .orElseThrow(() -> new ErrorException(NOT_FOUND_AUCTION));
+  }
+
+  private void publishPriceDroppedEvent(
+      Auction auction,
+      long oldPrice,
+      LocalDateTime now
+  ) {
+    eventPublisher.publishEvent(
+        new AuctionPriceDroppedEvent(
+            auction.getId(),
+            oldPrice,
+            auction.getCurrentPrice(),
+            now
+        )
+    );
   }
 }

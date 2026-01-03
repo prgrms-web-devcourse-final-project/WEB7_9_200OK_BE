@@ -142,7 +142,7 @@ public interface AuctionSpecification {
       @PathVariable Long auctionId,
 
       @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestParam Long userId
+      @AuthenticationPrincipal CustomUserDetails userDetails
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE, INVALID_AUCTION_SELLER,
@@ -153,6 +153,6 @@ public interface AuctionSpecification {
       @PathVariable Long auctionId,
 
       @Parameter(description = "사용자 ID", required = true, example = "1")
-      @RequestParam Long userId
+      @AuthenticationPrincipal CustomUserDetails userDetails
   );
 }
