@@ -1,5 +1,6 @@
 package com.windfall.api.auction.dto.response.info;
 
+import com.windfall.api.like.dto.response.AuctionLikeSupport;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
@@ -28,6 +29,19 @@ public record ProcessInfo(
 
     @Schema(description = "경매 시작 시간")
     LocalDateTime startedAt
-) {
+) implements AuctionLikeSupport<ProcessInfo> {
 
+  @Override
+  public ProcessInfo withIsLiked(boolean isLiked) {
+    return new ProcessInfo(
+        auctionId,
+        imageUrl,
+        title,
+        startPrice,
+        currentPrice,
+        discountRate,
+        isLiked,
+        startedAt
+    );
+  }
 }

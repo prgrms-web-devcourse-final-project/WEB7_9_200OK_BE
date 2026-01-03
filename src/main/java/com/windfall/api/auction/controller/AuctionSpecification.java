@@ -51,9 +51,10 @@ public interface AuctionSpecification {
       @Valid @RequestBody AuctionCreateRequest request
   );
 
-
   @Operation(summary = "경매 다건 조회", description = "경매 리스트들을 조회합니다.")
   ApiResponse<AuctionListReadResponse> readAuctionList(
+      @Parameter(description = "사용자 ID", required = false, example = "1")
+      @AuthenticationPrincipal CustomUserDetails user
   );
 
   @ApiErrorCodes(INVALID_PRICE)
@@ -84,7 +85,10 @@ public interface AuctionSpecification {
       @RequestParam(defaultValue = "createDate") String sortBy,
 
       @Parameter(description = "정렬 차림", example = "ASC")
-      @RequestParam(defaultValue = "ASC") Direction sortDirection
+      @RequestParam(defaultValue = "ASC") Direction sortDirection,
+
+      @Parameter(description = "사용자 ID", required = false, example = "1")
+      @AuthenticationPrincipal CustomUserDetails user
   );
 
   @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})
