@@ -49,6 +49,10 @@ public enum ErrorCode {
   PAYMENT_CONFIRM_FAILED(HttpStatus.BAD_REQUEST, "토스에서 해당 결제를 찾을 수 없습니다."),
   PAYMENT_ORDER_MISMATCH(HttpStatus.BAD_REQUEST, "주문번호가 일치하지 않는 보안성 에러입니다."),
   PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "주문 가격이 일치하지 않는 보안성 에러입니다."),
+  PAYMENT_REQUEST_LATE(HttpStatus.CONFLICT, "이미 결제 진행 중인 사람이 존재합니다."),
+  NOT_FOUND_BUYER(HttpStatus.NOT_FOUND, "해당 buyerId에 맞는 구매자를 db에서 찾지 못했습니다."),
+  NOT_FOUND_SELLER(HttpStatus.NOT_FOUND, "해당 seelerId에 맞는 판매자를 db에서 찾지 못했습니다."),
+
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
@@ -56,3 +60,6 @@ public enum ErrorCode {
   private final HttpStatus httpStatus;
   private final String message;
 }
+
+
+
