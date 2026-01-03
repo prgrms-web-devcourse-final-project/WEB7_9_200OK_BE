@@ -8,7 +8,6 @@ import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.chat.entity.ChatRoom;
-import com.windfall.domain.chat.enums.ChatMessageType;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
 import com.windfall.domain.payment.entity.Payment;
 import com.windfall.domain.payment.entity.PaymentSelection;
@@ -23,7 +22,6 @@ import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -162,13 +160,7 @@ public class PaymentService {
         new PaymentSelection(PaymentProvider.TOSS, PaymentMethod.MOBILE_PAYMENT));
     paymentRepository.save(payment);
 
-    ChatRoom chatRoom = ChatRoom.builder()
-        .trade(trade)
-        .lastMessageAt(LocalDateTime.now())
-        .lastMessagePreview("")
-        .lastMessageType(ChatMessageType.SYSTEM)
-        .build();
-
+    ChatRoom chatRoom = ChatRoom.generateChatRoom(trade);
     chatRoomRepository.save(chatRoom);
 
     return new PaymentConfirmResponse(

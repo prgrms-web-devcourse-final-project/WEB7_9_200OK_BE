@@ -43,4 +43,13 @@ public class ChatRoom extends BaseEntity {
     this.lastMessagePreview = preview;
     this.lastMessageType = type;
   }
+
+  public static ChatRoom generateChatRoom(Trade trade) {
+    return ChatRoom.builder()
+        .trade(trade)
+        .lastMessageAt(LocalDateTime.now())
+        .lastMessagePreview("")
+        .lastMessageType(ChatMessageType.SYSTEM)
+        .build();
+  }
 }
