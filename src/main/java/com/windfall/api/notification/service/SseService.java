@@ -81,4 +81,24 @@ public class SseService {
 
     sendToClient(id, "priceAlert", response);
   }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void auctionStartNotificationSend(Long userId, Long targetId, String auctionTitle) {
+    User user = userRepository.findById(userId).orElse(null);
+
+    Notification notification = Notification.create(
+        user,
+        "경매 시작 알림",
+        "관심 상품 '" + auctionTitle + "'의 경매가 시작되었습니다.",
+        false,
+        NotificationType.AUCTION_START_WISHLIST,
+        targetId
+    );
+
+    Notification saveNotification = notificationRepository.save(notification);
+    NotificationReadResponse response = NotificationReadResponse.from(saveNotification);
+    String id = String.valueOf(userId);
+
+    sendToClient(id, "auctionStartAlert", response);
+  }
 }
