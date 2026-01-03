@@ -66,7 +66,7 @@ public class S3Uploader {
 
   private String normalizeDir(String dirName) {
     if (dirName == null || dirName.isBlank()) {
-      throw new ErrorException(ErrorCode.INVALID_UPLOAD_FILE);
+      throw new ErrorException(ErrorCode.INVALID_DIRECTORY_NAME);
     }
     String dir = dirName;
     while (dir.startsWith("/")) {
