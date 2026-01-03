@@ -108,10 +108,7 @@ public class AuctionStateService {
   }
 
   private void notifyAuctionStart(Auction auction) {
-    List<NotificationSetting> settings = notificationSettingRepository.findAllActiveByAuctionAndType(
-        auction.getId(),
-        NotificationSettingType.AUCTION_START
-    );
+    List<NotificationSetting> settings = getActiveAuctionStartSettings(auction);
 
     if(settings.isEmpty()) return;
 
@@ -126,5 +123,12 @@ public class AuctionStateService {
         log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
       }
     }
+  }
+
+  private List<NotificationSetting> getActiveAuctionStartSettings(Auction auction) {
+    return notificationSettingRepository.findAllActiveByAuctionAndType(
+        auction.getId(),
+        NotificationSettingType.AUCTION_START
+    );
   }
 }
