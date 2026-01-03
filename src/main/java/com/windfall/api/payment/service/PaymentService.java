@@ -17,7 +17,6 @@ import com.windfall.domain.payment.repository.PaymentRepository;
 import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.trade.repository.TradeRepository;
-import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
@@ -50,7 +49,7 @@ public class PaymentService {
   @Transactional
   public PaymentConfirmResponse confirmPayment(
       PaymentConfirmRequest paymentConfirmRequest,
-      CustomUserDetails customUserDetails) {
+      Long buyerId) {
 
     // DTO에서 데이터 추출하며 예외처리.
     String paymentKey = paymentConfirmRequest.paymentKey();
@@ -84,7 +83,6 @@ public class PaymentService {
     */
 
     Long sellerId = auction.getSeller().getId();
-    Long buyerId = customUserDetails.getUserId();
     if(!userRepository.existsById(sellerId)) throw new ErrorException(ErrorCode.NOT_FOUND_SELLER);
     if(!userRepository.existsById(buyerId)) throw new ErrorException(ErrorCode.NOT_FOUND_BUYER);
     

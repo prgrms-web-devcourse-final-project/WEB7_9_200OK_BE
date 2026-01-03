@@ -24,7 +24,7 @@ public class PaymentController {
       @RequestBody PaymentConfirmRequest paymentConfirmRequest,
       @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-    PaymentConfirmResponse response = paymentService.confirmPayment(paymentConfirmRequest, customUserDetails);
+    PaymentConfirmResponse response = paymentService.confirmPayment(paymentConfirmRequest, customUserDetails.getUserId());
     return ApiResponse.ok("결제 승인 성공했습니다.", response);
 
   }
