@@ -6,12 +6,18 @@ import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 
 import com.windfall.api.auction.service.component.AuctionMessageSender;
 import com.windfall.api.notification.event.vo.AuctionPriceDroppedEvent;
+import com.windfall.api.notification.service.SseService;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.entity.AuctionPriceHistory;
 import com.windfall.domain.auction.repository.AuctionPriceHistoryRepository;
 import com.windfall.domain.auction.repository.AuctionRepository;
+import com.windfall.domain.notification.entity.NotificationSetting;
+import com.windfall.domain.notification.enums.NotificationSettingType;
+import com.windfall.domain.notification.repository.NotificationSettingRepository;
 import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,6 +35,8 @@ public class AuctionStateService {
   private final AuctionViewerService viewerService;
   private final AuctionMessageSender messageSender;
   private final ApplicationEventPublisher eventPublisher;
+  private final NotificationSettingRepository notificationSettingRepository;
+  private final SseService sseService;
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void startAuction(Long auctionId) {
@@ -36,6 +44,8 @@ public class AuctionStateService {
 
       auction.start();
       messageSender.broadcastPriceUpdate(auctionId, auction.getCurrentPrice(), PROCESS);
+
+      notifyAuctionStart(auction);
 
       log.info("✅경매 시작 처리 완료 ( 경매 ID: {} )", auction.getId());
     });
@@ -95,5 +105,26 @@ public class AuctionStateService {
             now
         )
     );
+  }
+
+  private void notifyAuctionStart(Auction auction) {
+    List<NotificationSetting> settings = notificationSettingRepository.findAllActiveByAuctionAndType(
+        auction.getId(),
+        NotificationSettingType.AUCTION_START
+    );
+
+    if(settings.isEmpty()) return;
+
+    for(NotificationSetting setting : settings) {
+      try {
+        sseService.auctionStartNotificationSend(
+            setting.getUser().getId(),
+            auction.getId(),
+            auction.getTitle()
+        );
+      } catch (Exception e) {
+        log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
+      }
+    }
   }
 }
