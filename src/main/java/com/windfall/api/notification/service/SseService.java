@@ -6,6 +6,8 @@ import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.notification.repository.NotificationRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.repository.UserRepository;
+import com.windfall.global.exception.ErrorCode;
+import com.windfall.global.exception.ErrorException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,17 +70,42 @@ public class SseService {
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void priceNotificationSend(Long userId,Long targetId,String content) {
-    User user = userRepository.findById(userId).orElse(null);
+    User user = getUserOrThrow(userId);
     Notification notification = Notification.create(user,
         "가격 하락 알림",
         "관심 상품의 가격이 하락했습니다: " + content,
         false,
         NotificationType.PRICE_DROP,targetId);
-    Notification saveNotification = notificationRepository.save(notification);
-    NotificationReadResponse response = NotificationReadResponse.from(saveNotification);
+
+    saveAndSend(userId, "priceAlert", notification);
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void auctionStartNotificationSend(Long userId, Long targetId, String auctionTitle) {
+    User user = getUserOrThrow(userId);
+
+    Notification notification = Notification.create(
+        user,
+        "경매 시작 알림",
+        "관심 상품 '" + auctionTitle + "'의 경매가 시작되었습니다.",
+        false,
+        NotificationType.AUCTION_START_WISHLIST,
+        targetId
+    );
+
+    saveAndSend(userId, "auctionStartAlert", notification);
+  }
+
+  private User getUserOrThrow(Long userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_USER));
+  }
+
+  private void saveAndSend(Long userId, String eventName, Notification notification) {
+    Notification savedNotification = notificationRepository.save(notification);
+    NotificationReadResponse response = NotificationReadResponse.from(savedNotification);
     String id = String.valueOf(userId);
 
-
-    sendToClient(id, "priceAlert", response);
+    sendToClient(id, eventName, response);
   }
 }
