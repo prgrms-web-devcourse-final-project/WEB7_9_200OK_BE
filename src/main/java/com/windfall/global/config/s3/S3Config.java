@@ -1,4 +1,4 @@
-package com.windfall.global.config;
+package com.windfall.global.config.s3;
 
 
 import org.springframework.beans.factory.annotation.Value;
