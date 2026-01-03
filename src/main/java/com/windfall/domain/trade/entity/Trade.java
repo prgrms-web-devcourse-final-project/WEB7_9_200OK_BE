@@ -41,4 +41,12 @@ public class Trade extends BaseEntity {
   @Column(name = "final_price", nullable = false)
   private Long finalPrice;
 
+  public void changeStatus(TradeStatus newStatus) {
+    this.status = newStatus;
+  }
+
+  public void changeBuyer(Long buyerId){
+    this.buyerId = buyerId;
+  }
+
 }

@@ -3,8 +3,10 @@ package com.windfall.api.payment.controller;
 import com.windfall.api.payment.dto.request.PaymentConfirmRequest;
 import com.windfall.api.payment.dto.response.PaymentConfirmResponse;
 import com.windfall.api.payment.service.PaymentService;
+import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +21,10 @@ public class PaymentController {
 
   @PostMapping(value = "/confirm")
   public ApiResponse<PaymentConfirmResponse> confirmPayment(
-      @RequestBody PaymentConfirmRequest paymentConfirmRequest) {
+      @RequestBody PaymentConfirmRequest paymentConfirmRequest,
+      @AuthenticationPrincipal CustomUserDetails customUserDetails) {
 
-    PaymentConfirmResponse response = paymentService.confirmPayment(paymentConfirmRequest);
+    PaymentConfirmResponse response = paymentService.confirmPayment(paymentConfirmRequest, customUserDetails.getUserId());
     return ApiResponse.ok("결제 승인 성공했습니다.", response);
 
   }
