@@ -129,7 +129,6 @@ public class PaymentService {
         paymentKey, orderId, 9999L, "카드 결제", "DONE");
     */
 
-
     if (!tossResponse.orderId().equals(paymentConfirmRequest.orderId())) {
       trade.changeStatus(TradeStatus.PAYMENT_FAILED);
       throw new ErrorException(ErrorCode.PAYMENT_ORDER_MISMATCH);
