@@ -4,9 +4,11 @@
 package com.windfall.api.user.controller;
 
 import com.windfall.api.user.dto.response.LoginUserResponse;
+import com.windfall.api.user.dto.response.OAuthTokenResponse;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -21,4 +23,7 @@ public interface UserSpecification {
 
   @Operation(summary = "두 토큰 중 하나라도 사용 가능한가 true/false 반환", description = "쿠키 속 액세스 토큰과 리프레시 토큰 중 하나라도 사용 가능하면 true, 둘 다 만료되었으면 false 반환합니다.")
   public ApiResponse<Boolean> validateTokens(@CookieValue("accessToken") String accessToken, @CookieValue("refreshToken") String refreshToken);
+
+  @Operation(summary = "액세스토큰 재발급", description = "로그인 반환양식과 동일하게 userId, accessToken, refreshToken으로 반환합니다.")
+  public ApiResponse<OAuthTokenResponse> regenerateAccessToken(HttpServletRequest request);
 }

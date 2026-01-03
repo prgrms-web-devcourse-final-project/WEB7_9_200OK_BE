@@ -15,3 +15,5 @@ public class PaymentConfirmResponse {
     this.amount = amount;
   }
 }
+// status, amount, orderId 만 넣자.
+// orderId를 UUID로 보내주신 만큼, 반환도 UUID로 반환하자

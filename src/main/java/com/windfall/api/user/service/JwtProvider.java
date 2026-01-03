@@ -3,6 +3,7 @@ package com.windfall.api.user.service;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtProvider {
+
   private final Key key; // SecretKey로 변환
   private final long accessTokenValidity;
   private final long refreshTokenValidity;
@@ -121,6 +123,25 @@ public class JwtProvider {
     return refreshTokenCookie;
   }
 
+  public Long extractUserId(String token) {
+    // refreshToken이 만료되면 내부 값이 추출할 수 없다.
+    try {
+      Claims claims = Jwts.parserBuilder()
+          .setSigningKey(key)
+          .build()
+          .parseClaimsJws(token)
+          .getBody();
+
+      return claims.get("userId", Long.class);
+
+    } catch (ExpiredJwtException e) {
+      throw new ErrorException(ErrorCode.EXPIRED_REFRESH_TOKEN);
+
+    } catch (JwtException | IllegalArgumentException e) {
+      throw new ErrorException(ErrorCode.INVALID_REFRESH_TOKEN);
+    }
+  }
+  
   public Long getUserId(String token) {
     Claims claims = Jwts.parserBuilder()
         .setSigningKey(key)
