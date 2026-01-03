@@ -5,8 +5,8 @@
 
 package com.windfall.api.user.service;
 
-import com.windfall.api.user.dto.response.OAuthUserInfo;
 import com.windfall.api.user.dto.response.OAuthTokenResponse;
+import com.windfall.api.user.dto.response.OAuthUserInfo;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.entity.UserToken;
 import com.windfall.domain.user.enums.ProviderType;
@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -44,6 +45,7 @@ public class OAuthKakaoService {
   @Value("${spring.kakao.redirect.uri}")
   private String kakaoRedirectUri;
 
+  @Transactional
   public OAuthTokenResponse loginOrSignup(OAuthUserInfo userInfo) {
 
     User user = userRepository.findByProviderUserId(userInfo.providerUserId())
