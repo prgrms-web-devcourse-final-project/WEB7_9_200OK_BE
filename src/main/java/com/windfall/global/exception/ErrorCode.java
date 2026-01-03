@@ -42,6 +42,10 @@ public enum ErrorCode {
   FORBIDDEN_CHAT_ROOM(HttpStatus.FORBIDDEN, "채팅방에 접근할 수 있는 권한이 없습니다."),
   INVALID_TRADE_STATUS_FOR_CHAT(HttpStatus.BAD_REQUEST, "현재 거래 상태에서는 채팅을 조회할 수 없습니다."),
 
+  // 채팅 이미지
+  EMPTY_CHAT_IMAGE(HttpStatus.BAD_REQUEST, "업로드할 이미지가 없습니다."),
+  INVALID_CHAT_IMAGE_COUNT(HttpStatus.BAD_REQUEST, "이미지는 최대 5장까지 업로드할 수 있습니다."),
+
   // 결제
   INVALID_PAYMENT_PROVIDER(HttpStatus.BAD_REQUEST, "결제 제공사를 선택하지 않았습니다."),
   INVALID_PAYMENT_METHOD(HttpStatus.BAD_REQUEST, "결제 수단을 선택하지 않았습니다."),
@@ -49,6 +53,10 @@ public enum ErrorCode {
   PAYMENT_CONFIRM_FAILED(HttpStatus.BAD_REQUEST, "토스에서 해당 결제를 찾을 수 없습니다."),
   PAYMENT_ORDER_MISMATCH(HttpStatus.BAD_REQUEST, "주문번호가 일치하지 않는 보안성 에러입니다."),
   PAYMENT_AMOUNT_MISMATCH(HttpStatus.CONFLICT, "주문 가격이 일치하지 않는 보안성 에러입니다."),
+
+  // S3 - 파일 업로드 공통
+  INVALID_UPLOAD_FILE(HttpStatus.BAD_REQUEST, "업로드 파일이 유효하지 않습니다."),
+
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
