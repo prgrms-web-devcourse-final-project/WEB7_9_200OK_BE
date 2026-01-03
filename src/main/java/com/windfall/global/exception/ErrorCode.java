@@ -57,6 +57,9 @@ public enum ErrorCode {
   NOT_FOUND_BUYER(HttpStatus.NOT_FOUND, "해당 buyerId에 맞는 구매자를 db에서 찾지 못했습니다."),
   NOT_FOUND_SELLER(HttpStatus.NOT_FOUND, "해당 seelerId에 맞는 판매자를 db에서 찾지 못했습니다."),
 
+  // S3 - 파일 업로드 공통
+  INVALID_UPLOAD_FILE(HttpStatus.BAD_REQUEST, "업로드 파일이 유효하지 않습니다."),
+
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
