@@ -5,6 +5,7 @@ import com.windfall.api.payment.dto.request.TossPaymentConfirmRequest;
 import com.windfall.api.payment.dto.response.PaymentConfirmResponse;
 import com.windfall.api.payment.dto.response.TossPaymentConfirmResponse;
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.enums.ChatMessageType;
@@ -30,6 +31,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -47,6 +49,7 @@ public class PaymentService {
   @Value("${spring.toss.secretkey}")
   private String widgetSecretKey;
 
+  @Transactional
   public PaymentConfirmResponse confirmPayment(
       PaymentConfirmRequest paymentConfirmRequest,
       CustomUserDetails customUserDetails) {
@@ -86,23 +89,32 @@ public class PaymentService {
     Long buyerId = customUserDetails.getUserId();
     if(!userRepository.existsById(sellerId)) throw new ErrorException(ErrorCode.NOT_FOUND_SELLER);
     if(!userRepository.existsById(buyerId)) throw new ErrorException(ErrorCode.NOT_FOUND_BUYER);
-
+    
+    // 더티체킹 이슈로 상태 분리
     Trade trade = tradeRepository.findByAuction(auction)
-        .orElseGet(() -> Trade.builder()
-            .auction(auction)
-            .sellerId(sellerId)
-            .buyerId(buyerId)
-            .finalPrice(amount)
-            .build());
-    tradeRepository.save(trade);
+        .orElse(null);
+    if (trade == null) {
+      trade = Trade.builder()
+          .auction(auction)
+          .sellerId(sellerId)
+          .buyerId(buyerId)
+          .finalPrice(amount)
+          .build();
+      tradeRepository.save(trade); // 신규 엔티티만 save
+    } else {
+      trade.changeBuyer(buyerId);
+    }
+
+    final Trade tradeFixed = trade;
+
     // 경우 1. buyer가 본인: 본인이 1빠따. 상태 체크 필요 X
     // 경우 2. buyer가 남: trade 상태가 CANCELED나 FAILED일 때만 가능.
-    if (!trade.getBuyerId().equals(buyerId)) {
-      if (trade.getStatus() == TradeStatus.PAYMENT_CANCELED
-          || trade.getStatus() == TradeStatus.PAYMENT_FAILED) {
-        throw new ErrorException(ErrorCode.PAYMENT_REQUEST_LATE);
-      }
+    if (!trade.getBuyerId().equals(buyerId)
+        && (trade.getStatus() == TradeStatus.PAYMENT_CANCELED
+        || trade.getStatus() == TradeStatus.PAYMENT_FAILED)) {
+      throw new ErrorException(ErrorCode.PAYMENT_REQUEST_LATE);
     }
+
 
     TossPaymentConfirmRequest tossRequest = new TossPaymentConfirmRequest(paymentKey, orderId,
         amount);
@@ -118,7 +130,7 @@ public class PaymentService {
         .bodyValue(tossRequest)
         .retrieve()
         .onStatus(HttpStatusCode::isError, response -> {
-          trade.changeStatus(TradeStatus.PAYMENT_FAILED);
+          tradeFixed.changeStatus(TradeStatus.PAYMENT_FAILED);
           return Mono.error(new ErrorException(ErrorCode.PAYMENT_CONFIRM_FAILED));
         })
         .bodyToMono(TossPaymentConfirmResponse.class)
@@ -143,7 +155,7 @@ public class PaymentService {
     // trade 객체, payment 객체 값과 status 변경, 저장.
     // payment 객체 생성, 값 넣고 저장.
     // 채팅방 객체도 생성, 저장.
-
+    auction.updateStatus(AuctionStatus.COMPLETED);
     trade.changeStatus(TradeStatus.PAYMENT_COMPLETED);
 
     Payment payment = Payment.confirm(trade.getId(), paymentKey, amount,

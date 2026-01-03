@@ -45,4 +45,8 @@ public class Trade extends BaseEntity {
     this.status = newStatus;
   }
 
+  public void changeBuyer(Long buyerId){
+    this.buyerId = buyerId;
+  }
+
 }
