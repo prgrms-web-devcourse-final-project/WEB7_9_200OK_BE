@@ -1,11 +1,11 @@
 package com.windfall.api.payment.service;
 
+import com.windfall.api.auction.service.AuctionStateService;
 import com.windfall.api.payment.dto.request.PaymentConfirmRequest;
 import com.windfall.api.payment.dto.request.TossPaymentConfirmRequest;
 import com.windfall.api.payment.dto.response.PaymentConfirmResponse;
 import com.windfall.api.payment.dto.response.TossPaymentConfirmResponse;
 import com.windfall.domain.auction.entity.Auction;
-import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
@@ -42,6 +42,7 @@ public class PaymentService {
   private final TradeRepository tradeRepository;
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
+  private final AuctionStateService auctionStateService;
 
   @Value("${spring.toss.secretkey}")
   private String widgetSecretKey;
@@ -151,7 +152,8 @@ public class PaymentService {
     // trade 객체, payment 객체 값과 status 변경, 저장.
     // payment 객체 생성, 값 넣고 저장.
     // 채팅방 객체도 생성, 저장.
-    auction.updateStatus(AuctionStatus.COMPLETED);
+
+    auctionStateService.completeAuction(auctionId);
     trade.changeStatus(TradeStatus.PAYMENT_COMPLETED);
 
     Payment payment = Payment.confirm(trade.getId(), paymentKey, amount,
