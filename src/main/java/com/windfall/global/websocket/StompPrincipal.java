@@ -5,8 +5,8 @@ import java.security.Principal;
 public class StompPrincipal implements Principal {
   private final String name;
 
-  public StompPrincipal(Long userId) {
-    this.name = String.valueOf(userId);
+  public StompPrincipal(String name) {
+    this.name = name;
   }
   @Override
   public String getName() {
