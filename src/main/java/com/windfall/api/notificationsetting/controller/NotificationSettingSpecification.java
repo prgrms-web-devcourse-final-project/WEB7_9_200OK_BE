@@ -1,6 +1,8 @@
 package com.windfall.api.notificationsetting.controller;
 
+import static com.windfall.global.exception.ErrorCode.INVALID_PRICE_NOTIFICATION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_PRICE_REACHED_NOTY;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 
 import com.windfall.api.notificationsetting.dto.request.UpdateNotySettingRequest;
@@ -28,7 +30,7 @@ public interface NotificationSettingSpecification {
       @AuthenticationPrincipal CustomUserDetails user
   );
 
-  @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION})
+  @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION, INVALID_PRICE_NOTIFICATION, NOT_FOUND_PRICE_REACHED_NOTY})
   @Operation(summary = "알림 세팅 수정", description = "알림 세팅을 수정합니다.")
   ApiResponse<UpdateNotySettingResponse> update(
       @Parameter(description = "경매 ID", required = true, example = "1")
@@ -40,7 +42,8 @@ public interface NotificationSettingSpecification {
               {
                 "auctionStart": true,
                 "auctionEnd": true,
-                "priceReached": true
+                "priceReached": true,
+                "price": 10000
               }
               """
       )

@@ -12,6 +12,9 @@ public record UpdateNotySettingRequest (
     boolean auctionEnd,
 
     @Schema(description = "가격 도달 설정 여부", example = "true")
-    boolean priceReached
+    boolean priceReached,
+
+    @Schema(description = "가격 도달 기준값", example = "10000")
+    Long price
 ){
 }

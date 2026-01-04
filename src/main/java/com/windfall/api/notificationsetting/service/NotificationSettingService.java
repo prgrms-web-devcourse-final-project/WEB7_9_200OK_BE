@@ -6,8 +6,10 @@ import com.windfall.api.notificationsetting.dto.response.UpdateNotySettingRespon
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.notification.entity.NotificationSetting;
+import com.windfall.domain.notification.entity.PriceNotification;
 import com.windfall.domain.notification.enums.NotificationSettingType;
 import com.windfall.domain.notification.repository.NotificationSettingRepository;
+import com.windfall.domain.notification.repository.PriceNotificationRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.exception.ErrorCode;
@@ -24,6 +26,7 @@ public class NotificationSettingService {
   private final NotificationSettingRepository notificationSettingRepository;
   private final UserRepository userRepository;
   private final AuctionRepository auctionRepository;
+  private final PriceNotificationRepository priceNotificationRepository;
 
   @Transactional(readOnly = true)
   public ReadNotySettingResponse read(Long auctionId, Long userId) {
@@ -42,6 +45,10 @@ public class NotificationSettingService {
   public UpdateNotySettingResponse update(Long auctionId, UpdateNotySettingRequest request,
       Long userId
   ) {
+    if (request.priceReached()) {
+      validatePrice(request);
+    }
+
     User user = getUser(userId);
     Auction auction = getAuction(auctionId);
 
@@ -49,7 +56,17 @@ public class NotificationSettingService {
     upsert(user, auction, NotificationSettingType.AUCTION_END, request.auctionEnd());
     upsert(user, auction, NotificationSettingType.PRICE_REACHED, request.priceReached());
 
+    if (request.priceReached()) {
+      upsertPriceNotification(userId, auctionId, request.price());
+    }
+
     return UpdateNotySettingResponse.from(request);
+  }
+
+  private void validatePrice(UpdateNotySettingRequest request) {
+      if (request.price() == null || request.price() <= 0) {
+        throw new ErrorException(ErrorCode.INVALID_PRICE_NOTIFICATION);
+      }
   }
 
   private User getUser(Long userId) {
@@ -72,6 +89,30 @@ public class NotificationSettingService {
             ));
 
     setting.updateActivated(activated);
+  }
+
+  private void upsertPriceNotification(Long userId, Long auctionId, Long price) {
+    NotificationSetting priceSetting =
+        notificationSettingRepository
+            .findByUserIdAndAuctionIdAndType(
+                userId, auctionId, NotificationSettingType.PRICE_REACHED
+            )
+            .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_PRICE_REACHED_NOTY));
+
+    PriceNotification pn = priceNotificationRepository
+        .findByUserIdAndAuctionId(userId, auctionId)
+        .orElseGet(() -> priceNotificationRepository.save(
+            PriceNotification.builder()
+                .setting(priceSetting)
+                .userId(userId)
+                .auctionId(auctionId)
+                .targetPrice(price)
+                .notified(false)
+                .build()
+        ));
+
+    pn.updateTargetPrice(price);
+    pn.resetNotified();
   }
 
   // 알림 발송 판단용
