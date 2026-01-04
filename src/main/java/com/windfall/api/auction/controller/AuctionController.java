@@ -15,10 +15,13 @@ import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
+import com.windfall.global.exception.ErrorCode;
+import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.security.Principal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -128,9 +131,12 @@ public class AuctionController implements AuctionSpecification {
   public void sendEmoji(
       @DestinationVariable Long auctionId,
       @Payload SellerEmojiRequest request,
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
+      Principal principal) {
 
-    Long userId = userDetails.getUserId();
+    if (principal == null) {
+      throw new ErrorException(ErrorCode.INVALID_TOKEN);
+    }
+    Long userId = Long.valueOf(principal.getName());
     interactionService.broadcastSellerEmoji(auctionId, userId, request.emojiType());
   }
 

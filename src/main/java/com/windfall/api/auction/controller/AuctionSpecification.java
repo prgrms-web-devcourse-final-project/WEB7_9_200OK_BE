@@ -4,12 +4,13 @@ import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_CANCEL;
 import static com.windfall.global.exception.ErrorCode.AUCTION_CANNOT_DELETE;
 import static com.windfall.global.exception.ErrorCode.INVALID_AUCTION_SELLER;
 import static com.windfall.global.exception.ErrorCode.INVALID_DROP_AMOUNT;
+import static com.windfall.global.exception.ErrorCode.INVALID_IMAGE_STATUS;
 import static com.windfall.global.exception.ErrorCode.INVALID_PRICE;
 import static com.windfall.global.exception.ErrorCode.INVALID_STOP_LOSS;
 import static com.windfall.global.exception.ErrorCode.INVALID_TIME;
+import static com.windfall.global.exception.ErrorCode.INVALID_TOKEN;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
-import static com.windfall.global.exception.ErrorCode.INVALID_IMAGE_STATUS;
 
 import com.windfall.api.auction.dto.request.AuctionCreateRequest;
 import com.windfall.api.auction.dto.request.SellerEmojiRequest;
@@ -30,11 +31,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.security.Principal;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -109,7 +110,7 @@ public interface AuctionSpecification {
       @ParameterObject Pageable pageable
   );
 
-  @ApiErrorCodes({NOT_FOUND_AUCTION})
+  @ApiErrorCodes({NOT_FOUND_AUCTION, INVALID_TOKEN})
   @PostMapping("/auctions/{auctionId}/emoji")
   @Operation(
       summary = "경매 이모지 전송 (WebSocket)",
@@ -119,12 +120,17 @@ public interface AuctionSpecification {
         
         판매자가 이모지를 전송합니다. (반환값 없음, /topic/auction/{id} 구독자에게 브로드캐스팅)
         
-        연결 정보
-        * **Pub:** `/app/auctions/{auctionId}/emoji`
-        * **Sub:** `/topic/auction/{auctionId}`
-
-        에러 처리
-        * `NOT_FOUND_AUCTION` 에러 발생 시, 별도 응답 없습니다.
+        ## 연결/라우팅
+        * **WS Endpoint:** `/ws-stomp`
+        * **Pub (SEND):** `/app/auctions/{auctionId}/emoji`
+        * **Sub (SUBSCRIBE):** `/topic/auction/{auctionId}`
+  
+        ## 인증
+        * WebSocket **CONNECT 시** STOMP Native Header로 인증 토큰을 전달해야 합니다.
+        * 예: `Authorization: Bearer <accessToken>`
+        * 서버는 CONNECT에서 토큰을 검증하고 `Principal`을 세팅합니다.
+        * `@MessageMapping` 핸들러에서는 `Principal.getName()` 값을 사용자 식별자로 사용합니다.
+  
         """
   )
   public void sendEmoji(
@@ -134,8 +140,8 @@ public interface AuctionSpecification {
       @Parameter(description = "이모지 요청 DTO", required = true, example = "LIKE")
       @Payload SellerEmojiRequest request,
 
-      @Parameter(description = "임시 사용자 ID", required = true, example = "1")
-      @AuthenticationPrincipal CustomUserDetails userDetails
+      @Parameter(description = "인증된 사용자 정보", required = true)
+      Principal principal
   );
 
   @ApiErrorCodes({NOT_FOUND_AUCTION, NOT_FOUND_USER, AUCTION_CANNOT_DELETE, INVALID_AUCTION_SELLER,
