@@ -1,62 +1,123 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>이모지 테스트</title>
+  <meta charset="UTF-8" />
+  <title>🔥 경매 이모지 테스트</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 20px auto; }
+    input, button, select { padding: 8px; margin: 4px; }
+    .row { margin: 10px 0; }
+    #messages, #errors { background: #111; color: #0f0; padding: 12px; min-height: 140px; white-space: pre-wrap; }
+    #errors { color: #ff5; }
+  </style>
 </head>
 <body>
-<h2>🔥 경매 이모지 테스트</h2>
-<div>
-  <button onclick="connect()">1. 연결하기</button>
-  <button onclick="sendEmoji('FIRE')">2. 🔥 불꽃 쏘기</button>
-  <button onclick="sendEmoji('LIKE')">3. 👍 좋아요 쏘기</button>
+<h2>🔥 경매 이모지(WebSocket) 테스트</h2>
+
+<div class="row">
+  <label>endpoint:</label>
+  <select id="endpoint">
+    <option value="http://localhost:8080/ws-stomp">/ws-stomp (SECURED, 토큰 필수)</option>
+    <option value="http://localhost:8080/ws-stomp-public">/ws-stomp-public (PUBLIC, 토큰 선택)</option>
+  </select>
 </div>
+
+<div class="row">
+  <label>auctionId:</label>
+  <input id="auctionId" value="1" style="width: 100px;" />
+
+  <label>accessToken(선택):</label>
+  <input id="token" style="width: 520px;" placeholder="Bearer 없이 토큰만 넣어도 됨" />
+
+  <button onclick="connect()">1) 연결하기</button>
+  <button onclick="disconnect()">연결 끊기</button>
+</div>
+
+<div class="row">
+  <button onclick="sendEmoji('FIRE')">2) 🔥 불꽃 쏘기</button>
+  <button onclick="sendEmoji('LIKE')">3) 👍 좋아요 쏘기</button>
+</div>
+
 <hr/>
-<h3>📩 받은 메시지 (구독 화면)</h3>
+
+<h3>📩 받은 메시지 (/topic/auction/{id})</h3>
 <div id="messages"></div>
 
+<h3>⚠️ 에러 (/user/queue/errors) - 로그인일 때만 수신 가능</h3>
+<div id="errors"></div>
+
 <script>
-  var stompClient = null;
+  let stompClient = null;
+
+  function append(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent += msg + "\n";
+  }
 
   function connect() {
-    // 1. 연결 주소: WebSocketConfig의 addEndpoint 주소
-    var socket = new SockJS('http://localhost:8080/ws-stomp');
+    const endpoint = document.getElementById("endpoint").value;
+    const auctionId = document.getElementById("auctionId").value.trim();
+    const token = document.getElementById("token").value.trim();
+
+    if (!auctionId) {
+      alert("auctionId를 입력하세요");
+      return;
+    }
+
+    const socket = new SockJS(endpoint);
     stompClient = Stomp.over(socket);
 
-    stompClient.connect({}, function (frame) {
-      console.log('Connected: ' + frame);
-      alert("연결 성공!");
+    // 디버그 로그 보고 싶으면 주석 해제
+    // stompClient.debug = (str) => append("messages", "[stomp] " + str);
 
-      // 2. 구독 주소: /topic/auction/{경매ID}
-      // (경매 ID는 1번이라고 가정)
-      stompClient.subscribe('/topic/auction/1', function (message) {
-        showEmoji(JSON.parse(message.body));
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = token.startsWith("Bearer ") ? token : ("Bearer " + token);
+    }
+
+    stompClient.connect(headers, function(frame) {
+      alert("연결 성공!");
+      append("messages", "✅ CONNECTED: " + frame);
+
+      // 1) 경매 토픽 구독 (비로그인도 가능하게 설계되어 있음)
+      stompClient.subscribe(`/topic/auction/${auctionId}`, function(message) {
+        const body = message.body;
+        append("messages", "📩 " + body);
       });
+
+      // 2) 에러 구독 (로그인 사용자만 가능: /user/** 구독은 인증 필요)
+      stompClient.subscribe(`/user/queue/errors`, function(message) {
+        append("errors", "❌ " + message.body);
+      });
+
+      append("messages", `✅ SUBSCRIBED: /topic/auction/${auctionId}`);
+      append("messages", `✅ SUBSCRIBED: /user/queue/errors (로그인 시)`);
+    }, function(err) {
+      append("errors", "❌ CONNECT ERROR: " + JSON.stringify(err));
+      alert("연결 실패 - 콘솔/에러창 확인");
     });
+  }
+
+  function disconnect() {
+    if (stompClient) {
+      stompClient.disconnect(() => append("messages", "👋 DISCONNECTED"));
+    }
+    stompClient = null;
   }
 
   function sendEmoji(type) {
-    // 3. 전송 주소: /pub + 컨트롤러 매핑 주소
-    // Config에서 "/pub" 설정, Controller에서 "/auctions/1/emoji" 설정
-    // => 합쳐서 "/pub/auctions/1/emoji"
+    if (!stompClient) return alert("먼저 연결하세요");
+    const auctionId = document.getElementById("auctionId").value.trim();
+    if (!auctionId) return alert("auctionId를 입력하세요");
 
-    var payload = JSON.stringify({
-      'emojiType': type
-    });
+    const payload = JSON.stringify({ emojiType: type });
 
-    // 헤더에 userId를 담아서 보냄 (우리가 만든 임시 로직)
-    stompClient.send("/app/auctions/1/emoji", { 'userId': '1' }, payload);
-  }
-
-  function showEmoji(message) {
-    var messagesDiv = document.getElementById("messages");
-    var p = document.createElement("p");
-    p.style.fontSize = "20px";
-    // 서버가 보내준 메시지 출력
-    p.textContent = `[경매방 ${message.auctionId}] ${message.emojiType} 이모지가 도착했습니다!`;
-    messagesDiv.appendChild(p);
+    // ✅ 서버 @MessageMapping("/auctions/{auctionId}/emoji") 이므로:
+    // SEND destination = /app/auctions/{auctionId}/emoji
+    stompClient.send(`/app/auctions/${auctionId}/emoji`, {}, payload);
+    append("messages", `➡️ SEND: ${payload}`);
   }
 </script>
 </body>
