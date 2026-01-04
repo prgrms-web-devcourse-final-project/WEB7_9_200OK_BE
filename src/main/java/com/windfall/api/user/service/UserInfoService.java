@@ -1,6 +1,9 @@
 package com.windfall.api.user.service;
 
 import com.windfall.api.user.dto.response.UserInfoResponse;
+import com.windfall.api.user.dto.response.reviewlist.AuctionImageRaw;
+import com.windfall.api.user.dto.response.reviewlist.ReviewListRaw;
+import com.windfall.api.user.dto.response.reviewlist.ReviewListResponse;
 import com.windfall.api.user.dto.response.saleshistory.CompletedSalesHistoryResponse;
 import com.windfall.api.user.dto.response.saleshistory.OwnerCompletedSalesHistoryResponse;
 import com.windfall.api.user.dto.response.saleshistory.ProcessingSalesHistoryResponse;
@@ -8,16 +11,21 @@ import com.windfall.api.user.dto.response.saleshistory.SalesHistoryRaw;
 import com.windfall.api.user.dto.response.saleshistory.BaseSalesHistoryResponse;
 import com.windfall.api.user.dto.response.saleshistory.SalesHistoryResponse;
 import com.windfall.domain.auction.entity.Auction;
+import com.windfall.domain.auction.entity.AuctionImage;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.enums.AuctionStatusGroup;
+import com.windfall.domain.auction.repository.AuctionImageRepository;
 import com.windfall.domain.user.repository.SalesHistoryQueryRepository;
+import com.windfall.domain.user.repository.UserInfoRepository;
 import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.response.SliceResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -29,14 +37,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserInfoService {
 
   private final UserService userService;
-  private final UserRepository userRepository;
+  private final UserInfoRepository userInfoRepository;
   private final SalesHistoryQueryRepository salesHistoryQueryRepository;
+  private final AuctionImageRepository auctionImageRepository;
 
   @Transactional
   public UserInfoResponse getUserInfo(Long userid, Long loginId){ //userDetails 추가될 경우 리팩토링 예정
     userService.getUserById(userid); //조회할 유저가 있는지 먼저 검색
 
-    return userRepository.findByUserInfo(userid, loginId);
+    return userInfoRepository.findByUserInfo(userid, loginId);
   }
 
   @Transactional
@@ -66,6 +75,34 @@ public class UserInfoService {
     );
 
     return SliceResponse.from(resultSlice);
+  }
+
+  @Transactional(readOnly = true)
+  public SliceResponse<ReviewListResponse> getUserReviewList(Long userId, Pageable pageable){
+    userService.getUserById(userId); //조회할 유저가 있는지 먼저 검색
+
+    Slice<ReviewListRaw> rawData = userInfoRepository.getUserReviewList(userId, pageable); //필요 데이터 꺼내오기 (이미지 제외)
+
+    List<Long> auctionIds = rawData.getContent().stream().map(ReviewListRaw::auctionId).toList(); //데이터 내부의 auctionId 추출
+
+    List<AuctionImageRaw> auctionImages = auctionImageRepository.findFirstImagesProjection(auctionIds); //각 경매의 첫 번째 이미지 추출
+
+    Map<Long, String> mappingImage = auctionImages.stream().collect(Collectors.toMap(
+        AuctionImageRaw::auctionId, //매핑용 이미지 설정
+        AuctionImageRaw::auctionImageUrl));
+
+    List<ReviewListResponse> resultContent = rawData.getContent().stream().map(data -> ReviewListResponse.of(data, mappingImage.get(data.auctionId()))).toList(); //순서대로 DTO 변환
+
+    Slice<ReviewListResponse> resultSlice = toSlice(resultContent, rawData); //Slice 재정의
+
+    return SliceResponse.from(resultSlice);
+  }
+
+  private Slice<ReviewListResponse> toSlice (List<ReviewListResponse> content, Slice<ReviewListRaw> sliceData){
+    return new SliceImpl<>(
+        content,
+        sliceData.getPageable(),
+        sliceData.hasNext());
   }
 
   private Map<AuctionStatusGroup, List<Long>> groupingStatus(List<SalesHistoryRaw> rawData, Long userid, Long loginId){
