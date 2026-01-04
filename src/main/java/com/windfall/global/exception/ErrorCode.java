@@ -61,6 +61,16 @@ public enum ErrorCode {
   INVALID_UPLOAD_FILE(HttpStatus.BAD_REQUEST, "업로드 파일이 유효하지 않습니다."),
   INVALID_DIRECTORY_NAME(HttpStatus.BAD_REQUEST, "디렉토리명이 유효하지 않습니다."),
 
+  //거래
+  NOT_FOUND_TRADE(HttpStatus.NOT_FOUND, "존재하지 않는 거래입니다."),
+
+  //리뷰
+  NOT_MATCHED_BUYER_ID(HttpStatus.BAD_REQUEST, "이 거래는 사용자의 거래가 아닙니다."),
+  NOT_PURCHASE_CONFIRMED(HttpStatus.BAD_REQUEST, "구매가 확정된 거래가 아닙니다."),
+  REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "리뷰가 이미 존재합니다."),
+  NOT_FOUND_REVIEW(HttpStatus.NOT_FOUND, "리뷰가 존재하지 않습니다."),
+
+
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
