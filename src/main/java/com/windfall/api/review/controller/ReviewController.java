@@ -27,7 +27,7 @@ public class ReviewController implements ReviewSpecification{
 
   private final ReviewService reviewService;
 
-  @PostMapping("")
+  @PostMapping
   public ApiResponse<CreateReviewResponse> createReview(
       @RequestBody @Valid CreateReviewRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
