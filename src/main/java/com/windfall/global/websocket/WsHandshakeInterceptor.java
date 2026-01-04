@@ -15,6 +15,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 public class WsHandshakeInterceptor implements HandshakeInterceptor {
 
   public static final String ATTR_ACCESS_TOKEN = "WS_ACCESS_TOKEN";
+  public static final String ATTR_ENDPOINT_TYPE = "WS_ENDPOINT_TYPE"; // "SECURED" | "PUBLIC"
 
   @Override
   public boolean beforeHandshake(
@@ -23,6 +24,19 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
       WebSocketHandler wsHandler,
       Map<String, Object> attributes
   ) {
+    String path = request.getURI().getPath();
+
+    // 엔드포인트 구분: public 먼저 체크
+    if (path != null && path.contains("/ws-stomp-public")) {
+      attributes.put(ATTR_ENDPOINT_TYPE, "PUBLIC");
+    } else if (path != null && path.contains("/ws-stomp")) {
+      attributes.put(ATTR_ENDPOINT_TYPE, "SECURED");
+    } else {
+      // 혹시 모를 케이스는 안전하게 SECURED로 처리
+      attributes.put(ATTR_ENDPOINT_TYPE, "SECURED");
+    }
+
+    // 쿠키에서 accessToken 저장
     if (request instanceof ServletServerHttpRequest servletReq) {
       HttpServletRequest http = servletReq.getServletRequest();
       Cookie[] cookies = http.getCookies();
@@ -34,6 +48,7 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
             .ifPresent(token -> attributes.put(ATTR_ACCESS_TOKEN, token));
       }
     }
+
     return true;
   }
 
@@ -46,3 +61,4 @@ public class WsHandshakeInterceptor implements HandshakeInterceptor {
   ) {
   }
 }
+

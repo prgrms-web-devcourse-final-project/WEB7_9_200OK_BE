@@ -29,28 +29,34 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
     accessor.setLeaveMutable(true);
 
-    // 1) CONNECT: 토큰 있으면 Principal을 "userId"로 강제 세팅
-    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+    // 세션이 어느 엔드포인트로 열렸는지 확인(SECURED | PUBLIC)
+    String endpointType = getEndpointType(accessor);
 
-      // Authorization or 쿠키 fallback
+    // 1) CONNECT: SECURED면 토큰 없으면 여기서 끊음
+    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
       String token = resolveToken(accessor);
 
+      if ("SECURED".equals(endpointType)) {
+        if (token == null) {
+          throw new ErrorException(ErrorCode.INVALID_TOKEN);
+        }
+      }
+
+      // 토큰이 있으면(SECURED든 PUBLIC이든) 인증 세팅
       if (token != null) {
         if (!jwtProvider.validateToken(token)) {
           throw new ErrorException(ErrorCode.INVALID_TOKEN);
         }
-
         Long userId = jwtProvider.getUserId(token);
         if (userId == null) {
           throw new ErrorException(ErrorCode.INVALID_TOKEN);
         }
 
-        // Principal을 userId로 세팅
         accessor.setUser(new StompPrincipal(String.valueOf(userId)));
       }
     }
 
-    // 2) SEND/SUBSCRIBE에서 인증 강제
+    // 2) SEND: 보호된 destination은 인증 강제
     if (StompCommand.SEND.equals(accessor.getCommand())) {
       String dest = accessor.getDestination();
       if (dest != null && (dest.startsWith("/app/chat.") || dest.startsWith("/app/auctions/"))) {
@@ -58,9 +64,18 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
       }
     }
 
+    // 3) SUBSCRIBE: /user/** 는 무조건 인증 필요
     if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
       String dest = accessor.getDestination();
-      if (dest != null && dest.startsWith("/user/")) {
+      if (dest == null) return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
+
+      // 개인 큐는 인증 필수
+      if (dest.startsWith("/user/")) {
+        requireAuthenticated(accessor);
+      }
+
+      // 채팅방 topic도 인증 없이는 구독 불가
+      if (dest.startsWith("/topic/chat.rooms.")) {
         requireAuthenticated(accessor);
       }
     }
@@ -72,6 +87,13 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
     if (accessor.getUser() == null) {
       throw new ErrorException(ErrorCode.INVALID_TOKEN);
     }
+  }
+
+  private String getEndpointType(StompHeaderAccessor accessor) {
+    if (accessor.getSessionAttributes() == null) return "SECURED";
+    Object v = accessor.getSessionAttributes().get(WsHandshakeInterceptor.ATTR_ENDPOINT_TYPE);
+    if (v == null) return "SECURED";
+    return String.valueOf(v);
   }
 
   private String resolveToken(StompHeaderAccessor accessor) {
@@ -95,3 +117,4 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
     return null;
   }
 }
+
