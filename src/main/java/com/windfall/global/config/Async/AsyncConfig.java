@@ -16,7 +16,7 @@ public class AsyncConfig {
     executor.setCorePoolSize(10);
     executor.setMaxPoolSize(50); // 기본 및 대기열 초과 시 최대 스레드 수
     executor.setQueueCapacity(100); // 대기열
-    executor.setThreadNamePrefix("SocketExecutor-");
+    executor.setThreadNamePrefix("Socket-Async-");
     executor.initialize();
     return  executor;
   }
