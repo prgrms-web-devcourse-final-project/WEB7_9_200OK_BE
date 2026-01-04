@@ -32,6 +32,7 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     SELECT
     t.status AS status, -- 거래 상태
     a.id AS auctionId, -- 경매 id
+    t.id AS tradeId,
     a.title AS title, -- 상품 이름
     ai.image AS auctionImageUrl, -- 상품 대표 사진
     a.start_price AS startPrice, -- 시작가
@@ -60,6 +61,7 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     SELECT
     t.status AS status, -- 거래 상태
     a.id AS auctionId, -- 경매 id
+    t.id AS tradeId,
     a.title AS title, -- 상품 이름
     ai.image AS auctionImageUrl, -- 상품 대표 사진
     a.start_price AS startPrice, -- 시작가
