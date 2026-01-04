@@ -1,6 +1,7 @@
 package com.windfall.api.user.controller;
 
 import com.windfall.api.user.dto.response.UserInfoResponse;
+import com.windfall.api.user.dto.response.reviewlist.ReviewListResponse;
 import com.windfall.api.user.dto.response.saleshistory.BaseSalesHistoryResponse;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
@@ -29,6 +30,12 @@ public interface UserInfoSpecification {
       @RequestParam(required = false) String filter,
       @PageableDefault(page = 0, size = 10) Pageable pageable
 
+  );
+
+  @Operation(summary = "사용자 리뷰 목록", description = "특정 사용자의 받은 리뷰를 반환합니다.")
+  ApiResponse<SliceResponse<ReviewListResponse>> getUserReviewList(
+      @PageableDefault(page = 0, size = 10) Pageable pageable,
+      @PathVariable Long userId
   );
 
 }

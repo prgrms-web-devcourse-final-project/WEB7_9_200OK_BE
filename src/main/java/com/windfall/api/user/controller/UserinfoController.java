@@ -1,14 +1,19 @@
 package com.windfall.api.user.controller;
 
+import com.windfall.api.mypage.dto.dashboard.BaseDashBoardDetails;
 import com.windfall.api.user.dto.response.UserInfoResponse;
+import com.windfall.api.user.dto.response.reviewlist.ReviewListResponse;
 import com.windfall.api.user.dto.response.saleshistory.BaseSalesHistoryResponse;
 import com.windfall.api.user.service.UserInfoService;
+import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,4 +54,17 @@ public class UserinfoController implements UserInfoSpecification{
 
     return ApiResponse.ok("사용자 판매내역 조회에 성공했습니다.", response);
   }
+
+  @Override
+  @GetMapping("/{userId}/reviews")
+  public ApiResponse<SliceResponse<ReviewListResponse>> getUserReviewList(
+      @PageableDefault(page = 0, size = 10) Pageable pageable,
+      @PathVariable Long userId
+  ) {
+
+    SliceResponse<ReviewListResponse> response = userInfoService.getUserReviewList(userId, pageable);
+
+    return ApiResponse.ok("사용자 리뷰 목록 조회에 성공하였습니다.", response);
+  }
+
 }
