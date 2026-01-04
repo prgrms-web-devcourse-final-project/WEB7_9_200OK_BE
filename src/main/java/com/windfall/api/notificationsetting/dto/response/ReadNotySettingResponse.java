@@ -1,6 +1,7 @@
 package com.windfall.api.notificationsetting.dto.response;
 
 import com.windfall.domain.notification.entity.NotificationSetting;
+import com.windfall.domain.notification.entity.PriceNotification;
 import com.windfall.domain.notification.enums.NotificationSettingType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
@@ -17,14 +18,20 @@ public record ReadNotySettingResponse (
     boolean auctionEnd,
 
     @Schema(description = "가격 도달 설정 여부")
-    boolean priceReached
+    boolean priceReached,
+
+    @Schema(description = "가격 도달 기준값")
+    Long price
 ){
 
   public static ReadNotySettingResponse allDisabled() {
-    return new ReadNotySettingResponse(false, false, false);
+    return new ReadNotySettingResponse(false, false, false, null);
   }
 
-  public static ReadNotySettingResponse from(List<NotificationSetting> settings) {
+  public static ReadNotySettingResponse of(
+      List<NotificationSetting> settings,
+      PriceNotification priceNotification
+  ) {
     Map<NotificationSettingType, Boolean> map =
         settings.stream()
             .collect(Collectors.toMap(
@@ -35,7 +42,8 @@ public record ReadNotySettingResponse (
     return new ReadNotySettingResponse(
         map.getOrDefault(NotificationSettingType.AUCTION_START, false),
         map.getOrDefault(NotificationSettingType.AUCTION_END, false),
-        map.getOrDefault(NotificationSettingType.PRICE_REACHED, false)
+        map.getOrDefault(NotificationSettingType.PRICE_REACHED, false),
+        priceNotification != null ? priceNotification.getTargetPrice() : null
     );
   }
 }

@@ -30,6 +30,10 @@ public class NotificationSettingService {
 
   @Transactional(readOnly = true)
   public ReadNotySettingResponse read(Long auctionId, Long userId) {
+    if (userId == null) {
+      return ReadNotySettingResponse.allDisabled();
+    }
+
     List<NotificationSetting> settings =
         notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
 
@@ -38,7 +42,11 @@ public class NotificationSettingService {
       return ReadNotySettingResponse.allDisabled();
     }
 
-    return ReadNotySettingResponse.from(settings);
+    PriceNotification priceNotification = priceNotificationRepository
+            .findByUserIdAndAuctionId(userId, auctionId)
+            .orElse(null);
+
+    return ReadNotySettingResponse.of(settings, priceNotification);
   }
 
   @Transactional
