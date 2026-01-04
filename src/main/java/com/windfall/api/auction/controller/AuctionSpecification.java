@@ -19,6 +19,7 @@ import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.dto.response.AuctionSearchResponse;
+import com.windfall.api.auction.dto.response.AuctionSellerInfoResponse;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
@@ -159,4 +160,8 @@ public interface AuctionSpecification {
       @Parameter(description = "사용자 ID", required = true, example = "1")
       @AuthenticationPrincipal CustomUserDetails userDetails
   );
+
+  @ApiErrorCodes({NOT_FOUND_USER})
+  @Operation(summary = "경매 판매자 상세 정보 조회", description = "해당 경매 판매자의 상세 정보를 조회합니다.")
+  ApiResponse<AuctionSellerInfoResponse> getAuctionSellerInfo(@PathVariable Long sellerId);
 }
