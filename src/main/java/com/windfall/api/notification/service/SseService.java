@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,7 +69,8 @@ public class SseService {
     }
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Async("socketTaskExecutor")
+  @Transactional
   public void priceNotificationSend(Long userId,Long targetId,String content) {
     User user = getUserOrThrow(userId);
     Notification notification = Notification.create(user,
@@ -80,7 +82,8 @@ public class SseService {
     saveAndSend(userId, "priceAlert", notification);
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Async("socketTaskExecutor")
+  @Transactional
   public void auctionStartNotificationSend(Long userId, Long targetId, String auctionTitle) {
     User user = getUserOrThrow(userId);
 

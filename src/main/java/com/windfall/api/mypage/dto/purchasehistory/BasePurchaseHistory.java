@@ -19,6 +19,9 @@ public abstract class BasePurchaseHistory {
   @Schema(description = "경매 id")
   private final Long auctionId;
 
+  @Schema(description = "거래 id")
+  private final Long tradeId;
+
   @Schema(description = "경매 제목")
   private final String title;
 
@@ -40,10 +43,11 @@ public abstract class BasePurchaseHistory {
   @Schema(description = "채팅 정보")
   private final ChatInfo chatInfo;
 
-  public BasePurchaseHistory(String status, Long auctionId, String title, String auctionImageUrl,
+  public BasePurchaseHistory(String status, Long auctionId, Long tradeId,String title, String auctionImageUrl,
       int startPrice, int endPrice, int discountPercent, LocalDate purchasedDate, Long roomId, int unreadCount) {
     this.status = status;
     this.auctionId = auctionId;
+    this.tradeId = tradeId;
     this.title = title;
     this.auctionImageUrl = auctionImageUrl;
     this.startPrice = startPrice;

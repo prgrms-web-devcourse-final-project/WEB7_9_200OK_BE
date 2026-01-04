@@ -10,8 +10,10 @@ import com.windfall.api.auction.dto.response.AuctionDetailResponse;
 import com.windfall.api.auction.dto.response.AuctionHistoryResponse;
 import com.windfall.api.auction.dto.response.AuctionListReadResponse;
 import com.windfall.api.auction.dto.response.AuctionSearchResponse;
+import com.windfall.api.auction.dto.response.AuctionSellerInfoResponse;
 import com.windfall.api.auction.service.AuctionInteractionService;
 import com.windfall.api.auction.service.AuctionService;
+import com.windfall.api.auction.service.AuctionSellerInfoService;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
@@ -49,6 +51,7 @@ public class AuctionController implements AuctionSpecification {
 
   private final AuctionService auctionService;
   private final AuctionInteractionService interactionService;
+  private final AuctionSellerInfoService auctionSellerInfoService;
 
   @Override
   @PostMapping
@@ -164,4 +167,10 @@ public class AuctionController implements AuctionSpecification {
     return ApiResponse.noContent();
   }
 
+  @GetMapping("/{sellerId}/seller")
+  public ApiResponse<AuctionSellerInfoResponse> getAuctionSellerInfo(@PathVariable Long sellerId){
+    AuctionSellerInfoResponse response = auctionSellerInfoService.getAuctionSellerInfo(sellerId);
+
+    return ApiResponse.ok("판매자 정보가 조회되었습니다.", response);
+  }
 }
