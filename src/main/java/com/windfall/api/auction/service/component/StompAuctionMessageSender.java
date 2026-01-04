@@ -7,10 +7,12 @@ import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.enums.EmojiType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Async("socketTaskExecutor")
 public class StompAuctionMessageSender implements AuctionMessageSender {
 
   private final SimpMessagingTemplate messagingTemplate;
