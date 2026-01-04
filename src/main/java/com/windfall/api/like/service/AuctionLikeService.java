@@ -1,13 +1,17 @@
 package com.windfall.api.like.service;
 
 import com.windfall.api.like.dto.response.AuctionLikeResponse;
+import com.windfall.api.like.dto.response.AuctionLikeSupport;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
 import com.windfall.domain.like.entity.AuctionLike;
 import com.windfall.domain.like.repository.AuctionLikeRepository;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,5 +74,25 @@ public class AuctionLikeService {
   public void deleteLike(Auction auction) {
     auctionLikeRepository.findAllByAuction(auction)
         .forEach(like -> auctionLikeRepository.deactivate(like.getId()));
+  }
+
+  @Transactional(readOnly = true)
+  public Set<Long> getLikedAuctionIds(
+      Long userId, List<? extends AuctionLikeSupport<?>> lists
+  ) {
+    List<Long> auctionIds = lists.stream()
+        .map(AuctionLikeSupport::auctionId)
+        .distinct()
+        .toList();
+
+    return new HashSet<>(auctionLikeRepository.findLikedAuctionIdsByActivatedTrue(userId, auctionIds));
+  }
+
+  public <T extends AuctionLikeSupport<T>> List<T> applyLikeStatus(
+      List<T> auctions, Set<Long> likedSet
+  ) {
+    return auctions.stream()
+        .map(info -> info.withIsLiked(likedSet.contains(info.auctionId())))
+        .toList();
   }
 }

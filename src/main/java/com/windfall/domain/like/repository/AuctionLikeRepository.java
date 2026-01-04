@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface AuctionLikeRepository extends JpaRepository<AuctionLike, Long> {
+public interface AuctionLikeRepository extends JpaRepository<AuctionLike, Long>, AuctionLikeRepositoryCustom {
 
   Optional<AuctionLike> findByAuctionIdAndUserId(Long auctionId, Long userId);
 

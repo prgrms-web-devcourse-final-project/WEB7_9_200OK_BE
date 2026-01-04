@@ -15,8 +15,6 @@ import com.windfall.api.auction.service.AuctionService;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.user.entity.CustomUserDetails;
-import com.windfall.global.exception.ErrorCode;
-import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import jakarta.validation.Valid;
@@ -28,7 +26,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,21 +67,32 @@ public class AuctionController implements AuctionSpecification {
       @RequestParam @Min(value = 1, message = "page는 1부터 시작합니다.") int page,
       @RequestParam(defaultValue = "15") int size,
       @RequestParam(defaultValue = "createDate") String sortBy,
-      @RequestParam(defaultValue = "ASC") Direction sortDirection
+      @RequestParam(defaultValue = "ASC") Direction sortDirection,
+      @AuthenticationPrincipal CustomUserDetails user
       // TODO 태그 관련 + 필터링(최신순, 인기순, 오래된 순 등등)
   ) {
+    Long userId = null;
+    if (user != null) {
+      userId = user.getUserId();
+    }
 
     PageRequest pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
     SliceResponse<AuctionSearchResponse> response = auctionService.searchAuction(pageable, query,
-        category, status, minPrice, maxPrice);
+        category, status, minPrice, maxPrice, userId);
     return ApiResponse.ok("경매 검색에 성공했습니다.", response);
   }
 
   @Override
   @GetMapping
   public ApiResponse<AuctionListReadResponse> readAuctionList(
+      @AuthenticationPrincipal CustomUserDetails user
   ) {
-    AuctionListReadResponse response = auctionService.readAuctionList();
+    Long userId = null;
+    if (user != null) {
+      userId = user.getUserId();
+    }
+
+    AuctionListReadResponse response = auctionService.readAuctionList(userId);
     return ApiResponse.ok("경매 목록 조회에 성공했습니다.", response);
   }
 
