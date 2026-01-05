@@ -9,7 +9,7 @@ public record ReviewListRaw(
     String nickname,
     String userProfileImage,
     LocalDateTime reviewedAt,
-    int rating,
+    double rating,
     String content,
     String auctionTitle
 ) {

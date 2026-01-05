@@ -1,5 +1,6 @@
 package com.windfall.api.user.dto.response.reviewlist;
 
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,15 +12,17 @@ public class ReviewListResponse{
   private final Long buyerId;
   private final String nickname;
   private final String userImageUrl;
-  private final int rating;
+  private final double rating;
   private final String content;
   private final String auctionImageUrl;
   private final String auctionTitle;
+  private final LocalDateTime reviewedAt;
 
   @Builder
   public ReviewListResponse(Long reviewId, Long auctionId, Long buyerId, String nickname,
-      String userImageUrl, int rating, String content, String auctionImageUrl,
-      String auctionTitle) {
+      String userImageUrl, double rating, String content, String auctionImageUrl,
+      String auctionTitle,
+      LocalDateTime reviewedAt) {
     this.reviewId = reviewId;
     this.auctionId = auctionId;
     this.buyerId = buyerId;
@@ -29,6 +32,7 @@ public class ReviewListResponse{
     this.content = content;
     this.auctionImageUrl = auctionImageUrl;
     this.auctionTitle = auctionTitle;
+    this.reviewedAt = reviewedAt;
   }
 
   public static ReviewListResponse of(ReviewListRaw raw, String auctionImageUrl){
@@ -42,6 +46,7 @@ public class ReviewListResponse{
         .content(raw.content())
         .auctionImageUrl(auctionImageUrl)
         .auctionTitle(raw.auctionTitle())
+        .reviewedAt(raw.reviewedAt())
         .build();
   }
 
