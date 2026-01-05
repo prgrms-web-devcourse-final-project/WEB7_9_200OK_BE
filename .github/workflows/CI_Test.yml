@@ -24,6 +24,8 @@ jobs:
       BUCKET_NAME: ${{secrets.BUCKET_NAME}}
       S3_BASE_URL: ${{secrets.S3_BASE_URL}}
       CLIENT_SECRET_KAKAO: ${{secrets.CLIENT_SECRET_KAKAO}}
+      CLIENT_SECRET_NAVER: ${{secrets.CLIENT_SECRET_NAVER}}
+      CLIENT_SECRET_GOOGLE: ${{secrets.CLIENT_SECRET_GOOGLE}}
 
     steps:
       - name: 리포지토리를 가져옵니다
