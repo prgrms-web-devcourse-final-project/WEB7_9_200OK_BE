@@ -244,7 +244,7 @@ private BooleanExpression priceBetween(Long minPrice, Long maxPrice) {
 
   // minPrice가 0보다 클 경우
   if(maxPrice == null){
-    maxPrice = minPrice;
+    return auction.currentPrice.goe(minPrice);
   }
   return auction.currentPrice.between(minPrice, maxPrice);
 }
