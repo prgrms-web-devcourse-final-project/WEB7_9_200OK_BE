@@ -20,7 +20,7 @@ public record ReviewDetailsRaw(
     String nickname,
 
     @Schema(description = "별점")
-    int rating,
+    double rating,
 
     @Schema(description = "내용")
     String content

@@ -14,7 +14,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   @Query("""
   SELECT new com.windfall.api.review.dto.response.ReviewDetailsRaw(
-    a.id, r.id, s.id, a.title, s.nickname, r.rating / 10, r.content
+    a.id, r.id, s.id, a.title, s.nickname, r.rating / 10.0, r.content
     )
   FROM Review r
   JOIN r.trade t

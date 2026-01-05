@@ -35,17 +35,17 @@ public class Review extends BaseEntity {
     this.content = content;
   }
 
-  public static Review createReview(Trade trade, int rating, String content){
+  public static Review createReview(Trade trade, double rating, String content){
     return Review.builder()
         .trade(trade)
-        .rating(rating * 10)
+        .rating((int) (rating * 10))
         .content(content)
         .build();
   }
 
-  public void updateReview(Integer rating, String content){
+  public void updateReview(Double rating, String content){
     if(rating != null){
-      this.rating = rating * 10;
+      this.rating = (int) (rating * 10);
     }
     if(content != null){
       this.content = content;

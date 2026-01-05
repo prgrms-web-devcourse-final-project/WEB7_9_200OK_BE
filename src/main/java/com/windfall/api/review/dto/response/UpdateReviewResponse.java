@@ -10,7 +10,7 @@ public record UpdateReviewResponse(
     Long reviewId,
 
     @Schema(description = "별점")
-    int rating,
+    double rating,
 
     @Schema(description = "내용")
     String content
@@ -18,7 +18,7 @@ public record UpdateReviewResponse(
   public static UpdateReviewResponse from(Review review){
     return UpdateReviewResponse.builder()
         .reviewId(review.getId())
-        .rating(review.getRating() / 10)
+        .rating(review.getRating() / 10.0)
         .content(review.getContent())
         .build();
   }
