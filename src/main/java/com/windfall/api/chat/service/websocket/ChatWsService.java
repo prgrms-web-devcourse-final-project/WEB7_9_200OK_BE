@@ -1,6 +1,7 @@
 package com.windfall.api.chat.service.websocket;
 
 import com.windfall.api.chat.dto.websocket.ChatMessageEvent;
+import com.windfall.api.chat.dto.websocket.ChatReadEvent;
 import com.windfall.api.chat.dto.websocket.ChatRoomUpdateEvent;
 import com.windfall.api.chat.dto.websocket.ChatSendRequest;
 import com.windfall.api.chat.service.ChatRoomService;
@@ -92,10 +93,17 @@ public class ChatWsService {
     // 본인 목록: unread 0으로 리셋 이벤트
     sendRoomUpdateToUser(String.valueOf(me.getId()), chatRoom, 0, true);
 
-    // 상대에게 “상대가 읽음 처리했다” 이벤트 보내기 -> 추후 리팩토링 및 추가 예정
-    // updated > 0일 때만 보내도 됨
-    // messagingTemplate.convertAndSend(topicRoomRead(chatRoomId),
-    //     new ChatReadEvent(chatRoomId, userId, LocalDateTime.now()));
+    // 상대에게 read 이벤트 브로드캐스트 - 실제로 바뀐 게 있을 때만 보내는 로직으로 처리
+    if (updated > 0) {
+      Long lastReadMessageId = chatMessageRepository.findMaxMessageId(chatRoomId);
+      if (lastReadMessageId == null) {
+        lastReadMessageId = 0L;
+      }
+
+      ChatReadEvent event = ChatReadEvent.of(chatRoomId, userId, lastReadMessageId);
+      messagingTemplate.convertAndSend(topicRoomRead(chatRoomId), event);
+    }
+
   }
 
   private void sendRoomUpdateToUser(String wsUserKey, ChatRoom room, long unreadDelta, boolean resetUnread) {
@@ -137,4 +145,7 @@ public class ChatWsService {
     return "/topic/chat.rooms." + chatRoomId;
   }
 
+  private String topicRoomRead(Long chatRoomId) {
+    return "/topic/chat.read." + chatRoomId;
+  }
 }
