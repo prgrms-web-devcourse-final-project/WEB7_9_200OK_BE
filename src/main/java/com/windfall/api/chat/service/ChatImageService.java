@@ -1,6 +1,7 @@
 package com.windfall.api.chat.service;
 
 import com.windfall.api.chat.dto.response.ChatImageUploadResponse;
+import com.windfall.api.user.service.UserService;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import com.windfall.global.s3.S3Uploader;
@@ -16,10 +17,14 @@ public class ChatImageService {
 
   private static final int MAX_CHAT_IMAGE_COUNT = 5;
 
+  private final UserService userService;
   private final S3Uploader s3Uploader;
 
   @Transactional(readOnly = true)
   public List<ChatImageUploadResponse> upload(List<MultipartFile> files, Long userId) {
+
+    userService.getUserById(userId);
+
     validateChatImages(files);
 
     String dirName = "chat/images/" + userId;

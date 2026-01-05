@@ -71,12 +71,12 @@ public class ChatWsService {
     Long sellerId = trade.getSellerId();
 
     // 발신자: unread 변화 없음, 마지막 메시지 갱신
-    sendRoomUpdateToUser(wsUserKey(sender), chatRoom, 0, false);
+    sendRoomUpdateToUser(String.valueOf(sender.getId()), chatRoom, 0, false);
 
     // 수신자: unread +1, 마지막 메시지 갱신
     Long receiverId = sender.getId().equals(buyerId) ? sellerId : buyerId;
     User receiver = userService.getUserById(receiverId);
-    sendRoomUpdateToUser(wsUserKey(receiver), chatRoom, +1, false);
+    sendRoomUpdateToUser(String.valueOf(receiver.getId()), chatRoom, +1, false);
   }
 
   public void markAsRead(Long userId, Long chatRoomId) {
@@ -90,7 +90,7 @@ public class ChatWsService {
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
 
     // 본인 목록: unread 0으로 리셋 이벤트
-    sendRoomUpdateToUser(wsUserKey(me), chatRoom, 0, true);
+    sendRoomUpdateToUser(String.valueOf(me.getId()), chatRoom, 0, true);
 
     // 상대에게 “상대가 읽음 처리했다” 이벤트 보내기 -> 추후 리팩토링 및 추가 예정
     // updated > 0일 때만 보내도 됨
@@ -103,10 +103,6 @@ public class ChatWsService {
         room.getLastMessageType(), room.getLastMessageAt(), unreadDelta, resetUnread);
 
     messagingTemplate.convertAndSendToUser(wsUserKey, "/queue/chat.rooms", update);
-  }
-
-  private String wsUserKey(User user) {
-    return user.getProvider().name() + "_" + user.getProviderUserId();
   }
 
   private void validateParticipant(Trade trade, Long userId) {
