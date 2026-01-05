@@ -34,7 +34,7 @@ public interface UserInfoRepository extends JpaRepository<User, Long> {
   @Query("""
   SELECT
   new com.windfall.api.user.dto.response.reviewlist.ReviewListRaw(
-  r.id, a.id, u.id, u.nickname, u.profileImageUrl, r.createDate, r.rating / 10, r.content, a.title)
+  r.id, a.id, u.id, u.nickname, u.profileImageUrl, r.createDate, r.rating / 10.0, r.content, a.title)
   FROM Review r
   JOIN r.trade t
   JOIN t.auction a
