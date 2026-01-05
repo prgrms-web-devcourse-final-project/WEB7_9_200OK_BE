@@ -25,7 +25,7 @@ public class SearchHistoryController implements SearchHistorySpecification {
   public ApiResponse<SearchHistoryReadResponse> readSearchHistory(
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-    SearchHistoryReadResponse response = searchHistoryService.readSearchHistory(1L);
+    SearchHistoryReadResponse response = searchHistoryService.readSearchHistory(user.getUserId());
     return ApiResponse.ok("경매 목록 조회에 성공했습니다.", response);
   }
 
