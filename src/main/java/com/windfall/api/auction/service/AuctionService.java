@@ -12,6 +12,7 @@ import com.windfall.api.auction.dto.response.info.ProcessInfo;
 import com.windfall.api.auction.dto.response.info.ScheduledInfo;
 import com.windfall.api.like.dto.response.AuctionLikeSupport;
 import com.windfall.api.like.service.AuctionLikeService;
+import com.windfall.api.searchHistory.service.SearchHistoryService;
 import com.windfall.api.tag.service.TagService;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.auction.entity.Auction;
@@ -50,6 +51,7 @@ public class AuctionService {
   private final AuctionTagRepository auctionTagRepository;
   private final AuctionLikeService auctionLikeService;
   private final AuctionImageService auctionImageService;
+  private final SearchHistoryService searchHistoryService;
 
   @Transactional
   public AuctionCreateResponse createAuction(AuctionCreateRequest request, Long sellerId) {
@@ -79,6 +81,8 @@ public class AuctionService {
     List<AuctionSearchResponse> auctions = auctionSlice.getContent();
 
     if (userId != null) {
+      User user = userService.getUserById(userId);
+      searchHistoryService.createSearchHistory(user, query);
       Set<Long> likedAuctionIds = auctionLikeService.getLikedAuctionIds(userId, auctions);
 
       auctions = auctionLikeService.applyLikeStatus(auctions, likedAuctionIds);
