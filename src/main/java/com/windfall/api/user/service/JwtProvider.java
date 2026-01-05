@@ -93,8 +93,7 @@ public class JwtProvider {
           .getBody();
 
       Date expiration = claims.getExpiration();
-      if (expiration == null) return JwtValidationResult.INVALID; // exp 없으면 비정상 토큰
-      // parseClaimsJws 단계에서 만료면 ExpiredJwtException이 터지므로 여기까지 오면 유효
+      if (expiration == null) return JwtValidationResult.INVALID;
       return JwtValidationResult.VALID;
 
     } catch (ExpiredJwtException e) {

@@ -35,12 +35,11 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
     // 1) CONNECT
     if (StompCommand.CONNECT.equals(accessor.getCommand())) {
 
-      // 🔁 CHANGED: PUBLIC이면 토큰이 오더라도 "아예 무시"
       if ("PUBLIC".equals(endpointType)) {
         return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
       }
 
-      // ✅ SECURED만 토큰 처리
+      // SECURED만 토큰 처리
       String token = resolveToken(accessor);
 
       if (token == null) {
