@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import java.util.List;
 import java.security.Principal;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -50,7 +51,8 @@ public interface AuctionSpecification {
   @ApiErrorCodes({INVALID_TIME, INVALID_STOP_LOSS, INVALID_DROP_AMOUNT,INVALID_IMAGE_STATUS})
   @Operation(summary = "경매 생성", description = "새로운 경매를 생성합니다.")
   ApiResponse<AuctionCreateResponse> createAuction(
-      @Valid @RequestBody AuctionCreateRequest request
+      @Valid @RequestBody AuctionCreateRequest request,
+      @AuthenticationPrincipal CustomUserDetails user
   );
 
   @Operation(summary = "경매 다건 조회", description = "경매 리스트들을 조회합니다.")
@@ -76,6 +78,9 @@ public interface AuctionSpecification {
 
       @Parameter(description = "최고가", example = "1000000")
       @RequestParam(required = false) Long maxPrice,
+
+      @Parameter(description = "태그 id 리스트", example = "[1,2]")
+      @RequestParam(required = false) List<Long> tagIds,
 
       @Parameter(description = "현재 페이지", example = "1")
       @RequestParam @Min(value = 1,message = "page는 1부터 시작합니다.") int page,

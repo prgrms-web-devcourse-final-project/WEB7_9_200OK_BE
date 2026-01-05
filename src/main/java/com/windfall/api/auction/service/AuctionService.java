@@ -52,8 +52,8 @@ public class AuctionService {
   private final AuctionImageService auctionImageService;
 
   @Transactional
-  public AuctionCreateResponse createAuction(AuctionCreateRequest request) {
-    User seller = userService.getUserById(request.sellerId());
+  public AuctionCreateResponse createAuction(AuctionCreateRequest request, Long sellerId) {
+    User seller = userService.getUserById(sellerId);
 
     validateAuctionRequest(request);
 
@@ -69,12 +69,12 @@ public class AuctionService {
   }
 
   public SliceResponse<AuctionSearchResponse> searchAuction(Pageable pageable,String query, AuctionCategory category,
-      AuctionStatus status, Long minPrice, Long maxPrice, Long userId) {
+      AuctionStatus status, Long minPrice, Long maxPrice, List<Long> tagIds, Long userId) {
 
     validatePrice(minPrice,maxPrice);
 
     Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
-        query, category, status, minPrice, maxPrice);
+        query, category, status, minPrice, maxPrice,  tagIds);
 
     List<AuctionSearchResponse> auctions = auctionSlice.getContent();
 

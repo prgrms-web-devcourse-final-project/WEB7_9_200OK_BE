@@ -13,10 +13,6 @@ import java.util.List;
 @Schema(description = "경매 생성 요청 DTO")
 public record AuctionCreateRequest(
 
-    @NotNull(message = "판매자 id는 필수입니다.")
-    @Schema(description = "판매자 id", example = "1")
-    Long sellerId,
-
     @NotBlank(message = "경매 제목은 필수입니다.")
     @Schema(description = "경매 제목", example = "테스트 제목")
     String title,
