@@ -1,9 +1,15 @@
 package com.windfall.api.chat.controller;
 
+import static com.windfall.global.exception.ErrorCode.FORBIDDEN_CHAT_ROOM;
+import static com.windfall.global.exception.ErrorCode.INVALID_TRADE_STATUS_FOR_CHAT;
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_CHAT_ROOM;
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
+
 import com.windfall.api.chat.dto.request.enums.ChatRoomScope;
 import com.windfall.api.chat.dto.response.ChatRoomDetailResponse;
 import com.windfall.api.chat.dto.response.ChatRoomListResponse;
 import com.windfall.domain.user.entity.CustomUserDetails;
+import com.windfall.global.config.swagger.ApiErrorCodes;
 import com.windfall.global.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Tag(name = "Chat", description = "채팅방 API")
 public interface ChatRoomSpecification {
 
+  @ApiErrorCodes({NOT_FOUND_USER})
   @Operation(
       summary = "채팅방 목록 조회",
       description = """
@@ -35,6 +42,7 @@ public interface ChatRoomSpecification {
       @AuthenticationPrincipal CustomUserDetails userDetails
   );
 
+  @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_CHAT_ROOM, FORBIDDEN_CHAT_ROOM, INVALID_TRADE_STATUS_FOR_CHAT})
   @Operation(
       summary = "채팅방 상세 조회 (메타 정보 + 메시지 내용 커서 페이징)",
       description = """
