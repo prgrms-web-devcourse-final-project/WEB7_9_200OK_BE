@@ -1,12 +1,10 @@
 package com.windfall.domain.notification.entity;
 
 import com.windfall.global.entity.BaseEntity;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,4 +29,12 @@ public class PriceNotification extends BaseEntity {
   private Long targetPrice;
 
   private Boolean notified;
+
+  public void updateTargetPrice(Long price) {
+    targetPrice = price;
+  }
+
+  public void resetNotified() {
+    notified = false;
+  }
 }
