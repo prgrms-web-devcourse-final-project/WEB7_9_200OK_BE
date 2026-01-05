@@ -2,6 +2,7 @@ package com.windfall.global.config;
 
 import com.windfall.global.websocket.StompAuthChannelInterceptor;
 import com.windfall.global.websocket.WsHandshakeInterceptor;
+import com.windfall.global.websocket.exception.WsStompErrorHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -17,6 +18,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
   private final WsHandshakeInterceptor wsHandshakeInterceptor;
+  private final WsStompErrorHandler wsStompErrorHandler;
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -27,6 +29,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
+
+    registry.setErrorHandler(wsStompErrorHandler);
+
     // 인증 필요 endpoint
     registry.addEndpoint("/ws-stomp")
         .setAllowedOriginPatterns("*")

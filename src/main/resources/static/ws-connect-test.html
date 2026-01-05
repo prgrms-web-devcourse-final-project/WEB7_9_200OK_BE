@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>Windfall WS CONNECT Error Test</title>
+
+  <!-- SockJS + StompJS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 980px; margin: 20px auto; }
+    input, button, select { padding: 8px; margin: 4px; }
+    .row { margin: 8px 0; }
+    pre {
+      background: #111;
+      color: #0f0;
+      padding: 16px;
+      height: 560px;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+    .hint { color: #444; font-size: 13px; margin-top: 4px; }
+    .badge { display:inline-block; padding: 2px 6px; border-radius: 6px; background:#eee; font-size: 12px;}
+  </style>
+</head>
+<body>
+<h2>WS CONNECT Error Test <span class="badge">SockJS + StompJS</span></h2>
+
+<div class="row">
+  <label>Endpoint: </label>
+  <select id="endpoint">
+    <option value="/ws-stomp">/ws-stomp (SECURED)</option>
+    <option value="/ws-stomp-public">/ws-stomp-public (PUBLIC)</option>
+  </select>
+
+  <label>JWT (선택): </label>
+  <input id="token" style="width: 520px" placeholder="Bearer 없이 토큰만 넣어도 됨" />
+
+  <button onclick="connect()">Connect</button>
+  <button onclick="disconnect()">Disconnect</button>
+  <button onclick="clearLog()">Clear</button>
+
+  <div class="hint">
+    ✅ 목표: CONNECT 단계에서 서버가 STOMP ERROR(JSON)를 내려주는지 확인<br/>
+    - SECURED(/ws-stomp): 토큰 없음 → <b>WS_TOKEN_MISSING</b><br/>
+    - 만료 토큰 → <b>WS_TOKEN_EXPIRED</b> / 무효 토큰 → <b>WS_TOKEN_INVALID</b><br/>
+    - PUBLIC(/ws-stomp-public): 토큰 없이도 연결 OK (단, 토큰을 “보내면” 검증하다가 실패할 수 있음)
+  </div>
+</div>
+
+<hr/>
+
+<div class="row">
+  <label>Connect Test Presets:</label>
+  <button onclick="setToken('')">토큰 비우기</button>
+  <button onclick="setToken('abc.def.ghi')">무효 토큰(가짜)</button>
+</div>
+
+<div class="row">
+  <label>After CONNECT (옵션)</label>
+  <input id="roomId" value="1" style="width: 80px" />
+  <button onclick="subscribeChat()">채팅 구독(옵션)</button>
+</div>
+
+<h3>Logs</h3>
+<pre id="log"></pre>
+
+<script>
+  let stompClient = null;
+  let sock = null;
+
+  function log(msg) {
+    const el = document.getElementById("log");
+    el.textContent += msg + "\n";
+    el.scrollTop = el.scrollHeight;
+    console.log(msg);
+  }
+
+  function clearLog() {
+    document.getElementById("log").textContent = "";
+  }
+
+  function setToken(v) {
+    document.getElementById("token").value = v;
+  }
+
+  function connect() {
+    const endpoint = document.getElementById("endpoint").value;
+    const token = document.getElementById("token").value.trim();
+
+    log("------------------------------------------------------------");
+    log(`▶ CONNECT TRY endpoint=${endpoint}`);
+    log(`▶ tokenProvided=${token ? "YES" : "NO"}`);
+
+    sock = new SockJS(endpoint);
+    stompClient = Stomp.over(sock);
+
+    // stomp 내부 debug 로그(원하면 끄기)
+    stompClient.debug = (str) => log("[stomp] " + str);
+
+    // ✅ 핵심: 서버가 STOMP ERROR 프레임을 보내면 여기로 들어온다.
+    stompClient.onerror = (frame) => {
+      log("🚨 [STOMP ERROR FRAME RECEIVED]");
+      try {
+        log("headers=" + JSON.stringify(frame.headers));
+      } catch (e) {}
+
+      // frame.body에 우리가 만든 JSON(WsErrorEvent)이 들어온다.
+      if (frame.body) {
+        log("body(raw)=" + frame.body);
+        try {
+          const obj = JSON.parse(frame.body);
+          log(`body(parsed)=code=${obj.code}, message=${obj.message}, timestamp=${obj.timestamp}`);
+        } catch (e) {
+          log("body(parse fail)=" + e.message);
+        }
+      } else {
+        log("body=<empty>");
+      }
+    };
+
+    // WebSocket close 확인 (SockJS여도 close 이벤트는 발생)
+    sock.onclose = (e) => {
+      log(`🔌 [SOCKJS CLOSED] code=${e?.code}, reason=${e?.reason}`);
+    };
+
+    const headers = {};
+    if (token) headers["Authorization"] = token.startsWith("Bearer ") ? token : ("Bearer " + token);
+
+    stompClient.connect(headers, (frame) => {
+      log("✅ CONNECTED OK");
+      log(String(frame));
+
+      // 연결 성공한 경우에만 아래는 의미가 있음
+      // (CONNECT 실패면 여기로 못 들어옴)
+      log("✅ TIP: 이제 구독/전송 테스트도 가능");
+    }, (err) => {
+      // connect error callback은 라이브러리/환경에 따라 메시지가 뭉뚱그려질 수 있음
+      log("❌ CONNECT ERROR CALLBACK");
+      try {
+        log("err=" + JSON.stringify(err));
+      } catch (e) {
+        log("err=" + String(err));
+      }
+      log("❗ CONNECT 실패 상세는 위의 [STOMP ERROR FRAME RECEIVED] 로그를 확인하세요.");
+    });
+  }
+
+  function disconnect() {
+    if (stompClient) {
+      stompClient.disconnect(() => log("👋 DISCONNECTED"));
+    }
+    stompClient = null;
+    sock = null;
+  }
+
+  // 연결 성공 후에만(옵션) 채팅 구독 붙여보기
+  function subscribeChat() {
+    if (!stompClient) return alert("먼저 Connect 하세요");
+    const roomId = document.getElementById("roomId").value.trim();
+    if (!roomId) return alert("roomId를 입력하세요");
+
+    log(`📌 subscribe /topic/chat.rooms.${roomId}`);
+    stompClient.subscribe(`/topic/chat.rooms.${roomId}`, (message) => {
+      log("📩 [ROOM TOPIC] " + message.body);
+    });
+
+    log("📌 subscribe /user/queue/chat.rooms");
+    stompClient.subscribe(`/user/queue/chat.rooms`, (message) => {
+      log("🧾 [MY ROOMS QUEUE] " + message.body);
+    });
+
+    log("📌 subscribe /user/queue/errors");
+    stompClient.subscribe(`/user/queue/errors`, (message) => {
+      log("🚨 [WS QUEUE ERROR] " + message.body);
+    });
+
+    log("✅ SUBSCRIBED");
+  }
+</script>
+</body>
+</html>

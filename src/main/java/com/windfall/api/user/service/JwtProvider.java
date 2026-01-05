@@ -1,5 +1,6 @@
 package com.windfall.api.user.service;
 
+import com.windfall.domain.user.enums.JwtValidationResult;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import io.jsonwebtoken.Claims;
@@ -80,6 +81,25 @@ public class JwtProvider {
 
     } catch (JwtException | IllegalArgumentException e) {
       return false;
+    }
+  }
+
+  public JwtValidationResult validateTokenWithResult(String token) {
+    try {
+      Claims claims = Jwts.parserBuilder()
+          .setSigningKey(key)
+          .build()
+          .parseClaimsJws(token)
+          .getBody();
+
+      Date expiration = claims.getExpiration();
+      if (expiration == null) return JwtValidationResult.INVALID;
+      return JwtValidationResult.VALID;
+
+    } catch (ExpiredJwtException e) {
+      return JwtValidationResult.EXPIRED;
+    } catch (JwtException | IllegalArgumentException e) {
+      return JwtValidationResult.INVALID;
     }
   }
 
