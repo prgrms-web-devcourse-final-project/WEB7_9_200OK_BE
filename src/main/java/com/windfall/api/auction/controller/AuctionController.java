@@ -23,7 +23,9 @@ import com.windfall.global.response.ApiResponse;
 import com.windfall.global.response.SliceResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+
 import java.security.Principal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,9 +58,10 @@ public class AuctionController implements AuctionSpecification {
   @Override
   @PostMapping
   public ApiResponse<AuctionCreateResponse> createAuction(
-      @Valid @RequestBody AuctionCreateRequest request
+      @Valid @RequestBody AuctionCreateRequest request,
+      @AuthenticationPrincipal CustomUserDetails user
   ) {
-    AuctionCreateResponse response = auctionService.createAuction(request);
+    AuctionCreateResponse response = auctionService.createAuction(request, user.getUserId());
     return ApiResponse.created("경매가 생성되었습니다.", response);
   }
 
@@ -70,12 +73,12 @@ public class AuctionController implements AuctionSpecification {
       @RequestParam(required = false) AuctionStatus status,
       @RequestParam(defaultValue = "0") Long minPrice,
       @RequestParam(required = false) Long maxPrice,
+      @RequestParam(required = false) List<Long> tagIds,
       @RequestParam @Min(value = 1, message = "page는 1부터 시작합니다.") int page,
       @RequestParam(defaultValue = "15") int size,
       @RequestParam(defaultValue = "createDate") String sortBy,
       @RequestParam(defaultValue = "ASC") Direction sortDirection,
       @AuthenticationPrincipal CustomUserDetails user
-      // TODO 태그 관련 + 필터링(최신순, 인기순, 오래된 순 등등)
   ) {
     Long userId = null;
     if (user != null) {
@@ -84,7 +87,7 @@ public class AuctionController implements AuctionSpecification {
 
     PageRequest pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
     SliceResponse<AuctionSearchResponse> response = auctionService.searchAuction(pageable, query,
-        category, status, minPrice, maxPrice, userId);
+        category, status, minPrice, maxPrice, tagIds,userId);
     return ApiResponse.ok("경매 검색에 성공했습니다.", response);
   }
 
