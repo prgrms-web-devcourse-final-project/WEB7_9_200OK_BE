@@ -1,6 +1,7 @@
 package com.windfall.global.websocket;
 
 import com.windfall.api.user.service.JwtProvider;
+import com.windfall.domain.user.enums.JwtValidationResult;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import lombok.RequiredArgsConstructor;
@@ -29,31 +30,38 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
     accessor.setLeaveMutable(true);
 
-    // 세션이 어느 엔드포인트로 열렸는지 확인(SECURED | PUBLIC)
     String endpointType = getEndpointType(accessor);
 
-    // 1) CONNECT: SECURED면 토큰 없으면 여기서 끊음
+    // 1) CONNECT
     if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+
+      // 🔁 CHANGED: PUBLIC이면 토큰이 오더라도 "아예 무시"
+      if ("PUBLIC".equals(endpointType)) {
+        return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
+      }
+
+      // ✅ SECURED만 토큰 처리
       String token = resolveToken(accessor);
 
-      if ("SECURED".equals(endpointType)) {
-        if (token == null) {
-          throw new ErrorException(ErrorCode.INVALID_TOKEN);
-        }
+      if (token == null) {
+        throw new ErrorException(ErrorCode.WS_TOKEN_MISSING);
       }
 
-      // 토큰이 있으면(SECURED든 PUBLIC이든) 인증 세팅
-      if (token != null) {
-        if (!jwtProvider.validateToken(token)) {
-          throw new ErrorException(ErrorCode.INVALID_TOKEN);
-        }
-        Long userId = jwtProvider.getUserId(token);
-        if (userId == null) {
-          throw new ErrorException(ErrorCode.INVALID_TOKEN);
-        }
+      JwtValidationResult result = jwtProvider.validateTokenWithResult(token);
 
-        accessor.setUser(new StompPrincipal(String.valueOf(userId)));
+      if (result == JwtValidationResult.EXPIRED) {
+        throw new ErrorException(ErrorCode.WS_TOKEN_EXPIRED);
       }
+      if (result == JwtValidationResult.INVALID) {
+        throw new ErrorException(ErrorCode.WS_TOKEN_INVALID);
+      }
+
+      Long userId = jwtProvider.getUserId(token);
+      if (userId == null) {
+        throw new ErrorException(ErrorCode.WS_TOKEN_INVALID);
+      }
+
+      accessor.setUser(new StompPrincipal(String.valueOf(userId)));
     }
 
     // 2) SEND: 보호된 destination은 인증 강제
@@ -64,17 +72,17 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
       }
     }
 
-    // 3) SUBSCRIBE: /user/** 는 무조건 인증 필요
+    // 3) SUBSCRIBE: /user/** 는 무조건 인증 필요 (+ 채팅 topic 인증 필요)
     if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
       String dest = accessor.getDestination();
-      if (dest == null) return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
+      if (dest == null) {
+        return MessageBuilder.createMessage(message.getPayload(), accessor.getMessageHeaders());
+      }
 
-      // 개인 큐는 인증 필수
       if (dest.startsWith("/user/")) {
         requireAuthenticated(accessor);
       }
 
-      // 채팅방 topic도 인증 없이는 구독 불가
       if (dest.startsWith("/topic/chat.rooms.")) {
         requireAuthenticated(accessor);
       }
@@ -85,7 +93,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
   private void requireAuthenticated(StompHeaderAccessor accessor) {
     if (accessor.getUser() == null) {
-      throw new ErrorException(ErrorCode.INVALID_TOKEN);
+      throw new ErrorException(ErrorCode.WS_AUTH_REQUIRED);
     }
   }
 
@@ -97,12 +105,10 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
   }
 
   private String resolveToken(StompHeaderAccessor accessor) {
-    // 1) Authorization 헤더 우선
     String auth = accessor.getFirstNativeHeader("Authorization");
     String token = extractBearer(auth);
     if (token != null) return token;
 
-    // 2) 쿠키 fallback (HandshakeInterceptor)
     if (accessor.getSessionAttributes() != null) {
       Object v = accessor.getSessionAttributes().get(WsHandshakeInterceptor.ATTR_ACCESS_TOKEN);
       if (v != null) return String.valueOf(v);
@@ -117,4 +123,3 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
     return null;
   }
 }
-
