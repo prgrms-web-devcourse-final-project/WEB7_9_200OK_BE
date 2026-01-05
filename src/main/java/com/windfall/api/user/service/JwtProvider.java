@@ -1,5 +1,6 @@
 package com.windfall.api.user.service;
 
+import com.windfall.domain.user.enums.JwtValidationResult;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import io.jsonwebtoken.Claims;
@@ -80,6 +81,26 @@ public class JwtProvider {
 
     } catch (JwtException | IllegalArgumentException e) {
       return false;
+    }
+  }
+
+  public JwtValidationResult validateTokenWithResult(String token) {
+    try {
+      Claims claims = Jwts.parserBuilder()
+          .setSigningKey(key)
+          .build()
+          .parseClaimsJws(token)
+          .getBody();
+
+      Date expiration = claims.getExpiration();
+      if (expiration == null) return JwtValidationResult.INVALID; // exp 없으면 비정상 토큰
+      // parseClaimsJws 단계에서 만료면 ExpiredJwtException이 터지므로 여기까지 오면 유효
+      return JwtValidationResult.VALID;
+
+    } catch (ExpiredJwtException e) {
+      return JwtValidationResult.EXPIRED;
+    } catch (JwtException | IllegalArgumentException e) {
+      return JwtValidationResult.INVALID;
     }
   }
 
