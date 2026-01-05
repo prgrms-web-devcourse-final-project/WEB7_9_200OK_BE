@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -71,41 +70,38 @@ public class SseService {
 
   @Async("socketTaskExecutor")
   @Transactional
-  public void priceNotificationSend(Long userId,Long targetId,String content) {
-    User user = getUserOrThrow(userId);
-    Notification notification = Notification.create(user,
+  public void priceNotificationSend(Long userId, Long targetId, String content) {
+    sendNotification(
+        userId,
+        targetId,
         "가격 하락 알림",
         "관심 상품의 가격이 하락했습니다: " + content,
-        false,
-        NotificationType.PRICE_DROP,targetId);
-
-    saveAndSend(userId, "priceAlert", notification);
+        NotificationType.PRICE_DROP,
+        "priceAlert"
+    );
   }
 
   @Async("socketTaskExecutor")
   @Transactional
   public void auctionStartNotificationSend(Long userId, Long targetId, String auctionTitle) {
-    User user = getUserOrThrow(userId);
-
-    Notification notification = Notification.create(
-        user,
+    sendNotification(
+        userId,
+        targetId,
         "경매 시작 알림",
         "관심 상품 '" + auctionTitle + "'의 경매가 시작되었습니다.",
-        false,
         NotificationType.AUCTION_START_WISHLIST,
-        targetId
+        "auctionStartAlert"
     );
-
-    saveAndSend(userId, "auctionStartAlert", notification);
   }
 
   @Async("socketTaskExecutor")
   @Transactional
   public void sendAuctionFailedToSeller(Long sellerId, Long auctionId, String auctionTitle) {
-    sendAuctionFailed(
+    sendNotification(
         sellerId,
         auctionId,
-        auctionTitle,
+        "경매 유찰 알림",
+        "'" + auctionTitle + "' 경매가 유찰되어 종료되었습니다.",
         NotificationType.AUCTION_FAILED_SELLER,
         "auctionFailedSeller"
     );
@@ -114,10 +110,11 @@ public class SseService {
   @Async("socketTaskExecutor")
   @Transactional
   public void sendAuctionFailedToSubscriber(Long userId, Long auctionId, String auctionTitle) {
-    sendAuctionFailed(
+    sendNotification(
         userId,
         auctionId,
-        auctionTitle,
+        "경매 유찰 알림",
+        "'" + auctionTitle + "' 경매가 유찰되어 종료되었습니다.",
         NotificationType.AUCTION_FAILED_SUBSCRIBER,
         "auctionFailedSubscriber"
     );
@@ -126,10 +123,11 @@ public class SseService {
   @Async("socketTaskExecutor")
   @Transactional
   public void sendAuctionSuccessToSeller(Long sellerId, Long auctionId, String auctionTitle) {
-    sendAuctionSuccess(
+    sendNotification(
         sellerId,
         auctionId,
-        auctionTitle,
+        "경매 낙찰 알림",
+        "'" + auctionTitle + "' 경매가 낙찰되어 종료되었습니다.",
         NotificationType.SALE_SUCCESS_SELLER,
         "auctionSuccessSeller"
     );
@@ -138,54 +136,33 @@ public class SseService {
   @Async("socketTaskExecutor")
   @Transactional
   public void sendAuctionSuccessToSubscriber(Long userId, Long auctionId, String auctionTitle) {
-    sendAuctionSuccess(
+    sendNotification(
         userId,
         auctionId,
-        auctionTitle,
+        "경매 낙찰 알림",
+        "'" + auctionTitle + "' 경매가 낙찰되어 종료되었습니다.",
         NotificationType.SALE_SUCCESS_SUBSCRIBER,
         "auctionSuccessSubscriber"
     );
   }
 
-  private void sendAuctionFailed(
+  private void sendNotification(
       Long userId,
-      Long auctionId,
-      String auctionTitle,
+      Long targetId,
+      String title,
+      String message,
       NotificationType type,
       String sseEventName
   ) {
     User user = getUserOrThrow(userId);
-
     Notification notification = Notification.create(
         user,
-        "경매 유찰 알림",
-        "'" + auctionTitle + "' 경매가 유찰되었습니다.",
+        title,
+        message,
         false,
         type,
-        auctionId
+        targetId
     );
-
-    saveAndSend(userId, sseEventName, notification);
-  }
-
-  private void sendAuctionSuccess(
-      Long userId,
-      Long auctionId,
-      String auctionTitle,
-      NotificationType type,
-      String sseEventName
-  ) {
-    User user = getUserOrThrow(userId);
-
-    Notification notification = Notification.create(
-        user,
-        "경매 낙찰 알림",
-        "'" + auctionTitle + "' 경매가 낙찰되었습니다.",
-        false,
-        type,
-        auctionId
-    );
-
     saveAndSend(userId, sseEventName, notification);
   }
 
