@@ -5,20 +5,20 @@ import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/trade")
+@RequestMapping("/api/v1/trades")
 public class TradeController implements TradeSpecification{
 
   private final TradeService tradeService;
 
   @Override
-  @PutMapping("/{tradeId}/confirm")
+  @PatchMapping("/{tradeId}/confirm")
   public ApiResponse<Void> purchaseConfirmTrade(
       @PathVariable Long tradeId,
       @AuthenticationPrincipal CustomUserDetails userDetails

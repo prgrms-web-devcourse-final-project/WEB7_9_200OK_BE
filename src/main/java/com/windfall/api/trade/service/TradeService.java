@@ -18,8 +18,7 @@ public class TradeService {
   @Transactional
   public void purchaseConfirmTrade(Long userId, Long tradeId){
 
-    Trade trade = tradeRepository.findById(tradeId).orElseThrow(
-        () -> new ErrorException(ErrorCode.NOT_FOUND_TRADE));
+    Trade trade = validateTrade(tradeId);
 
     //payment가 있는지
     isPaymentCompleted(trade.getStatus());
@@ -41,6 +40,11 @@ public class TradeService {
     if(!buyerId.equals(userId)){
       throw new ErrorException(ErrorCode.NOT_MATCHED_BUYER_ID);
     }
+  }
+
+  private Trade validateTrade(Long tradeId){
+    return tradeRepository.findById(tradeId).orElseThrow(
+        () -> new ErrorException(ErrorCode.NOT_FOUND_TRADE));
   }
 
 }

@@ -7,6 +7,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TradeRepository extends JpaRepository<Trade, Long> {
   Optional<Trade> findByAuction(Auction auction);
-
-  Optional<Trade> findById(Long id);
 }
