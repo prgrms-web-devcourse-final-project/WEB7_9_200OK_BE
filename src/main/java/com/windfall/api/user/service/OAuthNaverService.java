@@ -5,61 +5,132 @@
 
 package com.windfall.api.user.service;
 
-import com.windfall.api.user.dto.response.LoginUserResponse;
+import com.windfall.api.user.dto.response.OAuthTokenResponse;
 import com.windfall.api.user.dto.response.OAuthUserInfo;
+import com.windfall.domain.user.entity.User;
+import com.windfall.domain.user.entity.UserToken;
+import com.windfall.domain.user.enums.ProviderType;
 import com.windfall.domain.user.repository.UserRepository;
+import com.windfall.domain.user.repository.UserTokenRepository;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class OAuthNaverService {
+
   private final UserRepository userRepository;
+  private final UserTokenRepository userTokenRepository;
   private final JwtProvider jwtProvider; // JWT 발급용
   private final RestTemplate restTemplate;
 
   @Value("${spring.naver.client.id}")
   private String naverClientId;
 
-  @Value("${spring.naver.redirect.uri}")
-  private String naverRedirectUri;
+  @Value("${spring.naver.client.secret}")
+  private String naverClientSecret;
 
-  public LoginUserResponse loginOrSignup(String code) {
-    // 1. code로 access token 발급
-    String accessToken = requestAccessToken(code);
+  @Transactional
+  public OAuthTokenResponse loginOrSignup(OAuthUserInfo userInfo) {
 
-    // 2. access token으로 사용자 정보 요청
-    OAuthUserInfo userInfo = requestUserInfo(accessToken);
-
-    // 3. DB에서 회원 확인 후 없으면 생성
-    /*
-    User member = memberRepository.findByEmail(userInfo.email())
-        .orElseGet(() -> memberRepository.save(
-            new User(userInfo.email(), userInfo.nickname(), userInfo.profileImageUrl())
+    User user = userRepository.findByProviderUserId(userInfo.providerUserId())
+        .orElseGet(() -> userRepository.save(
+            new User(ProviderType.NAVER, userInfo.providerUserId(), userInfo.email(),
+                userInfo.nickname(), userInfo.profileImageUrl())
         ));
-     */
 
-    // 4. JWT 발급
-    //String jwtAccessToken = jwtService.generateAccessToken(member);
-    //String jwtRefreshToken = jwtService.generateRefreshToken(member);
-    String jwtAccessToken = "";
-    String jwtRefreshToken = "";
+    String jwtAccessToken = jwtProvider.generateAccessToken(user.getId(), user.getProviderUserId());
+    String jwtRefreshToken = jwtProvider.generateRefreshToken(user.getId(), user.getProviderUserId());
 
-    return new LoginUserResponse("","","");
-    //return new LoginUserResponse(member.getUserId(), member.getUsername(), jwtAccessToken, jwtRefreshToken);
+    userTokenRepository.findByUser(user)
+        .ifPresentOrElse(
+            userToken -> userToken.saveRefreshToken(jwtRefreshToken),
+            () -> userTokenRepository.save(UserToken.create(user, jwtRefreshToken))
+        );
+
+    return new OAuthTokenResponse(
+        user.getId(),
+        jwtAccessToken,
+        jwtRefreshToken
+    );
   }
 
-  private String requestAccessToken(String code) {
-    // RestTemplate 사용, 카카오 API에 POST 요청
-    // 반환값은 access token
-    return "";
+  public String requestAccessToken(String code, String state) {
+    String url = "https://nid.naver.com/oauth2.0/token";
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+    params.add("grant_type", "authorization_code");
+    params.add("client_id", naverClientId);
+    params.add("client_secret", naverClientSecret);
+    params.add("code", code);
+    params.add("state", state);
+
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+    try {
+      ResponseEntity<Map> response = restTemplate.postForEntity(url, request, Map.class);
+      Map<String, Object> body = response.getBody();
+
+      if (body != null && body.containsKey("access_token")) {
+        String accessToken = (String) body.get("access_token");
+        return accessToken;
+      } else {
+        throw new RuntimeException("네이버 access token 발급 실패 - 응답에 access_token 없음");
+      }
+
+    } catch (HttpClientErrorException e) {
+      throw new RuntimeException("네이버 access token 발급 실패", e);
+    } catch (Exception e) {
+      throw new RuntimeException("네이버 access token 요청 중 오류", e);
+    }
   }
 
-  private OAuthUserInfo requestUserInfo(String accessToken) {
-    // RestTemplate 사용, 카카오 API에 GET 요청
+  public OAuthUserInfo requestUserInfo(String accessToken) {
+    // RestTemplate 사용, 네이버 API에 GET 요청
     // JSON 응답 → OAuthUserInfo로 변환
-    return new OAuthUserInfo("", "", "", "");
+    String url = "https://openapi.naver.com/v1/nid/me";
+
+    // HTTP 헤더 설정
+    HttpHeaders headers = new HttpHeaders();
+    headers.setBearerAuth(accessToken); // Authorization: Bearer {accessToken}
+
+    HttpEntity<Void> request = new HttpEntity<>(headers);
+
+    // GET 요청 보내기
+    ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, request, Map.class);
+    Map<String, Object> body = response.getBody();
+
+    if (body == null) {
+      throw new RuntimeException("네이버 사용자 정보 요청 실패");
+    }
+
+    // naver_account 안에서 email, profile 정보 가져오기
+    Map<String, Object> responseMap = (Map<String, Object>) body.get("response");
+    if (responseMap == null) {
+      throw new RuntimeException("네이버 사용자 정보 응답에 response 없음");
+    }
+
+    Map<String, Object> profile = (Map<String, Object>) responseMap.get("profile");
+    String providerUserId = (String) responseMap.get("id");
+    String email = (String) responseMap.get("email");
+    String nickname = (String) responseMap.get("nickname");
+    String profileImageUrl = (String) responseMap.get("profile_image");
+
+    return new OAuthUserInfo(providerUserId, email, nickname, profileImageUrl);
   }
 }

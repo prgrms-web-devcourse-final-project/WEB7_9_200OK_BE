@@ -19,7 +19,7 @@ public class UserToken  extends BaseEntity {
   @JoinColumn(name = "user_id", nullable = false, unique = true)
   private User user;
 
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "TEXT")
   private String refreshToken;
 
   protected UserToken(User user, String refreshToken) {

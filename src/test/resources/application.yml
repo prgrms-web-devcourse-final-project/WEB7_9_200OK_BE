@@ -22,12 +22,14 @@ spring:
   naver:
     client:
       id: ${CLIENT_ID_NAVER}
+      secret: ${CLIENT_SECRET_NAVER}
     redirect:
       uri: ${REDIRECT_URI_NAVER}
 
   google:
     client:
       id: ${CLIENT_ID_GOOGLE}
+      secret: ${CLIENT_SECRET_GOOGLE}
     redirect:
       uri: ${REDIRECT_URI_GOOGLE}
 
