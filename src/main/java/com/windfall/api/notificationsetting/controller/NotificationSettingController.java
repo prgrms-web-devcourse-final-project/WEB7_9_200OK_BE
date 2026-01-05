@@ -28,8 +28,7 @@ public class NotificationSettingController implements NotificationSettingSpecifi
       @PathVariable Long auctionId,
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-    ReadNotySettingResponse response = notificationSettingService
-        .read(auctionId, user.getUserId());
+    ReadNotySettingResponse response = notificationSettingService.read(auctionId, user.getUserId());
     return ApiResponse.ok("알림 세팅 조회를 성공했습니다.", response);
   }
 

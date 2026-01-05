@@ -36,6 +36,8 @@ public enum ErrorCode {
   //알림
   NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND,"존재하지 않는 알림입니다."),
   INVALID_NOTIFICATION(HttpStatus.FORBIDDEN, "해당 유저의 알림이 아닙니다."),
+  INVALID_PRICE_NOTIFICATION(HttpStatus.BAD_REQUEST, "가격 도달 알림을 위한 가격이 유효하지 않습니다."),
+  NOT_FOUND_PRICE_REACHED_NOTY(HttpStatus.INTERNAL_SERVER_ERROR, "알림 설정 처리 중 내부 오류로 가격 도달 알림이 활성화 되지 않았습니다."),
 
   // 채팅
   NOT_FOUND_CHAT_ROOM(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),

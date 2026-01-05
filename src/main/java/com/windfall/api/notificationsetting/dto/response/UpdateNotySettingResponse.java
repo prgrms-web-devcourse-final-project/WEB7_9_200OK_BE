@@ -13,14 +13,18 @@ public record UpdateNotySettingResponse (
     boolean auctionEnd,
 
     @Schema(description = "가격 도달 설정 여부")
-    boolean priceReached
+    boolean priceReached,
+
+    @Schema(description = "가격 도달 기준값")
+    Long price
 ) {
 
   public static UpdateNotySettingResponse from(UpdateNotySettingRequest request) {
       return new UpdateNotySettingResponse(
           request.auctionStart(),
           request.auctionEnd(),
-          request.priceReached()
+          request.priceReached(),
+          request.price()
       );
   }
 }
