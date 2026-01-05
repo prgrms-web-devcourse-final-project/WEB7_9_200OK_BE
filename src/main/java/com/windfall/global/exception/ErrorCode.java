@@ -71,6 +71,7 @@ public enum ErrorCode {
 
   //거래
   NOT_FOUND_TRADE(HttpStatus.NOT_FOUND, "존재하지 않는 거래입니다."),
+  NOT_PAYMENT_COMPLETED_TRADE(HttpStatus.BAD_REQUEST, "결제가 완료된 거래가 아닙니다."),
 
   //리뷰
   NOT_MATCHED_BUYER_ID(HttpStatus.BAD_REQUEST, "이 거래는 사용자의 거래가 아닙니다."),
