@@ -37,6 +37,12 @@ public enum ErrorCode {
   NOT_FOUND_NOTIFICATION(HttpStatus.NOT_FOUND,"존재하지 않는 알림입니다."),
   INVALID_NOTIFICATION(HttpStatus.FORBIDDEN, "해당 유저의 알림이 아닙니다."),
 
+  // WS CONNECT/인증 단계 구체 에러
+  WS_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "웹소켓 연결에 토큰이 필요합니다."),
+  WS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
+  WS_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
+  WS_AUTH_REQUIRED(HttpStatus.UNAUTHORIZED, "인증이 필요한 요청입니다."),
+
   // 채팅
   NOT_FOUND_CHAT_ROOM(HttpStatus.NOT_FOUND, "존재하지 않는 채팅방입니다."),
   FORBIDDEN_CHAT_ROOM(HttpStatus.FORBIDDEN, "채팅방에 접근할 수 있는 권한이 없습니다."),
