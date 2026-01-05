@@ -71,7 +71,7 @@ class NotificationSettingServiceTest {
   @DisplayName("[알림 세팅 수정1] 알림 세팅을 수정하는 경우")
   void success2() {
     // given
-    UpdateNotySettingRequest request = new UpdateNotySettingRequest(true, false, true);
+    UpdateNotySettingRequest request = new UpdateNotySettingRequest(true, true, false, null);
 
     when(userRepository.findById(userId)).thenReturn(Optional.of(user));
     when(auctionRepository.findById(auctionId)).thenReturn(Optional.of(auction));
@@ -97,8 +97,8 @@ class NotificationSettingServiceTest {
 
     // then
     assertTrue(response.auctionStart());
-    assertFalse(response.auctionEnd());
-    assertTrue(response.priceReached());
+    assertTrue(response.auctionEnd());
+    assertFalse(response.priceReached());
 
     verify(notificationSettingRepository, times(3)).save(any(NotificationSetting.class));
   }
