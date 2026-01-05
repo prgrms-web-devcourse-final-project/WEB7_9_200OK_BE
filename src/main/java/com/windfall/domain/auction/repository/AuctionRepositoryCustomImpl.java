@@ -163,7 +163,6 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
             .from(auctionTag)
             .where(auctionTag.tag.id.in(tagIds))
             .groupBy(auctionTag.auction.id)
-            .having(auctionTag.count().eq((long) tagIds.size()))
     );
   }
 
