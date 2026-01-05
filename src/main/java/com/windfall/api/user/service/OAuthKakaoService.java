@@ -85,10 +85,6 @@ public class OAuthKakaoService {
     params.add("client_secret", kakaoClientSecret);
     params.add("code", code);
 
-    System.out.println("client_id : " + kakaoClientId);
-    System.out.println("redirect_uri : " + kakaoRedirectUri);
-    System.out.println("code : " + code);
-
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
     try {

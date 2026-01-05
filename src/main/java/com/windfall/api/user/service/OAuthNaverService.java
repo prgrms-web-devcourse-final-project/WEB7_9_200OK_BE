@@ -80,9 +80,6 @@ public class OAuthNaverService {
     params.add("code", code);
     params.add("state", state);
 
-    System.out.println("client_id : " + naverClientId);
-    System.out.println("code : " + code);
-
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
     try {

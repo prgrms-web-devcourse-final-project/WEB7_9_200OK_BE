@@ -83,9 +83,6 @@ public class OAuthGoogleService {
     params.add("code", code);
     params.add("redirect_uri", googleRedirectUri);
 
-    System.out.println("client_id : " + googleClientId);
-    System.out.println("code : " + code);
-
     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
     try {
