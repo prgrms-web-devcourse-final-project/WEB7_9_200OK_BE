@@ -73,7 +73,7 @@ public class UserinfoController implements UserInfoSpecification{
   }
 
   @Override
-  @PutMapping(path = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PutMapping(path = "/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ApiResponse<UpdateUserProfileImageResponse> updateUserImage(
       @RequestPart(name = "image") MultipartFile file,
       @AuthenticationPrincipal CustomUserDetails userDetails
@@ -86,7 +86,7 @@ public class UserinfoController implements UserInfoSpecification{
   }
 
   @Override
-  @PutMapping("/name")
+  @PutMapping("/names")
   public ApiResponse<UpdateUsernameResponse> updateUsername(
       @RequestBody @Valid UpdateUsernameRequest request,
       @AuthenticationPrincipal CustomUserDetails userDetails
