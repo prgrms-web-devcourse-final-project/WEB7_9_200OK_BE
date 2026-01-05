@@ -66,4 +66,12 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
       @Param("chatRoomId") Long chatRoomId,
       @Param("userId") Long userId
   );
+
+  @Query("""
+      select max(cm.id)
+      from ChatMessage cm
+      where cm.chatRoom.id = :chatRoomId
+      """)
+  Long findMaxMessageId(@Param("chatRoomId") Long chatRoomId);
+
 }
