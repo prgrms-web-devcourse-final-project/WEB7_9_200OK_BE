@@ -72,6 +72,8 @@ public enum ErrorCode {
   REVIEW_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "리뷰가 이미 존재합니다."),
   NOT_FOUND_REVIEW(HttpStatus.NOT_FOUND, "리뷰가 존재하지 않습니다."),
 
+  //유저 이미지 검증
+  INVALID_IMAGE_FILE(HttpStatus.BAD_REQUEST, "이미지 파일이 유효하지 않습니다."),
 
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")

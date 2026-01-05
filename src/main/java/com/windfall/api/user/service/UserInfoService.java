@@ -19,6 +19,8 @@ import com.windfall.domain.auction.repository.AuctionImageRepository;
 import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.repository.SalesHistoryQueryRepository;
 import com.windfall.domain.user.repository.UserInfoRepository;
+import com.windfall.global.exception.ErrorCode;
+import com.windfall.global.exception.ErrorException;
 import com.windfall.global.response.SliceResponse;
 import com.windfall.global.s3.S3Uploader;
 import java.net.URI;
@@ -106,6 +108,8 @@ public class UserInfoService {
   public UpdateUserProfileImageResponse updateUserProfileImage(MultipartFile image, Long loginId){
     User user = userService.getUserById(loginId);
 
+    validateImage(image);
+
     String oldUrl = user.getProfileImageUrl();
     String dirName = "profile/" + loginId;
     String newUrl = s3Uploader.upload(image, dirName);
@@ -126,6 +130,12 @@ public class UserInfoService {
     user.updateUsername(request.username());
 
     return new UpdateUsernameResponse(request.username());
+  }
+
+  private void validateImage(MultipartFile files) {
+    if (files == null || files.isEmpty()) {
+      throw new ErrorException(ErrorCode.INVALID_IMAGE_FILE);
+    }
   }
 
   private String URIPathParser(String url){
