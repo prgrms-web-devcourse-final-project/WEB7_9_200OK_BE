@@ -1,6 +1,7 @@
 package com.windfall.api.review.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 import lombok.Builder;
 
 @Builder
@@ -24,7 +25,7 @@ public record ReviewDetailsResponse(
     String nickname,
 
     @Schema(description = "별점")
-    int rating,
+    double rating,
 
     @Schema(description = "내용")
     String content
