@@ -59,15 +59,17 @@ public record AuctionDetailResponse(
     @Schema(description = "경매 시작 시간")
     LocalDateTime startedAt,
 
+    @Schema(description = "서버 시간")
+    LocalDateTime serverTime,
+
+    @Schema(description = "경매 생성 시간")
+    LocalDateTime createdDate,
+
     @Schema(description = "최근 가격 하락 내역")
     List<AuctionHistoryResponse> recentPriceHistory,
 
     @Schema(description = "태그 목록")
-    List<String> tags,
-
-    @Schema(description = "서버 시간")
-    LocalDateTime serverTime
-
+    List<String> tags
 ) {
   public static AuctionDetailResponse of(
       Auction auction,
@@ -97,9 +99,10 @@ public record AuctionDetailResponse(
         isLiked,
         viewerCount,
         auction.getStartedAt(),
+        LocalDateTime.now(),
+        auction.getCreateDate(),
         history,
-        tags,
-        LocalDateTime.now()
+        tags
     );
   }
 }
