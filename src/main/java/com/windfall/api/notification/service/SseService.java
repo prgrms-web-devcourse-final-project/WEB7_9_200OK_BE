@@ -99,6 +99,96 @@ public class SseService {
     saveAndSend(userId, "auctionStartAlert", notification);
   }
 
+  @Async("socketTaskExecutor")
+  @Transactional
+  public void sendAuctionFailedToSeller(Long sellerId, Long auctionId, String auctionTitle) {
+    sendAuctionFailed(
+        sellerId,
+        auctionId,
+        auctionTitle,
+        NotificationType.AUCTION_FAILED_SELLER,
+        "auctionFailedSeller"
+    );
+  }
+
+  @Async("socketTaskExecutor")
+  @Transactional
+  public void sendAuctionFailedToSubscriber(Long userId, Long auctionId, String auctionTitle) {
+    sendAuctionFailed(
+        userId,
+        auctionId,
+        auctionTitle,
+        NotificationType.AUCTION_FAILED_SUBSCRIBER,
+        "auctionFailedSubscriber"
+    );
+  }
+
+  @Async("socketTaskExecutor")
+  @Transactional
+  public void sendAuctionSuccessToSeller(Long sellerId, Long auctionId, String auctionTitle) {
+    sendAuctionSuccess(
+        sellerId,
+        auctionId,
+        auctionTitle,
+        NotificationType.SALE_SUCCESS_SELLER,
+        "auctionSuccessSeller"
+    );
+  }
+
+  @Async("socketTaskExecutor")
+  @Transactional
+  public void sendAuctionSuccessToSubscriber(Long userId, Long auctionId, String auctionTitle) {
+    sendAuctionSuccess(
+        userId,
+        auctionId,
+        auctionTitle,
+        NotificationType.SALE_SUCCESS_SUBSCRIBER,
+        "auctionSuccessSubscriber"
+    );
+  }
+
+  private void sendAuctionFailed(
+      Long userId,
+      Long auctionId,
+      String auctionTitle,
+      NotificationType type,
+      String sseEventName
+  ) {
+    User user = getUserOrThrow(userId);
+
+    Notification notification = Notification.create(
+        user,
+        "경매 유찰 알림",
+        "'" + auctionTitle + "' 경매가 유찰되었습니다.",
+        false,
+        type,
+        auctionId
+    );
+
+    saveAndSend(userId, sseEventName, notification);
+  }
+
+  private void sendAuctionSuccess(
+      Long userId,
+      Long auctionId,
+      String auctionTitle,
+      NotificationType type,
+      String sseEventName
+  ) {
+    User user = getUserOrThrow(userId);
+
+    Notification notification = Notification.create(
+        user,
+        "경매 낙찰 알림",
+        "'" + auctionTitle + "' 경매가 낙찰되었습니다.",
+        false,
+        type,
+        auctionId
+    );
+
+    saveAndSend(userId, sseEventName, notification);
+  }
+
   private User getUserOrThrow(Long userId) {
     return userRepository.findById(userId)
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_USER));

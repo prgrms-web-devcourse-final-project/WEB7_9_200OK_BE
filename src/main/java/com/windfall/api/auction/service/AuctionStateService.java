@@ -17,7 +17,6 @@ import com.windfall.domain.notification.enums.NotificationSettingType;
 import com.windfall.domain.notification.repository.NotificationSettingRepository;
 import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,11 +78,15 @@ public class AuctionStateService {
     if(auction.getStatus() == COMPLETED) return;
 
     auction.updateStatus(COMPLETED);
+
+    notifyAuctionSuccess(auction);
   }
 
   private void logAuctionChange(Auction auction, long oldPrice) {
     if(auction.getStatus() == FAILED) {
       log.info("❌경매 유찰 ( 경매 ID: {}, StopLoss 도달)", auction.getId());
+
+      notifyAuctionFailed(auction);
     } else {
       log.info("⬇️경매 가격 하락 ( 경매 ID: {}, 이전 가격: {}, 현재 가격: {} )",
           auction.getId(), oldPrice, auction.getCurrentPrice());
@@ -118,7 +121,8 @@ public class AuctionStateService {
   }
 
   private void notifyAuctionStart(Auction auction) {
-    List<NotificationSetting> settings = getActiveAuctionStartSettings(auction);
+    List<NotificationSetting> settings =
+        getActiveAuctionStartSettings(auction, NotificationSettingType.AUCTION_START);
 
     if(settings.isEmpty()) return;
 
@@ -135,10 +139,62 @@ public class AuctionStateService {
     }
   }
 
-  private List<NotificationSetting> getActiveAuctionStartSettings(Auction auction) {
+  private List<NotificationSetting> getActiveAuctionStartSettings(
+      Auction auction, NotificationSettingType type
+  ) {
     return notificationSettingRepository.findAllActiveByAuctionAndType(
         auction.getId(),
-        NotificationSettingType.AUCTION_START
+        type
     );
+  }
+
+  private void notifyAuctionFailed(Auction auction) {
+    sseService.sendAuctionFailedToSeller( // 판매자
+        auction.getSeller().getId(),
+        auction.getId(),
+        auction.getTitle()
+    );
+
+    List<NotificationSetting> settings =
+        getActiveAuctionStartSettings(auction, NotificationSettingType.AUCTION_END);
+
+    if(settings.isEmpty()) return;
+
+    for(NotificationSetting setting : settings) {
+      try {
+        sseService.sendAuctionFailedToSubscriber( // 알림 설정 유저
+            setting.getUser().getId(),
+            auction.getId(),
+            auction.getTitle()
+        );
+      } catch (Exception e) {
+        log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
+      }
+    }
+  }
+
+  private void notifyAuctionSuccess(Auction auction) {
+    sseService.sendAuctionSuccessToSeller( // 판매자
+        auction.getSeller().getId(),
+        auction.getId(),
+        auction.getTitle()
+    );
+
+    List<NotificationSetting> settings =
+        getActiveAuctionStartSettings(auction, NotificationSettingType.AUCTION_END);
+
+    if(settings.isEmpty()) return;
+
+    for(NotificationSetting setting : settings) {
+      try {
+        sseService.sendAuctionSuccessToSubscriber( // 알림 설정 유저
+            setting.getUser().getId(),
+            auction.getId(),
+            auction.getTitle()
+        );
+      } catch (Exception e) {
+        log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
+      }
+    }
   }
 }
