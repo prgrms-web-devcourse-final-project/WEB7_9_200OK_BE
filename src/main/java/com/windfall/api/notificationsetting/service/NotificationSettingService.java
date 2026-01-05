@@ -30,10 +30,6 @@ public class NotificationSettingService {
 
   @Transactional(readOnly = true)
   public ReadNotySettingResponse read(Long auctionId, Long userId) {
-    if (userId == null) {
-      return ReadNotySettingResponse.allDisabled();
-    }
-
     List<NotificationSetting> settings =
         notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
 
