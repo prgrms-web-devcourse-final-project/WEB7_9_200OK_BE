@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 @Component
@@ -76,5 +77,14 @@ public class S3Uploader {
       return baseUrl + key;
     }
     return baseUrl + "/" + key;
+  }
+
+  public void deleteFile(String key) {
+    DeleteObjectRequest request = DeleteObjectRequest.builder()
+        .bucket(s3Properties.getBucketName())
+        .key(key)
+        .build();
+
+    s3Client.deleteObject(request);
   }
 }
