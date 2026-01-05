@@ -18,6 +18,8 @@ import com.windfall.domain.notification.repository.NotificationSettingRepository
 import com.windfall.global.exception.ErrorException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -121,20 +123,90 @@ public class AuctionStateService {
   }
 
   private void notifyAuctionStart(Auction auction) {
-    List<NotificationSetting> settings =
-        getActiveAuctionStartSettings(auction, NotificationSettingType.AUCTION_START);
+    notifySubscribers(
+        auction,
+        NotificationSettingType.AUCTION_START,
+        (userId, auc) ->
+            sseService.auctionStartNotificationSend(
+                userId,
+                auc.getId(),
+                auc.getTitle()
+            )
+    );
+  }
 
-    if(settings.isEmpty()) return;
+  private void notifyAuctionFailed(Auction auction) {
+    notifySeller(
+        auction,
+        (auc) ->
+            sseService.sendAuctionFailedToSeller(
+                auc.getSeller().getId(),
+                auc.getId(),
+                auc.getTitle()
+            )
+    );
 
-    for(NotificationSetting setting : settings) {
+    notifySubscribers(
+        auction,
+        NotificationSettingType.AUCTION_END,
+        (userId, auc) ->
+            sseService.sendAuctionFailedToSubscriber(
+                userId,
+                auc.getId(),
+                auc.getTitle()
+            )
+    );
+  }
+
+  private void notifyAuctionSuccess(Auction auction) {
+    notifySeller(
+        auction,
+        (auc) ->
+            sseService.sendAuctionSuccessToSeller(
+                auc.getSeller().getId(),
+                auc.getId(),
+                auc.getTitle()
+            )
+    );
+
+    notifySubscribers(
+        auction,
+        NotificationSettingType.AUCTION_END,
+        (userId, auc) ->
+            sseService.sendAuctionSuccessToSubscriber(
+                userId,
+                auc.getId(),
+                auc.getTitle()
+            )
+    );
+  }
+
+  private void notifySeller(
+      Auction auction,
+      Consumer<Auction> notifyAction
+  ) {
+    try {
+      notifyAction.accept(auction);
+    } catch (Exception e) {
+      log.error("판매자 알림 발송 실패 [User: {}]: {}", auction.getSeller().getId(), e.getMessage());
+    }
+  }
+
+  private void notifySubscribers(
+      Auction auction,
+      NotificationSettingType settingType,
+      BiConsumer<Long, Auction> notifyAction
+  ) {
+    List<NotificationSetting> settings = getActiveAuctionStartSettings(auction, settingType);
+
+    if (settings.isEmpty()) return;
+
+    for (NotificationSetting setting : settings) {
+      Long userId = setting.getUser().getId();
       try {
-        sseService.auctionStartNotificationSend(
-            setting.getUser().getId(),
-            auction.getId(),
-            auction.getTitle()
-        );
+        notifyAction.accept(userId, auction);
       } catch (Exception e) {
-        log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
+        log.error("알림 설정 유저 알림 발송 실패 [User: {}]: {}", userId, e.getMessage());
       }
     }
   }
@@ -146,55 +218,5 @@ public class AuctionStateService {
         auction.getId(),
         type
     );
-  }
-
-  private void notifyAuctionFailed(Auction auction) {
-    sseService.sendAuctionFailedToSeller( // 판매자
-        auction.getSeller().getId(),
-        auction.getId(),
-        auction.getTitle()
-    );
-
-    List<NotificationSetting> settings =
-        getActiveAuctionStartSettings(auction, NotificationSettingType.AUCTION_END);
-
-    if(settings.isEmpty()) return;
-
-    for(NotificationSetting setting : settings) {
-      try {
-        sseService.sendAuctionFailedToSubscriber( // 알림 설정 유저
-            setting.getUser().getId(),
-            auction.getId(),
-            auction.getTitle()
-        );
-      } catch (Exception e) {
-        log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
-      }
-    }
-  }
-
-  private void notifyAuctionSuccess(Auction auction) {
-    sseService.sendAuctionSuccessToSeller( // 판매자
-        auction.getSeller().getId(),
-        auction.getId(),
-        auction.getTitle()
-    );
-
-    List<NotificationSetting> settings =
-        getActiveAuctionStartSettings(auction, NotificationSettingType.AUCTION_END);
-
-    if(settings.isEmpty()) return;
-
-    for(NotificationSetting setting : settings) {
-      try {
-        sseService.sendAuctionSuccessToSubscriber( // 알림 설정 유저
-            setting.getUser().getId(),
-            auction.getId(),
-            auction.getTitle()
-        );
-      } catch (Exception e) {
-        log.error("알림 발송 실패 [User: {}]: {}", setting.getUser().getId(), e.getMessage());
-      }
-    }
   }
 }
