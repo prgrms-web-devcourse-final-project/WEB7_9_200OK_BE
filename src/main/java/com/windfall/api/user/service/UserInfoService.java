@@ -1,6 +1,9 @@
 package com.windfall.api.user.service;
 
+import com.windfall.api.user.dto.request.UpdateUsernameRequest;
+import com.windfall.api.user.dto.response.UpdateUsernameResponse;
 import com.windfall.api.user.dto.response.UserInfoResponse;
+import com.windfall.api.user.dto.response.UpdateUserProfileImageResponse;
 import com.windfall.api.user.dto.response.reviewlist.AuctionImageRaw;
 import com.windfall.api.user.dto.response.reviewlist.ReviewListRaw;
 import com.windfall.api.user.dto.response.reviewlist.ReviewListResponse;
@@ -10,27 +13,27 @@ import com.windfall.api.user.dto.response.saleshistory.ProcessingSalesHistoryRes
 import com.windfall.api.user.dto.response.saleshistory.SalesHistoryRaw;
 import com.windfall.api.user.dto.response.saleshistory.BaseSalesHistoryResponse;
 import com.windfall.api.user.dto.response.saleshistory.SalesHistoryResponse;
-import com.windfall.domain.auction.entity.Auction;
-import com.windfall.domain.auction.entity.AuctionImage;
 import com.windfall.domain.auction.enums.AuctionStatus;
 import com.windfall.domain.auction.enums.AuctionStatusGroup;
 import com.windfall.domain.auction.repository.AuctionImageRepository;
+import com.windfall.domain.user.entity.User;
 import com.windfall.domain.user.repository.SalesHistoryQueryRepository;
 import com.windfall.domain.user.repository.UserInfoRepository;
-import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.response.SliceResponse;
+import com.windfall.global.s3.S3Uploader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +43,7 @@ public class UserInfoService {
   private final UserInfoRepository userInfoRepository;
   private final SalesHistoryQueryRepository salesHistoryQueryRepository;
   private final AuctionImageRepository auctionImageRepository;
+  private final S3Uploader s3Uploader;
 
   @Transactional
   public UserInfoResponse getUserInfo(Long userid, Long loginId){ //userDetails 추가될 경우 리팩토링 예정
@@ -96,6 +100,37 @@ public class UserInfoService {
     Slice<ReviewListResponse> resultSlice = toSlice(resultContent, rawData); //Slice 재정의
 
     return SliceResponse.from(resultSlice);
+  }
+
+  @Transactional
+  public UpdateUserProfileImageResponse updateUserProfileImage(MultipartFile image, Long loginId){
+    User user = userService.getUserById(loginId);
+
+    String oldUrl = user.getProfileImageUrl();
+    String dirName = "profile/" + loginId;
+    String newUrl = s3Uploader.upload(image, dirName);
+
+    user.updateProfileImage(newUrl); //S3에 새로운 이미지 저장
+
+    if(oldUrl != null){ //S3에 기존 이미지 삭제
+      String key = URIPathParser(oldUrl);
+      s3Uploader.deleteFile(key);
+    }
+    return new UpdateUserProfileImageResponse(newUrl);
+  }
+
+  @Transactional
+  public UpdateUsernameResponse updateUsername(UpdateUsernameRequest request, Long loginId){
+    User user = userService.getUserById(loginId);
+
+    user.updateUsername(request.username());
+
+    return new UpdateUsernameResponse(request.username());
+  }
+
+  private String URIPathParser(String url){
+    URI uri = URI.create(url);
+    return uri.getPath().substring(1);
   }
 
   private Slice<ReviewListResponse> toSlice (List<ReviewListResponse> content, Slice<ReviewListRaw> sliceData){
