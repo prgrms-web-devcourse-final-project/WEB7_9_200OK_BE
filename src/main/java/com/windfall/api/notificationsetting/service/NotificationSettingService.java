@@ -1,7 +1,9 @@
 package com.windfall.api.notificationsetting.service;
 
+import com.windfall.api.notificationsetting.dto.request.UpdateAuctionStartNotyRequest;
 import com.windfall.api.notificationsetting.dto.request.UpdateNotySettingRequest;
 import com.windfall.api.notificationsetting.dto.response.ReadNotySettingResponse;
+import com.windfall.api.notificationsetting.dto.response.UpdateAuctionStartNotyResponse;
 import com.windfall.api.notificationsetting.dto.response.UpdateNotySettingResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -65,6 +67,20 @@ public class NotificationSettingService {
     }
 
     return UpdateNotySettingResponse.from(request);
+  }
+
+  @Transactional
+  public UpdateAuctionStartNotyResponse updateAuctionStartNotification(
+      Long auctionId,
+      UpdateAuctionStartNotyRequest request,
+      Long userId
+  ) {
+    User user = getUser(userId);
+    Auction auction = getAuction(auctionId);
+
+    upsert(user, auction, NotificationSettingType.AUCTION_START, request.auctionStart());
+
+    return UpdateAuctionStartNotyResponse.from(request);
   }
 
   private void validatePrice(UpdateNotySettingRequest request) {

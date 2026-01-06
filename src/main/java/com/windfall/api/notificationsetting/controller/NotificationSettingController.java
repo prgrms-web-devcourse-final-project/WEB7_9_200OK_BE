@@ -1,5 +1,7 @@
 package com.windfall.api.notificationsetting.controller;
 
+import com.windfall.api.notificationsetting.dto.response.UpdateAuctionStartNotyResponse;
+import com.windfall.api.notificationsetting.dto.request.UpdateAuctionStartNotyRequest;
 import com.windfall.api.notificationsetting.dto.request.UpdateNotySettingRequest;
 import com.windfall.api.notificationsetting.dto.response.ReadNotySettingResponse;
 import com.windfall.api.notificationsetting.dto.response.UpdateNotySettingResponse;
@@ -10,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +31,8 @@ public class NotificationSettingController implements NotificationSettingSpecifi
       @PathVariable Long auctionId,
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-    ReadNotySettingResponse response = notificationSettingService.read(auctionId, user.getUserId());
+    Long userId = 6L;
+    ReadNotySettingResponse response = notificationSettingService.read(auctionId, userId);
     return ApiResponse.ok("알림 세팅 조회를 성공했습니다.", response);
   }
 
@@ -39,8 +43,22 @@ public class NotificationSettingController implements NotificationSettingSpecifi
       @RequestBody UpdateNotySettingRequest request,
       @AuthenticationPrincipal CustomUserDetails user
   ) {
+    Long userId = 6L;
+
     UpdateNotySettingResponse response = notificationSettingService
-        .update(auctionId, request, user.getUserId());
+        .update(auctionId, request, userId);
     return ApiResponse.ok("알림 세팅 수정을 성공했습니다.", response);
+  }
+
+  @PostMapping("/start")
+  public ApiResponse<UpdateAuctionStartNotyResponse> updateAuctionStartNotification(
+      @PathVariable Long auctionId,
+      @RequestBody UpdateAuctionStartNotyRequest request,
+      @AuthenticationPrincipal CustomUserDetails user
+  ) {
+    Long userId = 6L;
+    UpdateAuctionStartNotyResponse response = notificationSettingService
+        .updateAuctionStartNotification(auctionId, request,userId);
+    return ApiResponse.ok("경매 시작 알림 (비)활성화를 성공했습니다.", response);
   }
 }
