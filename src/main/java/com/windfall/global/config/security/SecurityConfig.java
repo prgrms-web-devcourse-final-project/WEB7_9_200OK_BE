@@ -36,14 +36,15 @@ public class SecurityConfig {
             .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
             .requestMatchers("/ws-stomp/**", "/ws-stomp-public/**").permitAll()
-            .requestMatchers("/api/v1/auctions/*/history", "/api/v1/auctions/*").permitAll()
-            .requestMatchers("/api/v1/auctions/*/seller").permitAll()
             .requestMatchers("/api/v1/tags/search").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/v1/auctions", "/api/v1/auctions/search").permitAll()
             .requestMatchers("/api/v1/payments/**").authenticated()
+            .requestMatchers("/api/v1/me/dashboard/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/api/v1/users/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/v1/auctions/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            // TODO: 개발 중이므로 나머지는 허용
-            .anyRequest().permitAll()
+            .anyRequest().authenticated()
         )
 
         .exceptionHandling(handling -> handling
