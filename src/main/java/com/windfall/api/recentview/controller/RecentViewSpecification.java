@@ -16,5 +16,9 @@ public interface RecentViewSpecification {
       @AuthenticationPrincipal CustomUserDetails userDetails
   );
 
-
+  @Operation(summary = "최근 본 경매내역 삭제", description = "최근 본 경매 내역을 삭제합니다. (마이페이지에서 사용됩니다.)")
+  ApiResponse<Void> deleteRecentView(
+      @PathVariable Long recentViewId,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  );
 }
