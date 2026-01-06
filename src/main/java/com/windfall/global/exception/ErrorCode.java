@@ -82,6 +82,10 @@ public enum ErrorCode {
   //유저 이미지 검증
   INVALID_IMAGE_FILE(HttpStatus.BAD_REQUEST, "이미지 파일이 유효하지 않습니다."),
 
+  //최근 본 목록
+  NOT_FOUND_RECENT_VIEW(HttpStatus.NOT_FOUND, "최근 본 내역이 존재하지 않습니다."),
+  INVALID_RECENT_VIEW_USERID(HttpStatus.FORBIDDEN, "사용자의 최근 본 내역이 아닙니다."),
+
   // 그 외
   UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 에러")
   ;
