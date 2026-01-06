@@ -16,6 +16,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
@@ -33,6 +34,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     runtimeOnly("com.h2database:h2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("com.github.napstr:logback-discord-appender:1.0.0")
 
     // Aws S3
     implementation("software.amazon.awssdk:s3:2.40.13")
