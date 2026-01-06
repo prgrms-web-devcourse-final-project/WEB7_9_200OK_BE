@@ -76,7 +76,7 @@ public class AuctionService {
     validatePrice(minPrice,maxPrice);
 
     Slice<AuctionSearchResponse> auctionSlice = auctionRepository.searchAuction(pageable,
-        query, category, status, minPrice, maxPrice,  tagIds);
+        query, category, status, minPrice, maxPrice, tagIds, userId);
 
     List<AuctionSearchResponse> auctions = auctionSlice.getContent();
 
@@ -92,7 +92,7 @@ public class AuctionService {
   }
 
   public AuctionListReadResponse readAuctionList(Long userId) {
-    List<ScheduledInfo> scheduleList = auctionRepository.getScheduledInfo(AuctionStatus.SCHEDULED, 15);
+    List<ScheduledInfo> scheduleList = auctionRepository.getScheduledInfo(AuctionStatus.SCHEDULED, userId,15);
     List<ProcessInfo> processList = auctionRepository.getProcessInfo(AuctionStatus.PROCESS, 15);
     List<PopularInfo> popularList = auctionRepository.getPopularInfo(AuctionStatus.PROCESS, 15);
 

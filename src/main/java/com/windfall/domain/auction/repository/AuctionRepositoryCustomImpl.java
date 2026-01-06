@@ -1,6 +1,7 @@
 package com.windfall.domain.auction.repository;
 
 
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -16,6 +17,7 @@ import com.windfall.api.auction.dto.response.info.ProcessInfo;
 import com.windfall.api.auction.dto.response.info.ScheduledInfo;
 import com.windfall.domain.auction.enums.AuctionCategory;
 import com.windfall.domain.auction.enums.AuctionStatus;
+import com.windfall.domain.notification.enums.NotificationSettingType;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import static com.windfall.domain.auction.entity.QAuction.auction;
 import static com.windfall.domain.tag.entity.QAuctionTag.auctionTag;
 import static com.windfall.domain.auction.entity.QAuctionImage.auctionImage;
 import static com.windfall.domain.auction.entity.QAuctionPriceHistory.auctionPriceHistory;
+import static com.windfall.domain.notification.entity.QNotificationSetting.notificationSetting;
 
 @RequiredArgsConstructor
 public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
@@ -60,7 +63,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
   }
 
   @Override
-  public List<ScheduledInfo> getScheduledInfo(AuctionStatus status, int limit) {
+  public List<ScheduledInfo> getScheduledInfo(AuctionStatus status,Long userId, int limit) {
     return queryFactory
         .select(Projections.constructor(ScheduledInfo.class,
             auction.id,
@@ -73,9 +76,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
             auction.title,
             auction.startPrice,
             Expressions.constant(false),
-            auction.startedAt
+            auction.startedAt,
+            isAuctionStartNotificationEnabled(userId)
         ))
         .from(auction)
+        .leftJoin(notificationSetting)
+        .on(auctionStartNotificationCondition(userId))
         .where(auction.status.eq(status))
         .orderBy(auction.startedAt.asc())
         .limit(limit)
@@ -109,7 +115,7 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
 
   @Override
   public Slice<AuctionSearchResponse> searchAuction(Pageable pageable, String query,
-      AuctionCategory category, AuctionStatus status, Long minPrice, Long maxPrice, List<Long> tagIds) {
+      AuctionCategory category, AuctionStatus status, Long minPrice, Long maxPrice, List<Long> tagIds,Long userId) {
     int pageSize = pageable.getPageSize();
     boolean hasNext = false;
     List<AuctionSearchResponse> auctionList = queryFactory.select(
@@ -127,9 +133,12 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
                 calculateDiscountRate(),
                 Expressions.constant(false),
                 auction.startedAt,
-                auction.status
+                auction.status,
+                isAuctionStartNotificationEnabled(userId)
             ))
         .from(auction)
+        .leftJoin(notificationSetting)
+        .on(auctionStartNotificationCondition(userId))
         .where(
             containsQuery(query),
             eqCategory(category),
@@ -248,5 +257,26 @@ private BooleanExpression priceBetween(Long minPrice, Long maxPrice) {
   }
   return auction.currentPrice.between(minPrice, maxPrice);
 }
+  private BooleanExpression auctionStartNotificationCondition(
+      Long userId
+  ) {
+    if (userId == null) {
+      return Expressions.TRUE;
+    }
+
+    return notificationSetting.auction.eq(auction)
+        .and(notificationSetting.user.id.eq(userId))
+        .and(notificationSetting.type.eq(NotificationSettingType.AUCTION_START))
+        .and(notificationSetting.activated.isTrue())
+        .and(auction.status.eq(AuctionStatus.SCHEDULED));
+  }
+
+  private Expression<Boolean> isAuctionStartNotificationEnabled(Long userId) {
+    if (userId == null) {
+      return Expressions.constant(false);
+    }
+
+    return notificationSetting.id.isNotNull();
+  }
 
 }

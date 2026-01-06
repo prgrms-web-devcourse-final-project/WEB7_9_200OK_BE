@@ -3,6 +3,7 @@ package com.windfall.api.auction.dto.response.info;
 import com.windfall.api.like.dto.response.AuctionLikeSupport;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Bool;
 
 @Schema(description = "경매 예정 응답 DTO")
 public record ScheduledInfo(
@@ -22,7 +23,10 @@ public record ScheduledInfo(
     Boolean isLiked,
 
     @Schema(description = "경매 시작 시간")
-    LocalDateTime startedAt
+    LocalDateTime startedAt,
+
+    @Schema(description = "경매 시작 알림 여부")
+    Boolean isNotification
 ) implements AuctionLikeSupport<ScheduledInfo> {
 
   @Override
@@ -33,7 +37,8 @@ public record ScheduledInfo(
         title,
         startPrice,
         isLiked,
-        startedAt
+        startedAt,
+        isNotification
     );
   }
 }

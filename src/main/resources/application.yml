@@ -58,6 +58,9 @@ logging:
     org.hibernate.orm.jdbc.extract: TRACE
     org.springframework.transaction.interceptor: TRACE
     com.backend: DEBUG
+  discord:
+    webhook-url: ${DISCORD_WEBHOOK_URL}
+  config: classpath:logback.xml
 
 springdoc:
   swagger-ui:
