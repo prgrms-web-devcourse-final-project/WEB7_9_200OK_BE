@@ -261,7 +261,7 @@ private BooleanExpression priceBetween(Long minPrice, Long maxPrice) {
       Long userId
   ) {
     if (userId == null) {
-      return Expressions.TRUE;
+      return Expressions.FALSE;
     }
 
     return notificationSetting.auction.eq(auction)
