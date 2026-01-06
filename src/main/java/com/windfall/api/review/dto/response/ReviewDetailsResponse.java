@@ -14,6 +14,9 @@ public record ReviewDetailsResponse(
     @Schema(description = "판매자 ID")
     Long sellerId,
 
+    @Schema(description = "판매자 프로필")
+    String sellerProfileImage,
+
     @Schema(description = "경매 이름 (상품 이름)")
     String auctionTitle,
 
@@ -34,6 +37,7 @@ public record ReviewDetailsResponse(
         .auctionId(rawReview.auctionId())
         .reviewId(rawReview.reviewId())
         .sellerId(rawReview.sellerId())
+        .sellerProfileImage(rawReview.sellerProfileImage())
         .auctionImageUrl(auctionImageUrl)
         .auctionTitle(rawReview.auctionTitle())
         .content(rawReview.content())
