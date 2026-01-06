@@ -13,6 +13,9 @@ public record ReviewDetailsRaw(
     @Schema(description = "판매자 ID")
     Long sellerId,
 
+    @Schema(description = "판매자 프로필")
+    String sellerProfileImage,
+
     @Schema(description = "경매 제목 (상품 이름)")
     String auctionTitle,
 
