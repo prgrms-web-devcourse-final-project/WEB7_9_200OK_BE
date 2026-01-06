@@ -102,4 +102,13 @@ public class AuctionImageService {
     int path = LocalDateTime.now().getNano();
     return  path + "/" + UUID.randomUUID();
   }
+
+  @Transactional(readOnly = true)
+  public List<String> getAuctionImageUrls(Long auctionId) {
+    List<AuctionImage> images = auctionImageRepository.findAllByAuctionId(auctionId);
+
+    return images.stream()
+        .map(AuctionImage::getImage)
+        .collect(Collectors.toList());
+  }
 }
