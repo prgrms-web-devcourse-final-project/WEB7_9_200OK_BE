@@ -188,6 +188,8 @@ public class AuctionService {
 
     Auction auction = getAuctionById(auctionId);
 
+    List<String> imageUrls = auctionImageService.getAuctionImageUrls(auctionId);
+
     long displayPrice = auction.getDisplayPrice();
 
     double discountRate = 0.0;
@@ -215,6 +217,7 @@ public class AuctionService {
 
     return AuctionDetailResponse.of(
         auction,
+        imageUrls,
         displayPrice,
         discountRate,
         exposedStopLoss,
