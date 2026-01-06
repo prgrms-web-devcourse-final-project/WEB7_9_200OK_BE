@@ -66,7 +66,14 @@ public class NotificationSettingService {
       upsertPriceNotification(userId, auctionId, request.price());
     }
 
-    return UpdateNotySettingResponse.from(request);
+    List<NotificationSetting> settings =
+        notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
+
+    PriceNotification priceNotification = priceNotificationRepository
+        .findByUserIdAndAuctionId(userId, auctionId)
+        .orElse(null);
+
+    return UpdateNotySettingResponse.of(settings, priceNotification);
   }
 
   @Transactional
@@ -80,7 +87,11 @@ public class NotificationSettingService {
 
     upsert(user, auction, NotificationSettingType.AUCTION_START, request.auctionStart());
 
-    return UpdateAuctionStartNotyResponse.from(request);
+    NotificationSetting setting = notificationSettingRepository.findByUserIdAndAuctionIdAndType(
+        userId, auctionId, NotificationSettingType.AUCTION_START)
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION_START_NOTY));
+
+    return UpdateAuctionStartNotyResponse.from(setting.isActivated());
   }
 
   private void validatePrice(UpdateNotySettingRequest request) {

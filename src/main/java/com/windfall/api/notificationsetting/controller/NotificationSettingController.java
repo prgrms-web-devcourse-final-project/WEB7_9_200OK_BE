@@ -31,8 +31,7 @@ public class NotificationSettingController implements NotificationSettingSpecifi
       @PathVariable Long auctionId,
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-    Long userId = 6L;
-    ReadNotySettingResponse response = notificationSettingService.read(auctionId, userId);
+    ReadNotySettingResponse response = notificationSettingService.read(auctionId, user.getUserId());
     return ApiResponse.ok("알림 세팅 조회를 성공했습니다.", response);
   }
 
@@ -43,10 +42,8 @@ public class NotificationSettingController implements NotificationSettingSpecifi
       @RequestBody UpdateNotySettingRequest request,
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-    Long userId = 6L;
-
     UpdateNotySettingResponse response = notificationSettingService
-        .update(auctionId, request, userId);
+        .update(auctionId, request, user.getUserId());
     return ApiResponse.ok("알림 세팅 수정을 성공했습니다.", response);
   }
 
@@ -57,9 +54,8 @@ public class NotificationSettingController implements NotificationSettingSpecifi
       @RequestBody UpdateAuctionStartNotyRequest request,
       @AuthenticationPrincipal CustomUserDetails user
   ) {
-    Long userId = 6L;
     UpdateAuctionStartNotyResponse response = notificationSettingService
-        .updateAuctionStartNotification(auctionId, request,userId);
+        .updateAuctionStartNotification(auctionId, request, user.getUserId());
     return ApiResponse.ok("경매 시작 알림 (비)활성화를 성공했습니다.", response);
   }
 }
