@@ -15,11 +15,13 @@ public class ConfirmedPurchaseHistoryResponse extends BasePurchaseHistory{
   private final Long reviewId;
 
   @Builder
-  public ConfirmedPurchaseHistoryResponse(String status, Long auctionId, Long tradeId, String title,
-      String auctionImageUrl, int startPrice, int endPrice, int discountPercent,
-      LocalDate purchasedDate, Long roomId, int unreadCount, Long reviewId) {
-    super(status, auctionId, tradeId, title, auctionImageUrl, startPrice, endPrice, discountPercent,
-        purchasedDate, roomId, unreadCount);
+  public ConfirmedPurchaseHistoryResponse(String status, Long auctionId, Long tradeId,
+      Long sellerId,
+      String sellername, String sellerProfileImage, String title, String auctionImageUrl,
+      int startPrice, int endPrice, int discountPercent, LocalDate purchasedDate, Long roomId,
+      int unreadCount, Long reviewId) {
+    super(status, auctionId, tradeId, sellerId, sellername, sellerProfileImage, title,
+        auctionImageUrl, startPrice, endPrice, discountPercent, purchasedDate, roomId, unreadCount);
     this.reviewId = reviewId;
   }
 
@@ -29,6 +31,9 @@ public class ConfirmedPurchaseHistoryResponse extends BasePurchaseHistory{
         .status(tuple.get("status", String.class))
         .auctionId(tuple.get("auctionId", Long.class))
         .tradeId(tuple.get("tradeId", Long.class))
+        .sellerId(tuple.get("sellerId", Long.class))
+        .sellername(tuple.get("sellername", String.class))
+        .sellerProfileImage(tuple.get("sellerProfileImage", String.class))
         .title(tuple.get("title", String.class))
         .auctionImageUrl(tuple.get("auctionImageUrl", String.class))
         .startPrice(tuple.get("startPrice", Long.class).intValue())

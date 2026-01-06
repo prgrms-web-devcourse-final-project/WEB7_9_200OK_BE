@@ -22,6 +22,15 @@ public abstract class BasePurchaseHistory {
   @Schema(description = "거래 id")
   private final Long tradeId;
 
+  @Schema(description = "판매자 id")
+  private final Long sellerId;
+
+  @Schema(description = "판매자 이름")
+  private final String sellername;
+
+  @Schema(description = "판매자 프로필 사진")
+  private final String sellerProfileImage;
+
   @Schema(description = "경매 제목")
   private final String title;
 
@@ -43,11 +52,16 @@ public abstract class BasePurchaseHistory {
   @Schema(description = "채팅 정보")
   private final ChatInfo chatInfo;
 
-  public BasePurchaseHistory(String status, Long auctionId, Long tradeId,String title, String auctionImageUrl,
-      int startPrice, int endPrice, int discountPercent, LocalDate purchasedDate, Long roomId, int unreadCount) {
+  public BasePurchaseHistory(String status, Long auctionId, Long tradeId, Long sellerId,
+      String sellername, String sellerProfileImage, String title, String auctionImageUrl,
+      int startPrice, int endPrice, int discountPercent, LocalDate purchasedDate,
+      Long roomId, int unreadCount) {
     this.status = status;
     this.auctionId = auctionId;
     this.tradeId = tradeId;
+    this.sellerId = sellerId;
+    this.sellername = sellername;
+    this.sellerProfileImage = sellerProfileImage;
     this.title = title;
     this.auctionImageUrl = auctionImageUrl;
     this.startPrice = startPrice;

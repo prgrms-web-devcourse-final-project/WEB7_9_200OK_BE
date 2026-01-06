@@ -32,7 +32,10 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     SELECT
     t.status AS status, -- 거래 상태
     a.id AS auctionId, -- 경매 id
-    t.id AS tradeId,
+    t.id AS tradeId, -- 거래 id
+    u.id AS sellerId, -- 판매자 id
+    u.nickname AS sellername, -- 판매자 이름
+    u.profile_image_url AS sellerProfileImage, -- 판매자 프로필 사진
     a.title AS title, -- 상품 이름
     ai.image AS auctionImageUrl, -- 상품 대표 사진
     a.start_price AS startPrice, -- 시작가
@@ -44,6 +47,7 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     FROM trade t
     JOIN auction a ON t.auction_id = a.id
     JOIN chat_room cr ON cr.trade_id = t.id
+    JOIN users u ON t.seller_id = u.id
     LEFT JOIN chat_message cm ON cm.chat_room_id = cr.id
     LEFT JOIN (
     SELECT i.auction_id as auction_id, MIN(i.id) as first_image_id
@@ -53,7 +57,7 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     ) x ON x.auction_id = a.id
     LEFT JOIN auction_image ai ON x.first_image_id = ai.id  -- 각 경매별 가장 첫 번째 이미지 뽑기
     WHERE t.id IN(:ids)
-    GROUP BY t.status, a.id, a.title, ai.image, a.start_price, t.final_price, t.create_date, cr.id
+    GROUP BY t.status, a.id, a.title, ai.image, a.start_price, t.final_price, t.create_date, cr.id, t.id, u.id, u.nickname, u.profile_image_url
 """, nativeQuery = true)
   List<Tuple> getPurchaseHistory(@Param("id") Long userid, @Param("ids") List<Long> ids, @Param("auctionIds") List<Long> auctionIds);
 
@@ -61,7 +65,10 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     SELECT
     t.status AS status, -- 거래 상태
     a.id AS auctionId, -- 경매 id
-    t.id AS tradeId,
+    t.id AS tradeId, -- 거래 id
+    u.id AS sellerId, -- 판매자 id
+    u.nickname AS sellername, -- 판매자 이름
+    u.profile_image_url AS sellerProfileImage, -- 판매자 프로필 사진
     a.title AS title, -- 상품 이름
     ai.image AS auctionImageUrl, -- 상품 대표 사진
     a.start_price AS startPrice, -- 시작가
@@ -74,6 +81,7 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     FROM trade t
     JOIN auction a ON t.auction_id = a.id
     JOIN chat_room cr ON cr.trade_id = t.id
+    JOIN users u ON t.seller_id = u.id
     LEFT JOIN review r ON r.trade_id = t.id
     LEFT JOIN chat_message cm ON cm.chat_room_id = cr.id
     LEFT JOIN (
@@ -84,7 +92,7 @@ public interface PurchaseHistoryQueryRepository extends JpaRepository<Trade, Lon
     ) x ON x.auction_id = a.id
     LEFT JOIN auction_image ai ON x.first_image_id = ai.id  -- 각 경매별 가장 첫 번째 이미지 뽑기
     WHERE t.id IN(:ids)
-    GROUP BY t.status, a.id, a.title, ai.image, a.start_price, t.final_price, t.create_date, cr.id, r.id
+    GROUP BY t.status, a.id, a.title, ai.image, a.start_price, t.final_price, t.create_date, cr.id, r.id, t.id, u.id, u.nickname, u.profile_image_url
 """, nativeQuery = true)
   List<Tuple> getConfirmedPurchaseHistory(@Param("id") Long userid, @Param("ids") List<Long> ids, @Param("auctionIds") List<Long> auctionIds);
 }
