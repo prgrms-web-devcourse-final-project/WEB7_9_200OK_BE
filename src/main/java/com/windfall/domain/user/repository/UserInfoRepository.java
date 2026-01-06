@@ -15,7 +15,10 @@ public interface UserInfoRepository extends JpaRepository<User, Long> {
   @Query("""
   SELECT
   new com.windfall.api.user.dto.response.UserInfoResponse(
-  (u.id = :loginId),
+  CASE
+    WHEN :loginId IS NOT NULL AND u.id = :loginId THEN true
+    ELSE false
+  END,
   u.id,
   u.nickname,
   u.email,
