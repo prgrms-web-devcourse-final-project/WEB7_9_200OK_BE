@@ -4,7 +4,6 @@ import com.windfall.api.user.service.JwtProvider;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.domain.user.entity.User;
-import com.windfall.global.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -12,13 +11,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
@@ -37,26 +38,14 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     }
 
     String token = resolveToken(request);
-
+    log.info("[PAYMENT] token = {}", token);
+    log.info("[PAYMENT] uri = {}", request.getRequestURI());
     if (token == null || token.isBlank()) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    if (!jwtProvider.validateToken(token)) {
-      response.setContentType("application/json;charset=UTF-8");
-      response.setStatus(HttpStatus.UNAUTHORIZED.value());
-      response.getWriter().write("""
-        {
-          "resultCode": "%s",
-          "msg": "%s"
-        }
-        """.formatted(
-          ErrorCode.INVALID_TOKEN.name(),
-          ErrorCode.INVALID_TOKEN.getMessage()
-      ));
-      return;
-    }
+
 
     String providerUserId = jwtProvider.getProviderUserId(token);
     User user = userService.getUserByProviderUserId(providerUserId);
@@ -76,6 +65,17 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    Authentication authInfo = SecurityContextHolder.getContext().getAuthentication();
+
+    if (authInfo != null && authentication.getPrincipal() instanceof CustomUserDetails userInfo) {
+      log.info("로그인 사용자 ID: {}", userInfo.getUserId());
+      log.info("로그인 사용자 이름: {}", userInfo.getUsername());
+      log.info("권한: {}", userInfo.getAuthorities());
+    } else {
+      log.info("SecurityContext에 인증 정보가 없음 또는 Principal이 CustomUserDetails가 아님");
+    }
+
 
     filterChain.doFilter(request, response);
   }

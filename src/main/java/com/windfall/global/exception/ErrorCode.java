@@ -17,6 +17,9 @@ public enum ErrorCode {
   EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 리프레시 토큰입니다."),
   INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "올바르지 못한 리프레시 토큰입니다."),
 
+  // 보안
+  EMPTY_USER_INFO(HttpStatus.UNAUTHORIZED, "보안을 통과한 유저 정보가 null입니다"),
+
   // 경매
   INVALID_TIME(HttpStatus.BAD_REQUEST, "경매 시간을 다시 설정해주세요."),
   INVALID_DROP_AMOUNT(HttpStatus.BAD_REQUEST, "경매 하락 가격을 다시 설정해주세요."),
