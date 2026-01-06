@@ -134,13 +134,4 @@ public class NotificationSettingService {
     pn.updateTargetPrice(price);
     pn.resetNotified();
   }
-
-  // 알림 발송 판단용
-  @Transactional(readOnly = true)
-  public boolean isEnabled(Long userId, Long auctionId, NotificationSettingType type) {
-    return notificationSettingRepository
-        .findByUserIdAndAuctionIdAndType(userId, auctionId, type)
-        .map(NotificationSetting::isActivated)
-        .orElse(false); // row 없으면 비활성화 반환
-  }
 }

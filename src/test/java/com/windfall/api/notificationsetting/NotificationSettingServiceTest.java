@@ -102,41 +102,4 @@ class NotificationSettingServiceTest {
 
     verify(notificationSettingRepository, times(3)).save(any(NotificationSetting.class));
   }
-
-  @Test
-  @DisplayName("[알림 세팅 확인1] row가 존재할 때 isEnabled 반환")
-  void isEnabled_returnsCorrectValue() {
-    // given
-    NotificationSetting setting = NotificationSetting.builder()
-        .user(user)
-        .auction(auction)
-        .type(NotificationSettingType.AUCTION_START)
-        .build();
-    setting.updateActivated(true);
-
-    when(notificationSettingRepository.findByUserIdAndAuctionIdAndType(
-        userId, auctionId, NotificationSettingType.AUCTION_START))
-        .thenReturn(Optional.of(setting));
-
-    // when
-    boolean enabled = service.isEnabled(userId, auctionId, NotificationSettingType.AUCTION_START);
-
-    // then
-    assertTrue(enabled);
-  }
-
-  @Test
-  @DisplayName("[알림 세팅 확인2] row가 없을 때 isEnabled 반환 false")
-  void isEnabled_returnsFalseIfNoRow() {
-    // given
-    when(notificationSettingRepository.findByUserIdAndAuctionIdAndType(
-        userId, auctionId, NotificationSettingType.AUCTION_START))
-        .thenReturn(Optional.empty());
-
-    // when
-    boolean enabled = service.isEnabled(userId, auctionId, NotificationSettingType.AUCTION_START);
-
-    // then
-    assertFalse(enabled);
-  }
 }
