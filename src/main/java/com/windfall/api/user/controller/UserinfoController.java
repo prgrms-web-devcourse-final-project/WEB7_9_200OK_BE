@@ -38,7 +38,10 @@ public class UserinfoController implements UserInfoSpecification{
   public ApiResponse<UserInfoResponse> getUserInfo(
       @PathVariable Long userid,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-    Long loginId = userDetails.getUserId();
+    Long loginId = null;
+    if (userDetails != null) {
+      loginId = userDetails.getUserId();
+    }
 
     UserInfoResponse response = userInfoService.getUserInfo(userid, loginId);
 
@@ -52,8 +55,10 @@ public class UserinfoController implements UserInfoSpecification{
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @RequestParam(required = false) String filter,
       @PageableDefault(page = 0, size = 10) Pageable pageable) {
-
-    Long loginId = userDetails.getUserId();
+    Long loginId = null;
+    if (userDetails != null) {
+      loginId = userDetails.getUserId();
+    }
 
     SliceResponse<BaseSalesHistoryResponse> response = userInfoService.getUserSalesHistory(userid, loginId, filter, pageable);
 
