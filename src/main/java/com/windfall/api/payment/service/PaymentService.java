@@ -7,12 +7,7 @@ import com.windfall.api.payment.dto.response.PaymentConfirmResponse;
 import com.windfall.api.payment.dto.response.TossPaymentConfirmResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
-import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.repository.ChatRoomRepository;
-import com.windfall.domain.payment.entity.Payment;
-import com.windfall.domain.payment.entity.PaymentSelection;
-import com.windfall.domain.payment.enums.PaymentMethod;
-import com.windfall.domain.payment.enums.PaymentProvider;
 import com.windfall.domain.payment.repository.PaymentRepository;
 import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.trade.enums.TradeStatus;
@@ -23,19 +18,19 @@ import com.windfall.global.exception.ErrorException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
-
   private final WebClient webClient;
   private final PaymentRepository paymentRepository;
   private final AuctionRepository auctionRepository;
@@ -43,14 +38,15 @@ public class PaymentService {
   private final ChatRoomRepository chatRoomRepository;
   private final UserRepository userRepository;
   private final AuctionStateService auctionStateService;
+  private final PaymentPostProcessService paymentPostProcessService;
 
   @Value("${spring.toss.secretkey}")
   private String widgetSecretKey;
 
-  @Transactional
   public PaymentConfirmResponse confirmPayment(
       PaymentConfirmRequest paymentConfirmRequest,
       Long buyerId) {
+    log.info("Now on PaymentService");
 
     // DTO에서 데이터 추출하며 예외처리.
     String paymentKey = paymentConfirmRequest.paymentKey();
@@ -59,6 +55,13 @@ public class PaymentService {
     Long auctionId = paymentConfirmRequest.auctionId();
     Auction auction = auctionRepository.findById(auctionId).orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION));
 
+    log.info(
+        "[PaymentConfirm] request received - paymentKey={}, orderId={}, amount={}, auctionId={}",
+        paymentKey,
+        orderId,
+        amount,
+        auctionId
+    );
     // 테스트용 임시 User seller 값.
     /*
     User seller = new User(
@@ -86,7 +89,14 @@ public class PaymentService {
     Long sellerId = auction.getSeller().getId();
     if(!userRepository.existsById(sellerId)) throw new ErrorException(ErrorCode.NOT_FOUND_SELLER);
     if(!userRepository.existsById(buyerId)) throw new ErrorException(ErrorCode.NOT_FOUND_BUYER);
-    
+
+    log.info(
+        "[PaymentConfirm] seller/buyer check start - auctionId={}, sellerId={}, buyerId={}",
+        auction.getId(),
+        sellerId,
+        buyerId
+    );
+
     // 더티체킹 이슈로 상태 분리
     Trade trade = tradeRepository.findByAuction(auction)
         .orElse(null);
@@ -116,6 +126,13 @@ public class PaymentService {
     TossPaymentConfirmRequest tossRequest = new TossPaymentConfirmRequest(paymentKey, orderId,
         amount);
 
+    log.info(
+        "[TossConfirm] request start - orderId={}, paymentKey={}, amount={}",
+        tossRequest.orderId(),
+        tossRequest.paymentKey(),
+        tossRequest.amount()
+    );
+
     Base64.Encoder encoder = Base64.getEncoder();
     byte[] encodedBytes = encoder.encode((widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
     String authorization = "Basic " + new String(encodedBytes);
@@ -127,16 +144,36 @@ public class PaymentService {
         .bodyValue(tossRequest)
         .retrieve()
         .onStatus(HttpStatusCode::isError, response -> {
+          log.warn(
+              "[TossConfirm] error response - httpStatus={}, orderId={}",
+              response.statusCode(),
+              tossRequest.orderId()
+          );
           tradeFixed.changeStatus(TradeStatus.PAYMENT_FAILED);
           return Mono.error(new ErrorException(ErrorCode.PAYMENT_CONFIRM_FAILED));
         })
         .bodyToMono(TossPaymentConfirmResponse.class)
         .block();
 
+    log.info(
+        "[TossConfirm] success response received - orderId={}, status={}, paymentKey={}, totalAmount={}, method={}",
+        tossResponse.orderId(),
+        tossResponse.status(),
+        tossResponse.paymentKey(),
+        tossResponse.totalAmount(),
+        tossResponse.method()
+    );
+
     /* // 통신 제외한 로직 테스트용 임시 저장 객체
     TossPaymentConfirmResponse tossResponse = new TossPaymentConfirmResponse(
         paymentKey, orderId, 9999L, "카드 결제", "DONE");
     */
+
+    log.info(
+        "[PaymentConfirm] toss response validation start - orderId={}, totalAmount={}",
+        tossResponse.orderId(),
+        tossResponse.totalAmount()
+    );
 
     if (!tossResponse.orderId().equals(paymentConfirmRequest.orderId())) {
       trade.changeStatus(TradeStatus.PAYMENT_FAILED);
@@ -148,20 +185,8 @@ public class PaymentService {
       throw new ErrorException(ErrorCode.PAYMENT_AMOUNT_MISMATCH);
     }
 
-    // 사후 처리용
-    // trade 객체, payment 객체 값과 status 변경, 저장.
-    // payment 객체 생성, 값 넣고 저장.
-    // 채팅방 객체도 생성, 저장.
-
-    auctionStateService.completeAuction(auctionId);
-    trade.changeStatus(TradeStatus.PAYMENT_COMPLETED);
-
-    Payment payment = Payment.confirm(trade.getId(), paymentKey, amount,
-        new PaymentSelection(PaymentProvider.TOSS, PaymentMethod.MOBILE_PAYMENT));
-    paymentRepository.save(payment);
-
-    ChatRoom chatRoom = ChatRoom.generateChatRoom(trade);
-    chatRoomRepository.save(chatRoom);
+    // db에 저장하는 로직 따로 뺌.
+    paymentPostProcessService.updateDatabaseAfterPayment(auctionId,trade,paymentKey,amount);
 
     return new PaymentConfirmResponse(
         tossResponse.orderId(), tossResponse.paymentKey(), tossResponse.totalAmount());
