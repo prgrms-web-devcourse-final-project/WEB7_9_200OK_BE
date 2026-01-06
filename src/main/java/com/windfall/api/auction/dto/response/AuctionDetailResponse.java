@@ -73,6 +73,7 @@ public record AuctionDetailResponse(
 ) {
   public static AuctionDetailResponse of(
       Auction auction,
+      List<String> imageUrls,
       long currentPrice,
       double discountRate,
       long stopLoss,
@@ -87,7 +88,7 @@ public record AuctionDetailResponse(
         auction.getTitle(),
         auction.getDescription(),
         auction.getCategory(),
-        List.of("https://example.jpg"), // auction.getImageUrls(),
+        imageUrls,
         SellerInfo.from(auction.getSeller()),
         auction.getStartPrice(),
         auction.getDropAmount(),
