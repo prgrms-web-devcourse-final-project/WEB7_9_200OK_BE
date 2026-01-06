@@ -21,7 +21,7 @@ public class RecentViewService {
   @Transactional
   public void record(Long auctionId, Long userId){
 
-    if(isLoginUser(userId)) return; //비회원이면 해당 로직 실행할 필요가 없음
+    if(!isLoginUser(userId)) return; //비회원이면 해당 로직 실행할 필요가 없음
 
     Auction auction = auctionRepository.findById(auctionId).orElseThrow(() -> new ErrorException(
         ErrorCode.NOT_FOUND_AUCTION));
@@ -70,6 +70,6 @@ public class RecentViewService {
   }
 
   private boolean isLoginUser(Long userId){
-    return userId == null;
+    return userId != null;
   }
 }
