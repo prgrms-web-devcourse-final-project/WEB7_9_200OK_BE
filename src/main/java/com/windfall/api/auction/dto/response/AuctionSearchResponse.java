@@ -33,7 +33,9 @@ public record AuctionSearchResponse(
     LocalDateTime startedAt,
 
     @Schema(description = "경매 상태 (경매 예정, 경매 진행 중, 경매 종료)")
-    AuctionStatus status
+    AuctionStatus status,
+    @Schema(description = "경매 시작 알림 여부")
+    Boolean isNotification
 ) implements AuctionLikeSupport<AuctionSearchResponse> {
 
   @Override
@@ -47,7 +49,8 @@ public record AuctionSearchResponse(
         this.discountRate,
         liked,
         this.startedAt,
-        this.status
+        this.status,
+        this.isNotification
     );
   }
 }
