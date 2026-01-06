@@ -32,17 +32,14 @@ public class NotificationSettingService {
 
   @Transactional(readOnly = true)
   public ReadNotySettingResponse read(Long auctionId, Long userId) {
-    List<NotificationSetting> settings =
-        notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
+    List<NotificationSetting> settings = getByUserIdAndAuctionId(auctionId, userId);
 
     // row가 하나도 없으면 전부 비활성화
     if (settings.isEmpty()) {
       return ReadNotySettingResponse.allDisabled();
     }
 
-    PriceNotification priceNotification = priceNotificationRepository
-            .findByUserIdAndAuctionId(userId, auctionId)
-            .orElse(null);
+    PriceNotification priceNotification = getPriceNotification(auctionId, userId);
 
     return ReadNotySettingResponse.of(settings, priceNotification);
   }
@@ -66,12 +63,8 @@ public class NotificationSettingService {
       upsertPriceNotification(userId, auctionId, request.price());
     }
 
-    List<NotificationSetting> settings =
-        notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
-
-    PriceNotification priceNotification = priceNotificationRepository
-        .findByUserIdAndAuctionId(userId, auctionId)
-        .orElse(null);
+    List<NotificationSetting> settings = getByUserIdAndAuctionId(auctionId, userId);
+    PriceNotification priceNotification = getPriceNotification(auctionId, userId);
 
     return UpdateNotySettingResponse.of(settings, priceNotification);
   }
@@ -87,11 +80,25 @@ public class NotificationSettingService {
 
     upsert(user, auction, NotificationSettingType.AUCTION_START, request.auctionStart());
 
-    NotificationSetting setting = notificationSettingRepository.findByUserIdAndAuctionIdAndType(
-        userId, auctionId, NotificationSettingType.AUCTION_START)
+    NotificationSetting setting =
+        notificationSettingRepository.findByUserIdAndAuctionIdAndType(
+            userId,
+            auctionId,
+            NotificationSettingType.AUCTION_START
+        )
         .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION_START_NOTY));
 
     return UpdateAuctionStartNotyResponse.from(setting.isActivated());
+  }
+
+  private List<NotificationSetting> getByUserIdAndAuctionId(Long auctionId, Long userId) {
+    return notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
+  }
+
+  private PriceNotification getPriceNotification(Long auctionId, Long userId) {
+    return priceNotificationRepository
+        .findByUserIdAndAuctionId(userId, auctionId)
+        .orElse(null);
   }
 
   private void validatePrice(UpdateNotySettingRequest request) {
