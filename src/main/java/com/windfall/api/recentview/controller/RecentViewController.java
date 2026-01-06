@@ -5,6 +5,7 @@ import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,19 @@ public class RecentViewController implements RecentViewSpecification {
     recentViewService.record(auctionId, userId);
 
     return ApiResponse.ok("최근 본 목록이 업데이트 되었습니다.", null);
+  }
+
+  @Override
+  @DeleteMapping("/{recentViewId}")
+  public ApiResponse<Void> deleteRecentView(
+      @PathVariable Long recentViewId,
+      @AuthenticationPrincipal CustomUserDetails userDetails
+  ){
+
+    Long userId = userDetails.getUserId();
+    recentViewService.deleteView(recentViewId, userId);
+
+    return ApiResponse.ok("최근 본 목록을 삭제하였습니다.", null);
   }
 
 }

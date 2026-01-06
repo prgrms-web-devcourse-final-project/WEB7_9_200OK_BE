@@ -11,6 +11,7 @@ import lombok.Getter;
 
 @Getter
 @JsonPropertyOrder({
+    "recentViewId",
     "status",
     "auctionId",
     "title",
@@ -32,10 +33,11 @@ public class CompletedRecentViewListResponse extends BaseRecentViewList{
   private final String tradeStatus;
 
   @Builder
-  public CompletedRecentViewListResponse(String status, Long auctionId, String title,
-      String auctionImageUrl, int startPrice, LocalDate startedAt, int discountPercent,
+  public CompletedRecentViewListResponse(Long recentViewId, String status, Long auctionId,
+      String title, String auctionImageUrl, int startPrice, LocalDate startedAt,
+      int discountPercent,
       int endPrice, String tradeStatus) {
-    super(status, auctionId, title, auctionImageUrl, startPrice, startedAt);
+    super(recentViewId, status, auctionId, title, auctionImageUrl, startPrice, startedAt);
     this.discountPercent = discountPercent;
     this.endPrice = endPrice;
     this.tradeStatus = tradeStatus;
@@ -43,6 +45,7 @@ public class CompletedRecentViewListResponse extends BaseRecentViewList{
 
   public static CompletedRecentViewListResponse from(Tuple tuple){
     return CompletedRecentViewListResponse.builder()
+        .recentViewId(tuple.get("recentViewId", Long.class))
         .status(tuple.get("status", String.class))
         .auctionId(tuple.get("auctionId", Long.class))
         .title(tuple.get("title", String.class))

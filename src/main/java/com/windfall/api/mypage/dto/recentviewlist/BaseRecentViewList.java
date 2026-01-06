@@ -14,6 +14,9 @@ import lombok.Getter;
 )
 public abstract class BaseRecentViewList {
 
+  @Schema(description = "최근 본 내역 id")
+  private final Long recentViewId;
+
   @Schema(description = "경매 상태")
   private final String status;
 
@@ -32,8 +35,9 @@ public abstract class BaseRecentViewList {
   @Schema(description = "경매 시작일")
   private final LocalDate startedAt;
 
-  public BaseRecentViewList(String status, Long auctionId, String title, String auctionImageUrl,
-      int startPrice, LocalDate startedAt) {
+  public BaseRecentViewList(Long recentViewId, String status, Long auctionId, String title,
+      String auctionImageUrl, int startPrice, LocalDate startedAt) {
+    this.recentViewId = recentViewId;
     this.status = status;
     this.auctionId = auctionId;
     this.title = title;

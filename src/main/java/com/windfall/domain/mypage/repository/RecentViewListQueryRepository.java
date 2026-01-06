@@ -26,6 +26,7 @@ public interface RecentViewListQueryRepository extends JpaRepository<Auction, Lo
 
   @Query(value = """
   SELECT
+  rv.id AS recentViewId,
   a.status AS status, -- 경매 상태 (일반, 취소)
   a.id AS auctionId, -- 경매 아이디
   a.title AS title, -- 경매 이름 (상품 이름)
@@ -47,6 +48,7 @@ public interface RecentViewListQueryRepository extends JpaRepository<Auction, Lo
 
   @Query(value = """
   SELECT
+  rv.id AS recentViewId,
   a.status AS status, -- 경매 상태 (완료)
   a.id AS auctionId, -- 경매 아이디
   a.title AS title, -- 경매 이름 (상품 이름)
@@ -72,6 +74,7 @@ public interface RecentViewListQueryRepository extends JpaRepository<Auction, Lo
 
   @Query(value = """
   SELECT
+  rv.id AS recentViewId,
   a.status AS status, -- 경매 상태 (진행 중, 유찰)
   a.id AS auctionId, -- 경매 아이디
   a.title AS title, -- 경매 이름 (상품 이름)

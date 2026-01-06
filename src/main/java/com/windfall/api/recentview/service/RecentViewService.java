@@ -36,6 +36,28 @@ public class RecentViewService {
     }
   }
 
+  @Transactional
+  public void deleteView(Long recentViewId, Long userId){
+    //최근 본 내역 id가 유효한지 검증
+    RecentView recentView = validateRecentView(recentViewId);
+
+    //유저 검증
+    validateUser(recentView.getUserId(), userId);
+
+    //삭제
+    recentViewRepository.delete(recentView);
+  }
+
+  private RecentView validateRecentView(Long recentViewId){
+    return recentViewRepository.findById(recentViewId).orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_RECENT_VIEW));
+  }
+
+  private void validateUser(Long recentViewUserId, Long userId){
+    if(!recentViewUserId.equals(userId)){
+      throw new ErrorException(ErrorCode.INVALID_RECENT_VIEW_USERID);
+    }
+  }
+
   private void removeLastView(Long userId){
     int count = recentViewRepository.countByUserId(userId);
 
