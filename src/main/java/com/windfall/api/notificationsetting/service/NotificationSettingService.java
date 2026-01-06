@@ -1,7 +1,9 @@
 package com.windfall.api.notificationsetting.service;
 
+import com.windfall.api.notificationsetting.dto.request.UpdateAuctionStartNotyRequest;
 import com.windfall.api.notificationsetting.dto.request.UpdateNotySettingRequest;
 import com.windfall.api.notificationsetting.dto.response.ReadNotySettingResponse;
+import com.windfall.api.notificationsetting.dto.response.UpdateAuctionStartNotyResponse;
 import com.windfall.api.notificationsetting.dto.response.UpdateNotySettingResponse;
 import com.windfall.domain.auction.entity.Auction;
 import com.windfall.domain.auction.repository.AuctionRepository;
@@ -30,17 +32,14 @@ public class NotificationSettingService {
 
   @Transactional(readOnly = true)
   public ReadNotySettingResponse read(Long auctionId, Long userId) {
-    List<NotificationSetting> settings =
-        notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
+    List<NotificationSetting> settings = getByUserIdAndAuctionId(auctionId, userId);
 
     // row가 하나도 없으면 전부 비활성화
     if (settings.isEmpty()) {
       return ReadNotySettingResponse.allDisabled();
     }
 
-    PriceNotification priceNotification = priceNotificationRepository
-            .findByUserIdAndAuctionId(userId, auctionId)
-            .orElse(null);
+    PriceNotification priceNotification = getPriceNotification(auctionId, userId);
 
     return ReadNotySettingResponse.of(settings, priceNotification);
   }
@@ -64,7 +63,42 @@ public class NotificationSettingService {
       upsertPriceNotification(userId, auctionId, request.price());
     }
 
-    return UpdateNotySettingResponse.from(request);
+    List<NotificationSetting> settings = getByUserIdAndAuctionId(auctionId, userId);
+    PriceNotification priceNotification = getPriceNotification(auctionId, userId);
+
+    return UpdateNotySettingResponse.of(settings, priceNotification);
+  }
+
+  @Transactional
+  public UpdateAuctionStartNotyResponse updateAuctionStartNotification(
+      Long auctionId,
+      UpdateAuctionStartNotyRequest request,
+      Long userId
+  ) {
+    User user = getUser(userId);
+    Auction auction = getAuction(auctionId);
+
+    upsert(user, auction, NotificationSettingType.AUCTION_START, request.auctionStart());
+
+    NotificationSetting setting =
+        notificationSettingRepository.findByUserIdAndAuctionIdAndType(
+            userId,
+            auctionId,
+            NotificationSettingType.AUCTION_START
+        )
+        .orElseThrow(() -> new ErrorException(ErrorCode.NOT_FOUND_AUCTION_START_NOTY));
+
+    return UpdateAuctionStartNotyResponse.from(setting.isActivated());
+  }
+
+  private List<NotificationSetting> getByUserIdAndAuctionId(Long auctionId, Long userId) {
+    return notificationSettingRepository.findByUserIdAndAuctionId(userId, auctionId);
+  }
+
+  private PriceNotification getPriceNotification(Long auctionId, Long userId) {
+    return priceNotificationRepository
+        .findByUserIdAndAuctionId(userId, auctionId)
+        .orElse(null);
   }
 
   private void validatePrice(UpdateNotySettingRequest request) {
@@ -117,14 +151,5 @@ public class NotificationSettingService {
 
     pn.updateTargetPrice(price);
     pn.resetNotified();
-  }
-
-  // 알림 발송 판단용
-  @Transactional(readOnly = true)
-  public boolean isEnabled(Long userId, Long auctionId, NotificationSettingType type) {
-    return notificationSettingRepository
-        .findByUserIdAndAuctionIdAndType(userId, auctionId, type)
-        .map(NotificationSetting::isActivated)
-        .orElse(false); // row 없으면 비활성화 반환
   }
 }

@@ -2,11 +2,14 @@ package com.windfall.api.notificationsetting.controller;
 
 import static com.windfall.global.exception.ErrorCode.INVALID_PRICE_NOTIFICATION;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION;
+import static com.windfall.global.exception.ErrorCode.NOT_FOUND_AUCTION_START_NOTY;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_PRICE_REACHED_NOTY;
 import static com.windfall.global.exception.ErrorCode.NOT_FOUND_USER;
 
+import com.windfall.api.notificationsetting.dto.request.UpdateAuctionStartNotyRequest;
 import com.windfall.api.notificationsetting.dto.request.UpdateNotySettingRequest;
 import com.windfall.api.notificationsetting.dto.response.ReadNotySettingResponse;
+import com.windfall.api.notificationsetting.dto.response.UpdateAuctionStartNotyResponse;
 import com.windfall.api.notificationsetting.dto.response.UpdateNotySettingResponse;
 import com.windfall.domain.user.entity.CustomUserDetails;
 import com.windfall.global.config.swagger.ApiErrorCodes;
@@ -36,18 +39,21 @@ public interface NotificationSettingSpecification {
       @Parameter(description = "경매 ID", required = true, example = "1")
       @PathVariable Long auctionId,
 
-      @Parameter(description = "알림 여부", required = true,
-          example =
-              """
-              {
-                "auctionStart": true,
-                "auctionEnd": true,
-                "priceReached": true,
-                "price": 10000
-              }
-              """
-      )
+      @Parameter(description = "알림 여부", required = true)
       @RequestBody UpdateNotySettingRequest request,
+
+      @Parameter(description = "사용자 ID", example = "1")
+      @AuthenticationPrincipal CustomUserDetails user
+  );
+
+  @ApiErrorCodes({NOT_FOUND_USER, NOT_FOUND_AUCTION, NOT_FOUND_AUCTION_START_NOTY})
+  @Operation(summary = "경매 시작 알림 단일 (비)활성화", description = "경매 시작 알림을 (비)활성화할 수 있습니다.")
+  ApiResponse<UpdateAuctionStartNotyResponse> updateAuctionStartNotification(
+      @Parameter(description = "경매 ID", required = true, example = "1")
+      @PathVariable Long auctionId,
+
+      @Parameter(description = "경매 시작 알림 여부", required = true)
+      @RequestBody UpdateAuctionStartNotyRequest request,
 
       @Parameter(description = "사용자 ID", example = "1")
       @AuthenticationPrincipal CustomUserDetails user

@@ -38,6 +38,7 @@ public enum ErrorCode {
   INVALID_NOTIFICATION(HttpStatus.FORBIDDEN, "해당 유저의 알림이 아닙니다."),
   INVALID_PRICE_NOTIFICATION(HttpStatus.BAD_REQUEST, "가격 도달 알림을 위한 가격이 유효하지 않습니다."),
   NOT_FOUND_PRICE_REACHED_NOTY(HttpStatus.INTERNAL_SERVER_ERROR, "알림 설정 처리 중 내부 오류로 가격 도달 알림이 활성화 되지 않았습니다."),
+  NOT_FOUND_AUCTION_START_NOTY(HttpStatus.INTERNAL_SERVER_ERROR, "알림 설정 처리 중 내부 오류로 경매 시작 알림이 활성화 되지 않았습니다."),
 
   // WS CONNECT/인증 단계 구체 에러
   WS_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "웹소켓 연결에 토큰이 필요합니다."),
