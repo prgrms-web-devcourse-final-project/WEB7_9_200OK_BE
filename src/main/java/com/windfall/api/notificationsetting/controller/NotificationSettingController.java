@@ -50,6 +50,7 @@ public class NotificationSettingController implements NotificationSettingSpecifi
     return ApiResponse.ok("알림 세팅 수정을 성공했습니다.", response);
   }
 
+  @Override
   @PostMapping("/start")
   public ApiResponse<UpdateAuctionStartNotyResponse> updateAuctionStartNotification(
       @PathVariable Long auctionId,
