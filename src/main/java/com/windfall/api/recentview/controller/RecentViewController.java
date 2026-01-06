@@ -25,7 +25,10 @@ public class RecentViewController implements RecentViewSpecification {
       @AuthenticationPrincipal CustomUserDetails userDetails
   ){
 
-    Long userId = userDetails.getUserId();
+    Long userId = null;
+    if (userDetails != null) {
+      userId = userDetails.getUserId();
+    }
     recentViewService.record(auctionId, userId);
 
     return ApiResponse.ok("최근 본 목록이 업데이트 되었습니다.", null);
