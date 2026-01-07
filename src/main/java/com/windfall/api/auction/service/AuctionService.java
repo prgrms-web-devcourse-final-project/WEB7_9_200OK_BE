@@ -52,6 +52,7 @@ public class AuctionService {
   private final AuctionLikeService auctionLikeService;
   private final AuctionImageService auctionImageService;
   private final SearchHistoryService searchHistoryService;
+  private final AuctionViewerService auctionViewerService;
 
   @Transactional
   public AuctionCreateResponse createAuction(AuctionCreateRequest request, Long sellerId) {
@@ -94,8 +95,7 @@ public class AuctionService {
   public AuctionListReadResponse readAuctionList(Long userId) {
     List<ScheduledInfo> scheduleList = auctionRepository.getScheduledInfo(AuctionStatus.SCHEDULED, userId,15);
     List<ProcessInfo> processList = auctionRepository.getProcessInfo(AuctionStatus.PROCESS, 15);
-    List<PopularInfo> popularList = auctionRepository.getPopularInfo(AuctionStatus.PROCESS, 15);
-
+    List<PopularInfo> popularList = auctionViewerService.getPopularInfo();
     LocalDateTime now = LocalDateTime.now();
 
     if (userId != null) {
@@ -111,6 +111,7 @@ public class AuctionService {
 
     return AuctionListReadResponse.of(now, popularList, processList, scheduleList);
   }
+
 
   private List<? extends AuctionLikeSupport<?>> mergeAuctionLikeTargets(
       List<PopularInfo> popularList, List<ProcessInfo> processList,

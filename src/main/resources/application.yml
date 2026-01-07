@@ -102,3 +102,12 @@ management:
   health:
     redis:
       enabled: false # 헬스체크 최소화
+
+resilience4j:
+  retry:
+    configs:
+      customRetry:
+        maxAttempts: 3
+        waitDuration: 2s
+        enableExponentialBackoff: true
+        exponential-backoff-multiplier: 2.0

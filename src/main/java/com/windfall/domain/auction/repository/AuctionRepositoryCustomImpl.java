@@ -89,7 +89,32 @@ public class AuctionRepositoryCustomImpl implements AuctionRepositoryCustom {
   }
 
   @Override
-  public List<PopularInfo> getPopularInfo(AuctionStatus status, int limit) {
+  public List<PopularInfo> getPopularInfo(List<Long> auctionIds) {
+    return queryFactory
+        .select(Projections.constructor(PopularInfo.class,
+            auction.id,
+            JPAExpressions
+                .select(auctionImage.image)
+                .from(auctionImage)
+                .where(auctionImage.auction.id.eq(auction.id))
+                .orderBy(auctionImage.id.asc())
+                .limit(1),
+            auction.title,
+            auction.startPrice,
+            auction.currentPrice,
+            calculateDiscountRate(),
+            Expressions.constant(false),
+            auction.startedAt
+        ))
+        .from(auction)
+        .where(auction.id.in(auctionIds)
+            .and(auction.status.eq(AuctionStatus.PROCESS)))
+        .fetch();
+  }
+
+
+  @Override
+  public List<PopularInfo> fallbackPopularInfo(AuctionStatus status, int limit) {
     return queryFactory
         .select(Projections.constructor(PopularInfo.class,
             auction.id,
