@@ -99,8 +99,8 @@ public class AuctionImageService {
   }
 
   private String generateObjectKey() {
-    int path = LocalDateTime.now().getNano();
-    return  path + "/" + UUID.randomUUID();
+    String path = "auction/images/";
+    return  path + UUID.randomUUID();
   }
 
   @Transactional(readOnly = true)
