@@ -30,6 +30,7 @@ public enum ErrorCode {
   INVALID_AUCTION_SELLER(HttpStatus.FORBIDDEN, "해당 경매의 판매자가 아닙니다."),
   AUCTION_CANNOT_DELETE(HttpStatus.CONFLICT, "현재 상태의 경매는 삭제할 수 없습니다."),
   AUCTION_CANNOT_CANCEL(HttpStatus.CONFLICT, "현재 상태의 경매는 취소할 수 없습니다."),
+  POPULAR_AUCTION_FETCH_FAIL(HttpStatus.BAD_REQUEST, "인기 경매 목록을 불러오는 데 실패했습니다."),
 
   // 경매 이미지
   INVALID_S3_UPLOAD(HttpStatus.BAD_GATEWAY,"S3 이미지 업로드 실패했습니다."),
