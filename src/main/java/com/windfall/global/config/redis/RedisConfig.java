@@ -50,6 +50,8 @@ public class RedisConfig {
   public RedisTemplate<String, Object> pubSubRedisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
 
+    redisTemplate.setConnectionFactory(redisConnectionFactory());
+
     // 토픽(channel) 이름: 문자열
     redisTemplate.setKeySerializer(new StringRedisSerializer());
 
