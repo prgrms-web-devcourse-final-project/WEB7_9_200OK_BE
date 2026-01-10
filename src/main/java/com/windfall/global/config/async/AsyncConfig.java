@@ -1,4 +1,4 @@
-package com.windfall.global.config.Async;
+package com.windfall.global.config.async;
 
 import java.util.concurrent.Executor;
 import org.springframework.context.annotation.Bean;
