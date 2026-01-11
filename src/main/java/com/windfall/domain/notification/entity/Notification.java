@@ -1,6 +1,5 @@
 package com.windfall.domain.notification.entity;
 
-import com.windfall.api.notification.dto.response.NotificationMarkResponse;
 import com.windfall.domain.notification.enums.NotificationType;
 import com.windfall.domain.user.entity.User;
 import com.windfall.global.entity.BaseEntity;
@@ -59,5 +58,11 @@ public class Notification extends BaseEntity {
 
   public void updateReadStatus(Boolean readStatus) {
     this.readStatus = readStatus;
+  }
+
+  public void updateChatMessage(String title, String message) {
+    this.title = title;
+    this.message = message;
+    this.readStatus = false;
   }
 }
