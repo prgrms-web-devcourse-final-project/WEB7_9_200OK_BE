@@ -1,5 +1,6 @@
 package com.windfall.api.review.service;
 
+import com.windfall.api.notification.service.SseService;
 import com.windfall.api.review.dto.request.CreateReviewRequest;
 import com.windfall.api.review.dto.request.UpdateReviewRequest;
 import com.windfall.api.review.dto.response.CreateReviewResponse;
@@ -26,6 +27,7 @@ public class ReviewService {
   private final TradeRepository tradeRepository;
   private final ReviewRepository reviewRepository;
   private final AuctionImageRepository auctionImageRepository;
+  private final SseService sseService;
 
   @Transactional
   public CreateReviewResponse createReview(Long userId, CreateReviewRequest request) {
@@ -51,6 +53,8 @@ public class ReviewService {
 
     Review review = Review.createReview(trade, request.rating(), request.content());
     reviewRepository.save(review);
+
+    notifyReviewRegistered(trade.getSellerId(), review.getId());
 
     return CreateReviewResponse.from(review);
   }
@@ -103,4 +107,10 @@ public class ReviewService {
     }
   }
 
+  private void notifyReviewRegistered(Long sellerId, Long reviewId) {
+    sseService.sendReviewRegistered(
+        sellerId,
+        reviewId
+    );
+  }
 }

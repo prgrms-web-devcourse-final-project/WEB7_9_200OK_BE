@@ -188,6 +188,19 @@ public class SseService {
     return Boolean.TRUE.equals(ok);
   }
 
+  @Async("socketTaskExecutor")
+  @Transactional
+  public void sendReviewRegistered(Long userId, Long targetId) {
+    sendNotification(
+        userId,
+        targetId,
+        "리뷰 등록 알림",
+        "구매자가 리뷰를 등록했습니다.",
+        NotificationType.REVIEW_REGISTERED,
+        "reviewRegistered"
+    );
+  }
+
   private void sendNotification(
       Long userId,
       Long targetId,
