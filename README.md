@@ -121,8 +121,7 @@
 --- 
 
 ## 🎞️ 시연 영상
-[![Video Label](http://img.youtube.com/vi/so-kIIsm_cE/0.jpg)](https://youtu.be/so-kIIsm_cE)
-[![Video Label](http://img.youtube.com/vi/jqGaCgQcWaM/0.jpg)](https://youtu.be/jqGaCgQcWaM)
+[![Video Label](http://img.youtube.com/vi/UX1E70MlFtU/0.jpg)](https://youtu.be/UX1E70MlFtU)
 
 --- 
 
