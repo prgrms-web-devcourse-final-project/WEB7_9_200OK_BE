@@ -4,6 +4,7 @@ import com.windfall.api.chat.dto.websocket.ChatMessageEvent;
 import com.windfall.api.chat.dto.websocket.ChatReadEvent;
 import com.windfall.api.chat.dto.websocket.ChatRoomUpdateEvent;
 import com.windfall.api.chat.dto.websocket.ChatSendRequest;
+import com.windfall.api.chat.event.vo.ChatMessageCreatedEvent;
 import com.windfall.api.chat.service.ChatRoomService;
 import com.windfall.api.user.service.UserService;
 import com.windfall.domain.chat.entity.ChatImage;
@@ -12,6 +13,7 @@ import com.windfall.domain.chat.entity.ChatRoom;
 import com.windfall.domain.chat.enums.ChatMessageType;
 import com.windfall.domain.chat.repository.ChatImageRepository;
 import com.windfall.domain.chat.repository.ChatMessageRepository;
+import com.windfall.domain.notification.repository.NotificationRepository;
 import com.windfall.domain.trade.entity.Trade;
 import com.windfall.domain.trade.enums.TradeStatus;
 import com.windfall.domain.user.entity.User;
@@ -19,6 +21,7 @@ import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +37,9 @@ public class ChatWsService {
   private final ChatRoomService chatRoomService;
   private final ChatMessageRepository chatMessageRepository;
   private final ChatImageRepository chatImageRepository;
+  private final NotificationRepository notificationRepository;
+
+  private final ApplicationEventPublisher eventPublisher;
 
   public void sendMessage(Long userId, ChatSendRequest request) {
     User sender = userService.getUserById(userId);
@@ -78,6 +84,18 @@ public class ChatWsService {
     Long receiverId = sender.getId().equals(buyerId) ? sellerId : buyerId;
     User receiver = userService.getUserById(receiverId);
     sendRoomUpdateToUser(String.valueOf(receiver.getId()), chatRoom, +1, false);
+
+    // AFTER_COMMIT 알림 이벤트 발행 (여기서 발행해도 리스너는 AFTER_COMMIT 으로 실행)
+    eventPublisher.publishEvent(
+        ChatMessageCreatedEvent.of(
+            chatRoom.getId(),
+            sender.getId(),
+            receiver.getId(),
+            sender.getNickname(),
+            preview,
+            msg.getCreateDate()
+        )
+    );
   }
 
   public void markAsRead(Long userId, Long chatRoomId) {
@@ -89,6 +107,9 @@ public class ChatWsService {
     validateTradeStatus(chatRoom);
 
     int updated = chatMessageRepository.markAllAsReadExcludingSender(chatRoomId, userId);
+
+    // 채팅 알림도 읽음 처리 동기화
+    notificationRepository.markChatRoomAsRead(userId, chatRoomId);
 
     // 본인 목록: unread 0으로 리셋 이벤트
     sendRoomUpdateToUser(String.valueOf(me.getId()), chatRoom, 0, true);

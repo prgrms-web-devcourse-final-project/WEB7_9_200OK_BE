@@ -9,9 +9,11 @@ import com.windfall.domain.user.repository.UserRepository;
 import com.windfall.global.exception.ErrorCode;
 import com.windfall.global.exception.ErrorException;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class SseService {
   private final Map<String, SseEmitter> sseEmitterMap = new ConcurrentHashMap<>();
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
+  private final RedisTemplate<String, String> redisTemplate;
 
 
   // TODO 현재 lastEventId 처리는 구현하지 않음 -> 나중에 userId가 아닌 따로 관리할 때 구현 예정 + SSE 관련 캐싱이나 DB 저장도 고려
@@ -144,6 +147,45 @@ public class SseService {
         NotificationType.SALE_SUCCESS_SUBSCRIBER,
         "auctionSuccessSubscriber"
     );
+  }
+
+  @Async("socketTaskExecutor")
+  @Transactional
+  public void chatNotificationSend(Long receiverId, Long chatRoomId, String senderName, String preview) {
+
+    // 1) 알림 upsert (읽지 않은 동일 채팅방 알림이 있으면 업데이트)
+    User user = getUserOrThrow(receiverId);
+
+    Notification saved = notificationRepository.findUnreadChatNotificationOne(receiverId, chatRoomId)
+        .map(n -> {
+          n.updateReadStatus(false);
+          n.updateChatMessage("채팅 알림", senderName + ": " + preview);
+          return n;
+        })
+        .orElseGet(() -> Notification.create(
+            user,
+            "채팅 알림",
+            senderName + ": " + preview,
+            false,
+            NotificationType.CHAT_MESSAGE,
+            chatRoomId
+        ));
+
+    Notification persisted = notificationRepository.save(saved);
+
+    // 2) SSE 전송 스로틀 (짧은 시간에 여러 개 오면 토스트 난사 방지)
+    if (!shouldPushChatNotification(receiverId, chatRoomId)) {
+      return; // DB는 갱신됐으니 실시간 푸시만 스킵
+    }
+
+    NotificationReadResponse response = NotificationReadResponse.from(persisted);
+    sendToClient(String.valueOf(receiverId), "chatMessage", response);
+  }
+
+  private boolean shouldPushChatNotification(Long userId, Long chatRoomId) {
+    String key = "chat:noti:cooldown:" + userId + ":" + chatRoomId;
+    Boolean ok = redisTemplate.opsForValue().setIfAbsent(key, "1", Duration.ofSeconds(3));
+    return Boolean.TRUE.equals(ok);
   }
 
   @Async("socketTaskExecutor")

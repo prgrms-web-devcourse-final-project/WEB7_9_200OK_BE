@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Windfall Chat + SSE Notification Test</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    label { font-size: 12px; color: #555; }
+    input, select, button, textarea { padding: 8px; border: 1px solid #ccc; border-radius: 8px; }
+    input[type="text"], input[type="number"] { width: 220px; }
+    textarea { width: 100%; height: 140px; font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; }
+    button { cursor: pointer; }
+    .small { font-size: 12px; color: #666; }
+    .ok { color: #0a7; }
+    .warn { color: #b60; }
+    .err { color: #c00; }
+    .log { height: 260px; overflow: auto; background: #0b1020; color: #e7ecff; padding: 10px; border-radius: 10px; font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; font-size: 12px; white-space: pre-wrap; }
+    .pill { padding: 2px 8px; border-radius: 999px; border: 1px solid #ddd; font-size: 12px; }
+  </style>
+
+  <!-- SockJS + STOMP (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+
+<body>
+<h2>Windfall 채팅/채팅알림(WS+SSE) 로컬 테스트</h2>
+<div class="small">
+  - WS(STOMP): <code>/ws-stomp</code> 또는 <code>/ws-stomp-public</code><br/>
+  - App Destinations: <code>/app/chat.send</code>, <code>/app/chat.enter</code>, <code>/app/chat.leave</code>, <code>/app/chat.read</code>, <code>/app/chat.ping</code><br/>
+  - Subscribe Topics: <code>/topic/chat.rooms.{chatRoomId}</code>, <code>/topic/chat.read.{chatRoomId}</code>, <code>/user/queue/chat.rooms</code>, <code>/user/queue/errors</code><br/>
+  - SSE: <code>/api/v1/notifications/subscribe</code> (프로젝트 실제 path가 다르면 아래에서 바꿔줘)
+</div>
+
+<div class="grid" style="margin-top:12px;">
+  <!-- Connection -->
+  <div class="card">
+    <h3>1) 연결 설정</h3>
+    <div class="row">
+      <label>Base URL</label>
+      <input id="baseUrl" type="text" value="http://localhost:8080" />
+      <span class="pill" id="statusWs">WS: DISCONNECTED</span>
+      <span class="pill" id="statusSse">SSE: DISCONNECTED</span>
+    </div>
+    <div class="row" style="margin-top:8px;">
+      <label>WS Endpoint</label>
+      <select id="wsEndpoint">
+        <option value="/ws-stomp-public">/ws-stomp-public (토큰 없이 권장)</option>
+        <option value="/ws-stomp">/ws-stomp (토큰 필요할 수 있음)</option>
+      </select>
+
+      <label>Bearer Token (선택)</label>
+      <input id="bearer" type="text" placeholder="Bearer xxx or xxx" />
+    </div>
+
+    <div class="row" style="margin-top:8px;">
+      <label>테스트 계정 userId(표시용)</label>
+      <input id="myUserId" type="number" value="1" />
+      <span class="small warn">
+          ※ WS의 Principal은 서버가 토큰/핸드셰이크로 설정함. 여기 userId는 UI 표시용.
+        </span>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button onclick="connectWs()">WS 연결</button>
+      <button onclick="disconnectWs()">WS 끊기</button>
+      <button onclick="connectSse()">SSE 구독</button>
+      <button onclick="disconnectSse()">SSE 끊기</button>
+    </div>
+
+    <div class="row" style="margin-top:8px;">
+      <label>SSE Path</label>
+      <input id="ssePath" type="text" value="/api/v1/notifications/subscribe" />
+      <label>lastEventId(선택)</label>
+      <input id="lastEventId" type="text" placeholder="(optional)" />
+    </div>
+
+    <div class="small" style="margin-top:8px;">
+      SSE가 쿠키/세션 기반 인증이라면 브라우저에서 자동으로 쿠키가 붙고, 토큰 기반이라면 서버가 헤더를 요구할 수 있어.
+      (EventSource는 헤더를 붙이기 어렵기 때문에 보통 쿠키 방식으로 둠)
+    </div>
+  </div>
+
+  <!-- Scenario -->
+  <div class="card">
+    <h3>2) 시나리오 실행</h3>
+    <div class="row">
+      <label>ChatRoomId</label>
+      <input id="chatRoomId" type="number" value="1" />
+      <label>메시지 타입</label>
+      <select id="msgType">
+        <option value="TEXT">TEXT</option>
+        <option value="IMAGE">IMAGE</option>
+      </select>
+    </div>
+
+    <div class="row" style="margin-top:8px;">
+      <label>TEXT content</label>
+      <input id="msgContent" type="text" value="안녕! 테스트 메시지" />
+    </div>
+
+    <div class="row" style="margin-top:8px;">
+      <label>IMAGE urls(JSON 배열)</label>
+      <input id="imgUrls" type="text" value='["https://example.com/a.jpg"]' />
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button onclick="enterRoom()">enter (presence 저장)</button>
+      <button onclick="leaveRoom()">leave (presence 삭제)</button>
+      <button onclick="sendMessage()">send</button>
+      <button onclick="markRead()">read</button>
+      <button onclick="ping()">ping (TTL 연장)</button>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <label>스팸 전송(스로틀 확인)</label>
+      <input id="spamCount" type="number" value="5" />
+      <input id="spamInterval" type="number" value="500" />
+      <span class="small">(ms 간격)</span>
+      <button onclick="spamSend()">연속 send</button>
+    </div>
+
+    <div class="small" style="margin-top:10px;">
+      ✅ 추천 테스트 순서:<br/>
+      1) A창: SSE 구독 + WS 연결 + enter → B창에서 send → A는 SSE 알림이 오면 안 됨(스킵)<br/>
+      2) A창: leave → B창에서 send → A는 SSE <code>chatMessage</code> 이벤트가 와야 함<br/>
+      3) B창에서 연속 send → A SSE는 3초 스로틀로 너무 자주 안 와야 함(DB upsert는 계속 됨)
+    </div>
+  </div>
+</div>
+
+<div class="grid" style="margin-top:12px;">
+  <div class="card">
+    <h3>3) 수신 로그</h3>
+    <div class="row small">
+      <span>WS Topic / Queue / SSE 이벤트가 여기 찍힘</span>
+      <button onclick="clearLog()">로그 비우기</button>
+    </div>
+    <div id="log" class="log" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card">
+    <h3>4) 현재 구독 상태</h3>
+    <div class="small">
+      - WS 연결 후 자동 구독: <code>/user/queue/errors</code>, <code>/user/queue/chat.rooms</code><br/>
+      - RoomId 변경 후 "채팅방 구독" 버튼을 눌러야 해당 topic을 받음
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button onclick="subscribeRoomTopics()">채팅방 topic 구독</button>
+      <button onclick="unsubscribeRoomTopics()">채팅방 topic 구독 해제</button>
+    </div>
+
+    <div class="small" style="margin-top:10px;">
+      구독 대상:<br/>
+      - <code>/topic/chat.rooms.{chatRoomId}</code> (메시지 이벤트)<br/>
+      - <code>/topic/chat.read.{chatRoomId}</code> (read 이벤트)
+    </div>
+
+    <div class="small" style="margin-top:10px;">
+      ⚠️ WebSocketConfig에서 <code>setUserDestinationPrefix("/user")</code>를 쓰고 있으므로
+      <code>/user/queue/**</code>는 개인 큐로 들어옴.
+    </div>
+  </div>
+</div>
+
+<script>
+  let stompClient = null;
+  let sock = null;
+  let sse = null;
+
+  let roomSubs = { msg: null, read: null };
+
+  function now() {
+    const d = new Date();
+    return d.toISOString().replace('T',' ').replace('Z','');
+  }
+
+  function log(line, level="") {
+    const el = document.getElementById('log');
+    const prefix = level ? `[${level}] ` : "";
+    el.textContent += `${now()} ${prefix}${line}\n`;
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function setStatus(id, text, cls) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = "pill " + (cls || "");
+  }
+
+  function base() {
+    return document.getElementById('baseUrl').value.trim().replace(/\/$/, "");
+  }
+
+  function tokenHeader() {
+    let raw = document.getElementById('bearer').value.trim();
+    if (!raw) return {};
+    if (!raw.toLowerCase().startsWith("bearer ")) raw = "Bearer " + raw;
+    return { Authorization: raw };
+  }
+
+  function connectWs() {
+    if (stompClient && stompClient.connected) {
+      log("WS already connected", "WARN");
+      return;
+    }
+    const endpoint = document.getElementById('wsEndpoint').value;
+    const url = base() + endpoint;
+
+    sock = new SockJS(url);
+    stompClient = Stomp.over(sock);
+    stompClient.debug = function(str) {
+      // 필요하면 주석 해제
+      // log(str, "STOMP");
+    };
+
+    const headers = tokenHeader();
+
+    log(`WS connecting to ${url} ...`);
+    stompClient.connect(headers, function(frame) {
+      setStatus("statusWs", "WS: CONNECTED", "ok");
+      log("WS connected: " + frame, "OK");
+
+      // 기본 구독들
+      stompClient.subscribe("/user/queue/errors", (msg) => {
+        log("[/user/queue/errors] " + msg.body, "ERR");
+      });
+
+      stompClient.subscribe("/user/queue/chat.rooms", (msg) => {
+        log("[/user/queue/chat.rooms] " + msg.body, "OK");
+      });
+
+      log("Subscribed: /user/queue/errors, /user/queue/chat.rooms", "OK");
+    }, function(err) {
+      setStatus("statusWs", "WS: ERROR", "err");
+      log("WS connect error: " + JSON.stringify(err), "ERR");
+    });
+  }
+
+  function disconnectWs() {
+    try {
+      unsubscribeRoomTopics();
+      if (stompClient) stompClient.disconnect(() => {});
+      stompClient = null;
+      sock = null;
+      setStatus("statusWs", "WS: DISCONNECTED", "");
+      log("WS disconnected", "OK");
+    } catch (e) {
+      log("WS disconnect error: " + e, "ERR");
+    }
+  }
+
+  function connectSse() {
+    if (sse) {
+      log("SSE already connected", "WARN");
+      return;
+    }
+    const path = document.getElementById("ssePath").value.trim();
+    const lastEventId = document.getElementById("lastEventId").value.trim();
+
+    // EventSource는 커스텀 헤더를 못 붙임 (기본).
+    // 서버가 lastEventId를 query로 받는다면 아래처럼 붙일 수 있음.
+    // 너희 subscribe 메서드는 파라미터로 lastEventId를 받으니,
+    // 컨트롤러에서 @RequestParam으로 받는 형태라면 query로 넣어둘 수 있음.
+    let url = base() + path;
+    if (lastEventId) {
+      const sep = url.includes("?") ? "&" : "?";
+      url += `${sep}lastEventId=${encodeURIComponent(lastEventId)}`;
+    }
+
+    log("SSE connecting to " + url + " ...");
+    sse = new EventSource(url, { withCredentials: true });
+
+    sse.onopen = () => {
+      setStatus("statusSse", "SSE: CONNECTED", "ok");
+      log("SSE connected", "OK");
+    };
+
+    sse.onerror = (e) => {
+      setStatus("statusSse", "SSE: ERROR", "err");
+      log("SSE error (브라우저가 자동 재연결 시도함). 콘솔/네트워크 탭 확인 필요", "ERR");
+      // EventSource는 자동 재연결을 시도하므로 바로 close 하지 않는 게 보통 더 좋음.
+    };
+
+    // 기본 message 이벤트
+    sse.onmessage = (e) => {
+      log(`[SSE message] data=${e.data}`, "OK");
+    };
+
+    // 서버에서 name("chatMessage")로 보내는 이벤트 리스너
+    sse.addEventListener("chatMessage", (e) => {
+      log(`[SSE chatMessage] data=${e.data}`, "OK");
+    });
+
+    // 기존 알림 이벤트들(원하면 계속 추가 가능)
+    sse.addEventListener("priceAlert", (e) => log(`[SSE priceAlert] ${e.data}`, "OK"));
+    sse.addEventListener("auctionStartAlert", (e) => log(`[SSE auctionStartAlert] ${e.data}`, "OK"));
+    sse.addEventListener("auctionFailedSeller", (e) => log(`[SSE auctionFailedSeller] ${e.data}`, "OK"));
+    sse.addEventListener("auctionFailedSubscriber", (e) => log(`[SSE auctionFailedSubscriber] ${e.data}`, "OK"));
+    sse.addEventListener("auctionSuccessSeller", (e) => log(`[SSE auctionSuccessSeller] ${e.data}`, "OK"));
+    sse.addEventListener("auctionSuccessSubscriber", (e) => log(`[SSE auctionSuccessSubscriber] ${e.data}`, "OK"));
+
+    log("SSE listeners added: chatMessage, priceAlert, auction*", "OK");
+  }
+
+  function disconnectSse() {
+    if (!sse) {
+      log("SSE not connected", "WARN");
+      return;
+    }
+    sse.close();
+    sse = null;
+    setStatus("statusSse", "SSE: DISCONNECTED", "");
+    log("SSE disconnected", "OK");
+  }
+
+  function chatRoomId() {
+    return Number(document.getElementById('chatRoomId').value);
+  }
+
+  function requireWs() {
+    if (!stompClient || !stompClient.connected) {
+      log("WS not connected. Connect WS first.", "ERR");
+      throw new Error("WS not connected");
+    }
+  }
+
+  function subscribeRoomTopics() {
+    requireWs();
+    const roomId = chatRoomId();
+    unsubscribeRoomTopics();
+
+    roomSubs.msg = stompClient.subscribe(`/topic/chat.rooms.${roomId}`, (msg) => {
+      log(`[/topic/chat.rooms.${roomId}] ${msg.body}`, "OK");
+    });
+    roomSubs.read = stompClient.subscribe(`/topic/chat.read.${roomId}`, (msg) => {
+      log(`[/topic/chat.read.${roomId}] ${msg.body}`, "OK");
+    });
+
+    log(`Subscribed room topics for roomId=${roomId}`, "OK");
+  }
+
+  function unsubscribeRoomTopics() {
+    if (roomSubs.msg) { roomSubs.msg.unsubscribe(); roomSubs.msg = null; }
+    if (roomSubs.read) { roomSubs.read.unsubscribe(); roomSubs.read = null; }
+  }
+
+  function enterRoom() {
+    requireWs();
+    const roomId = chatRoomId();
+    stompClient.send("/app/chat.enter", {}, JSON.stringify({ chatRoomId: roomId }));
+    log(`SEND /app/chat.enter {chatRoomId:${roomId}}`, "OK");
+  }
+
+  function leaveRoom() {
+    requireWs();
+    const roomId = chatRoomId();
+    stompClient.send("/app/chat.leave", {}, JSON.stringify({ chatRoomId: roomId }));
+    log(`SEND /app/chat.leave {chatRoomId:${roomId}}`, "OK");
+  }
+
+  function ping() {
+    requireWs();
+    stompClient.send("/app/chat.ping", {}, "");
+    log(`SEND /app/chat.ping`, "OK");
+  }
+
+  function sendMessage() {
+    requireWs();
+    const roomId = chatRoomId();
+    const type = document.getElementById("msgType").value;
+
+    let payload = { chatRoomId: roomId, messageType: type, content: null, imageUrls: null };
+
+    if (type === "TEXT") {
+      payload.content = document.getElementById("msgContent").value;
+    } else {
+      const raw = document.getElementById("imgUrls").value.trim();
+      try {
+        payload.imageUrls = raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        log("IMAGE urls JSON 파싱 실패. 예: [\"https://...\"]", "ERR");
+        return;
+      }
+    }
+
+    stompClient.send("/app/chat.send", {}, JSON.stringify(payload));
+    log(`SEND /app/chat.send ${JSON.stringify(payload)}`, "OK");
+  }
+
+  function markRead() {
+    requireWs();
+    const roomId = chatRoomId();
+    // ChatReadRequest가 record(ChatRoomId) 형태라면 아래처럼 맞음
+    stompClient.send("/app/chat.read", {}, JSON.stringify({ chatRoomId: roomId }));
+    log(`SEND /app/chat.read {chatRoomId:${roomId}}`, "OK");
+  }
+
+  async function spamSend() {
+    requireWs();
+    const count = Number(document.getElementById("spamCount").value);
+    const interval = Number(document.getElementById("spamInterval").value);
+
+    log(`Spam sending ${count} messages every ${interval}ms`, "WARN");
+    for (let i = 1; i <= count; i++) {
+      document.getElementById("msgType").value = "TEXT";
+      document.getElementById("msgContent").value = `스팸 테스트 #${i} (${new Date().toLocaleTimeString()})`;
+      sendMessage();
+      await new Promise(r => setTimeout(r, interval));
+    }
+    log("Spam send done", "OK");
+  }
+
+  function clearLog() {
+    document.getElementById("log").textContent = "";
+  }
+</script>
+</body>
+</html>
